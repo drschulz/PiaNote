@@ -1,22 +1,24 @@
-var piano = new Wad({
+/*var piano = new Wad({
     source : 'square', 
     env : {
         attack : 0.01, 
-        decay : 0.005, 
-        sustain : 0.2, 
-        hold : 0.015, 
-        release : 0.3
+        decay : 0.4, 
+        sustain : 0.0, 
+        hold : 0.0, 
+        release : 0.1
     }, 
     filter : {
         type : 'lowpass', 
         frequency : 1200, 
         q : 8.5, 
         env : {
-            attack : 0.2, 
+            attack : 0.02, 
             frequency : 600
         }
     }
-});
+});*/
+
+var piano = new Wad(Wad.presets.piano);
 
 piano.globalReverb = true;
 

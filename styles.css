@@ -50,6 +50,7 @@ paper-card.black {
   margin: 0.5em 1em 0.5em 0;
   width: 2em;
   height: 5em;
+  padding-top: 80px;
 }
 
 .empty {

@@ -26,7 +26,8 @@ function handleKeyUp(event) {
 var time = 0; 
  
 function noteOn(note) {
-  piano.play({pitch: midiMap[note]});
+  MIDI.noteOn(1, note, 127, 0);
+  //piano.play({pitch: midiMap.musicNote(note)});
   var now = performance.now();
   
   if (time !== 0) {
@@ -34,13 +35,15 @@ function noteOn(note) {
     updateRhythms(timePassed);
   }
   time = now;
-  updateKeyMap(midiMap[note]);
+  updateKeyMap(note);
   updateVisualPiano(note, true);
 		
 }
 
 function noteOff(note) {
+  MIDI.noteOff(1, note, 0);
   updateVisualPiano(note, false);
+  
 }
 
 var NOTE_ON_CMD = 9;
