@@ -88,8 +88,6 @@ function drawSheetMusic() {
   stave = new Vex.Flow.Stave(10, 10, 1000);
   stave.addClef("treble").setContext(ctx).draw();
   
-  
-  
    Vex.Flow.Formatter.FormatAndDraw(ctx, stave, sheetNotes);
    beams = Vex.Flow.Beam.generateBeams(sheetNotes, {stem_direction: 1});
    beams.forEach(function(beam) {
@@ -162,12 +160,6 @@ function playMajorChord(instrument, baseNote, duration) {
   MIDI.chordOn(0, [baseNote, baseNote + 4, baseNote + 7], velocity, curBeat);
   MIDI.chordOff(0, [baseNote, baseNote + 4, baseNote + 7], velocity, curBeat + duration);
   curBeat += duration;
-  
-  /*MIDI.noteOn(0, baseNote, velocity, curBeat);
-  MIDI.noteOn(0, baseNote + 4, velocity, curBeat);
-  MIDI.noteOn(0, baseNote + 7, velocity, curBeat);
-  
-  MIDI.noteOff()*/
 }
 
 function playMinorChord(instrument, baseNote, duration) {
@@ -282,8 +274,30 @@ function addEvent(element, eventName, callback) {
 var midiMap;
 var ctx;
 
+function createPiano() {
+  var octave = [0, 1, 0, 1, 0, 2, 0, 1, 0, 1, 0, 1, 0, 2];
+  var currentKey;
+  var currentKeyNum = 36;
+  for(i = 0; i < 4*octave.length; i++) {
+   currentKey = octave[i % octave.length];
+   if (currentKey === 0) {
+     $('#piano-container').append("<paper-card id='k" + currentKeyNum + "' class='white key' elevation='1'></paper-card>");
+     console.log("appending white key!");
+     currentKeyNum ++;
+   }
+   else if (currentKey == 1) {
+     $('#blackkeys').append("<paper-card id='k" + currentKeyNum + "' class='black key' elevation='1'></paper-card>");
+     currentKeyNum++;  
+   }
+   else {
+     $('#blackkeys').append("<span class='empty'></span>");
+   }
+  }
+}
+
 //init: start up MIDI
 window.addEventListener('load', function() {   
+  createPiano();
   midiMap = new MidiMap();
   
   if (navigator.requestMIDIAccess) {

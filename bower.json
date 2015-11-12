@@ -12,7 +12,6 @@
     "midijs": "mudcube/MIDI.js#master",
     "midijssf": "gleitz/midi-js-soundfonts#master",
     "vexflow": "0xfe/vexflow#master",
-    "iron-elements": "PolymerElements/iron-elements#^1.0.0",
-    "paper-elements": "PolymerElements/paper-elements#^1.0.1"
+    "paper-elements": "PolymerElements/paper-card#^1.0.1"
   }
 }

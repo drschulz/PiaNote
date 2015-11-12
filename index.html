@@ -10,79 +10,34 @@
 
   <script src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
   <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
-<script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+  <script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
   <script src="bower_components/wad/src/wad.js"></script>
   <script src="bower_components/vexflow/releases/vexflow-min.js"></script>
   <script src="bower_components/midijs/inc/shim/Base64.js" type="text/javascript"></script>
 	<script src="bower_components/midijs/inc/shim/Base64binary.js" type="text/javascript"></script>
 	
   <script src="bower_components/midijs/build/MIDI.js"></script>
-
-  <link rel="import" href="bower_components/iron-icons/iron-icons.html">
-  <link rel="import" href="bower_components/paper-toolbar/paper-toolbar.html">
   <!-- <link rel="import" href="bower_components/font-roboto/roboto.html"> -->
   <link rel="import" href="bower_components/paper-card/paper-card.html">
-  <link rel="import" href="bower_components/paper-checkbox/paper-checkbox.html">
-  <link rel="import" href="bower_components/paper-icon-button/paper-icon-button.html">
-  <link rel="import" href="bower_components/paper-fab/paper-fab.html">
-  <link rel="import" href="bower_components/paper-tabs/paper-tabs.html">
-  <link rel="import" href="bower_components/paper-toast/paper-toast.html">
 
   <link rel="stylesheet" href="styles.css">
 </head>
 
-<body unresolved>
-  <section>
-    <template id="toastGroup" is="dom-bind">
-        <div id="blackkeys">
-          <paper-card id="k61" class="black key" elevation="1"></paper-card>
-          <paper-card id="k63" class="black key" elevation="1" ></paper-card>
-          <span class="empty"></span>
-          <paper-card id="k66" class="black key" elevation="1" ></paper-card>
-          <paper-card id="k68" class="black key" elevation="1"></paper-card>
-          <paper-card id="k70" class="black key" elevation="1"></paper-card>
-          <span class="empty"></span>
-          <paper-card id="k73" class="black key" elevation="1"></paper-card>
-          <paper-card id="k75" class="black key" elevation="1"></paper-card>
-          <span class="empty"></span>
-          <paper-card id="k78" class="black key" elevation="1"></paper-card>
-          <paper-card id="k80" class="black key" elevation="1"></paper-card>
-          <paper-card id="k82" class="black key" elevation="1"></paper-card>
-          <span class="empty"></span>
-          <paper-card id="k85" class="black key" elevation="1"></paper-card>
-          <paper-card id="k87" class="black key" elevation="1"></paper-card>
-        </div>
-        <paper-card id="k60" class="white key" elevation="1"></paper-card>
-        <paper-card id="k62" class="white key" elevation="1" ></paper-card>
-        <paper-card id="k64" class="white key" elevation="1" ></paper-card>
-        <paper-card id="k65" class="white key" elevation="1" ></paper-card>
-        <paper-card id="k67" class="white key" elevation="1"></paper-card>
-        <paper-card id="k69" class="white key" elevation="1"></paper-card>
-        <paper-card id="k71" class="white key" elevation="1"></paper-card>
-        <paper-card id="k72" class="white key" elevation="1"></paper-card>
-        <paper-card id="k74" class="white key" elevation="1"></paper-card>
-        <paper-card id="k76" class="white key" elevation="1"></paper-card>
-        <paper-card id="k77" class="white key" elevation="1"></paper-card>
-        <paper-card id="k79" class="white key" elevation="1"></paper-card>
-        <paper-card id="k81" class="white key" elevation="1"></paper-card>
-        <paper-card id="k83" class="white key" elevation="1"></paper-card>
-        <paper-card id="k84" class="white key" elevation="1"></paper-card>
-        <paper-card id="k86" class="white key" elevation="1"></paper-card>
-        <paper-card id="k88" class="white key" elevation="1"></paper-card>
-        <paper-toast id="toast" text="Sample toast here."></paper-toast>
-      
-      <div class="a">
-        <canvas id="mystaff" width=700 height="100"></canvas>
-      </div>
-    </template>
-  </section>
-
-  <script src="mappings.js"></script>
+<body>
+  <h1>Schroeder</h1>
+  <br>
+  <div id="piano-container">
+    <div id="blackkeys"></div>
+  </div>
+  <div>
+    <canvas id="mystaff" width=2000 height="400"></canvas>
+  </div>
+</body>
+<script src="mappings.js"></script>
   <script src="instruments.js"></script>
   <script src="userInput.js"></script>
   <script src="main.js"></script>
   <script>
      
   </script>
-</body>
 </html>
