@@ -64,23 +64,6 @@ var sheetNotes = [];
 var beams = [];
 
 function drawSheetMusic() {
-  /*var voice = new Vex.Flow.Voice({
-    num_beats: 48,
-    beat_value: 4,
-    resolution: Vex.Flow.RESOLUTION
-  });
-  
-  voice.setStrict(false);
-
-  // Add notes to voice
-  voice.addTickables(sheetNotes);
-
-  // Format and justify the notes to 500 pixels
-  var formatter = new Vex.Flow.Formatter().
-    joinVoices([voice]).format([voice], 1000);
-
-  // Render voice
-  voice.draw(ctx, stave);*/
   if (ctx !== undefined) {
     ctx.clear();
   }
@@ -89,11 +72,6 @@ function drawSheetMusic() {
   stave.addClef("treble").setContext(ctx).draw();
   
    Vex.Flow.Formatter.FormatAndDraw(ctx, stave, sheetNotes, {auto_beam: true});
-   /*beams = Vex.Flow.Beam.generateBeams(sheetNotes);
-   beams.forEach(function(beam) {
-     beam.setContext(ctx).draw();
-   });*/
-   
 }
 
 function playTune() {
@@ -280,25 +258,27 @@ function startAccompanimentLoop() {
   setInterval(playTune, tempo * 48 * 1000 << 0);
 }
 
-//init: start up MIDI
-window.addEventListener('load', function() {   
-  createPiano();
-  midiMap = new MidiMap();
+function initializeButtons() {
   $("#play-button").prop("disabled", true);
   $("#play-button").click(startAccompanimentLoop);
-  
-  if (navigator.requestMIDIAccess) {
-    navigator.requestMIDIAccess().then( onMIDIStarted, onMIDISystemError );
-  }
-  
-  addEvent(window, "keydown", handleKeyDown);
-  addEvent(window, "keyup", handleKeyUp);
-  
+}
+
+function initializeMaps() {
+  midiMap = new MidiMap();
+}
+
+function initializeTempo() {
   var bpm = 160;
   tempo = 60 / bpm;
-  
-  var num = 0;
-  
+}
+
+function initializeSheetMusic() {
+  var canvas = $('#mystaff')[0]; 
+  renderer = new Vex.Flow.Renderer(canvas,
+  Vex.Flow.Renderer.Backends.SVG);
+}
+
+function initializeMidi() {
   MIDI.loadPlugin({
 		soundfontUrl: "./soundFonts/FluidR3_GM/",
 		instrument: ["acoustic_grand_piano", "acoustic_bass"],
@@ -317,9 +297,19 @@ window.addEventListener('load', function() {
 		  $("#play-button").prop("disabled", false);
 		}
 	});
-  
-  var canvas = $('#mystaff')[0]; 
-  renderer = new Vex.Flow.Renderer(canvas,
-  Vex.Flow.Renderer.Backends.SVG);
+}
 
+function initializePiaNote() {
+  createPiano();
+  initializeButtons();
+  initializeMaps();
+  initializeTempo();
+  initializeUserInput();
+  initializeSheetMusic();
+  initializeMidi();
+}
+
+//init: start up MIDI
+window.addEventListener('load', function() {   
+  initializePiaNote();
 });

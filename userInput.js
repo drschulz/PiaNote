@@ -86,3 +86,12 @@ function onMIDISystemError( err ) {
   document.getElementById("synthbox").className = "error";
   console.log( "MIDI not initialized - error encountered:" + err.code );
 }
+
+function initializeUserInput() {
+  if (navigator.requestMIDIAccess) {
+    navigator.requestMIDIAccess().then( onMIDIStarted, onMIDISystemError );
+  }
+  
+  addEvent(window, "keydown", handleKeyDown);
+  addEvent(window, "keyup", handleKeyUp);
+}
