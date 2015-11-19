@@ -9,35 +9,44 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
 
   <script src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
-  <script src="//code.jquery.com/jquery-1.11.3.min.js"></script>
-  <script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
-  <script src="bower_components/wad/src/wad.js"></script>
+  <script src="bower_components/jquery/dist/jquery.js"></script>
+  <script src="bower_components/Wad/build/wad.js"></script>
+  <script src="bower_components/raphael/raphael.js"></script>
+  <script src="bower_components/vexflow/releases/vexflow-debug.js"></script>
   <script src="bower_components/vexflow/releases/vexflow-min.js"></script>
-  <script src="bower_components/midijs/inc/shim/Base64.js" type="text/javascript"></script>
-	<script src="bower_components/midijs/inc/shim/Base64binary.js" type="text/javascript"></script>
-	
-  <script src="bower_components/midijs/build/MIDI.js"></script>
-  <!-- <link rel="import" href="bower_components/font-roboto/roboto.html"> -->
-  <link rel="import" href="bower_components/paper-card/paper-card.html">
-
-  <link rel="stylesheet" href="styles.css">
-</head>
-
-<body>
-  <h1>Schroeder</h1>
-  <br>
-  <div id="piano-container">
-    <div id="blackkeys"></div>
-  </div>
-  <div>
-    <canvas id="mystaff" width=2000 height="400"></canvas>
-  </div>
-</body>
-<script src="mappings.js"></script>
+  <script src="bower_components/midi/inc/shim/Base64.js" type="text/javascript"></script>
+	<script src="bower_components/midi/inc/shim/Base64binary.js" type="text/javascript"></script>
+  <script src="bower_components/midi/build/MIDI.js"></script>
+  <link rel="import" href="bower_components/font-roboto/roboto.html">
+  <link rel="import" href="bower_components/paper-elements/paper-elements.html">
+  <link rel="import" href="bower_components/iron-icons/av-icons.html">
+  <link rel="import" href="bower_components/iron-flex-layout/iron-flex-layout.html">
+  <script src="mappings.js"></script>
   <script src="instruments.js"></script>
   <script src="userInput.js"></script>
   <script src="main.js"></script>
-  <script>
-     
-  </script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body unresolved class="fullbleed layout vertical">
+  <paper-header-panel class="flex">
+    <paper-toolbar>
+      <paper-icon-button icon="home"></paper-icon-button>
+      <div>Schroeder</div>
+    </paper-toolbar>
+    <div class="horizontal center-justified layout">
+      <paper-button raised id="play-button">
+        <iron-icon icon="av:play-circle-outline"></iron-icon>
+        Play Accompaniment
+      </paper-button>
+    </div>
+    <div id="staff-container">
+      <svg id="mystaff" width="2000" height="300"></svg>
+    </div>
+    <div id="piano-container" class="horizontal center-justified layout">
+      <div id="blackkeys"></div>
+    </div>
+    
+  </paper-header-panel>
+</body>
 </html>

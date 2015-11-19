@@ -2,16 +2,15 @@
   "name": "Schroeder2",
   "description": "",
   "homepage": "",
-  "keywords": [
-  ],
+  "keywords": [],
   "author": "",
   "private": true,
   "dependencies": {
-    "jquery": "jquery/jquery#master",
-    "wad": "rserota/wad#master",
-    "midijs": "mudcube/MIDI.js#master",
-    "midijssf": "gleitz/midi-js-soundfonts#master",
-    "vexflow": "0xfe/vexflow#master",
-    "paper-elements": "PolymerElements/paper-card#^1.0.1"
+    "bootstrap": "~3.3.5",
+    "Wad": "wad#~2.3.0",
+    "vexflow": "~1.2.36",
+    "paper-elements": "PolymerElements/paper-elements#^1.0.1",
+    "midi": "*",
+    "raphael": "~2.1.4"
   }
 }

@@ -85,56 +85,62 @@ function drawSheetMusic() {
     ctx.clear();
   }
   ctx = renderer.getContext();
-  stave = new Vex.Flow.Stave(10, 10, 1000);
+  stave = new Vex.Flow.Stave(10, 10, 1500);
   stave.addClef("treble").setContext(ctx).draw();
   
-   Vex.Flow.Formatter.FormatAndDraw(ctx, stave, sheetNotes);
-   beams = Vex.Flow.Beam.generateBeams(sheetNotes, {stem_direction: 1});
+   Vex.Flow.Formatter.FormatAndDraw(ctx, stave, sheetNotes, {auto_beam: true});
+   /*beams = Vex.Flow.Beam.generateBeams(sheetNotes);
    beams.forEach(function(beam) {
      beam.setContext(ctx).draw();
-   });
+   });*/
    
 }
 
 function playTune() {
   sheetNotes = [];
   songcurBeat = 0;
+  
   var note = getRandomKey(keyMap);
   var noteMap = keyMap[note];
   var dur = getRandomKey(rhythms);
   var durMap = rhythms[dur];
   var sheetNote;
   var currentDur = 0;
+  var remaining = 0;
   
-  while(songcurBeat < 48) {
-    //console.log("The note!: " + note);
-    MIDI.noteOn(1, note, velocity, tempo*songcurBeat);
-    MIDI.noteOff(1, note, velocity, tempo*(songcurBeat + (rhythmMap[dur])));
-    //piano.play({pitch: midiMap.musicNote(note), wait: tempo*songcurBeat, duration: rhythmMap[dur]});
-    songcurBeat += rhythmMap[dur];
-    sheetNote = new Vex.Flow.StaveNote({ keys: [midiMap.sheetNote(note)], duration: dur});
-    
-    /*if (rhythmMap[dur] >= 1 || currentDur >= 1) {
-      if (tempSheetNotes.length > 1) {
-        beams.push(new Vex.Flow.Beam(tempSheetNotes));
-        console.log("made new beam!");
-      }
-      Array.prototype.push.apply(sheetNotes, tempSheetNotes);
-      tempSheetNotes = [];
-      currentDur = 0;
-      
-      if (rhythmMap[dur] >= 1) {
-        sheetNotes.push(sheetNote);
-      }
-      else {
-        tempSheetNotes.push(sheetNote);
-        currentDur += rhythmMap[dur];
+  while(songcurBeat < 48*8) {
+    if (currentDur != 32 && currentDur + rhythmWholeMap[dur] > 32) {
+      remaining = 32 - currentDur;
+      //Add a rest
+      songcurBeat += remaining;
+      var i = 0;
+      var nextRestVal;
+      while(currentDur < 32 && i < possibleRestValues.length) {
+        nextRestVal = possibleRestValues[i];
+        if (currentDur + nextRestVal <= 32) {
+          sheetNotes.push(new Vex.Flow.StaveNote({keys: ["b/4"], duration: reverseRestMap["" + nextRestVal]}));
+          currentDur += nextRestVal;
+        }
+        else {
+          i++;
+        }
       }
     }
+    if (currentDur == 32) {
+      sheetNotes.push(new Vex.Flow.BarNote(1));
+      currentDur = 0;
+    }
+    
+    MIDI.noteOn(1, note, velocity, tempo*songcurBeat/8.0);
+    songcurBeat += rhythmWholeMap[dur];
+    MIDI.noteOff(1, note, velocity, tempo*(songcurBeat/8.0));
+    if (dur.indexOf("d") != -1) {
+      sheetNote = new Vex.Flow.StaveNote({ keys: [midiMap.sheetNote(note)], duration: dur}).addDotToAll();
+    }
     else {
-      currentDur += rhythmMap[dur];
-      tempSheetNotes.push(sheetNote);
-    }*/
+      sheetNote = new Vex.Flow.StaveNote({ keys: [midiMap.sheetNote(note)], duration: dur});
+    }
+    currentDur += rhythmWholeMap[dur];
     sheetNotes.push(sheetNote);
     
     note = noteMap[Math.random()*noteMap.length << 0];
@@ -152,33 +158,18 @@ var curBeat = 0;
 var velocity = 127;
 
 function playMajorChord(instrument, baseNote, duration) {
-  /*instrument.play({pitch: midiMap.musicNote(baseNote), wait: curBeat});
-  instrument.play({pitch: midiMap.musicNote(baseNote + 4), wait: curBeat});
-  instrument.play({pitch: midiMap.musicNote(baseNote + 7), wait: curBeat});
-  curBeat += duration;*/
-  
   MIDI.chordOn(0, [baseNote, baseNote + 4, baseNote + 7], velocity, curBeat);
   MIDI.chordOff(0, [baseNote, baseNote + 4, baseNote + 7], velocity, curBeat + duration);
   curBeat += duration;
 }
 
 function playMinorChord(instrument, baseNote, duration) {
-  /*instrument.play({pitch: midiMap.musicNote(baseNote), wait: curBeat});
-  instrument.play({pitch: midiMap.musicNote(baseNote + 3), wait: curBeat});
-  instrument.play({pitch: midiMap.musicNote(baseNote + 7), wait: curBeat});
-  curBeat += duration;*/
-  
   MIDI.chordOn(0, [baseNote, baseNote + 3, baseNote + 7], velocity, curBeat);
   MIDI.chordOff(0, [baseNote, baseNote + 3, baseNote + 7], velocity, curBeat + duration);
   curBeat += duration;
 }
 
 function playSeventhChord(instrument, baseNote, duration) {
-  /*instrument.play({pitch: midiMap.musicNote(baseNote), wait: curBeat});
-  instrument.play({pitch: midiMap.musicNote(baseNote + 4), wait: curBeat});
-  instrument.play({pitch: midiMap.musicNote(baseNote + 7), wait: curBeat});
-  instrument.play({pitch: midiMap.musicNote(baseNote + 10), wait: curBeat});
-  curBeat += duration;*/
   MIDI.chordOn(0, [baseNote, baseNote + 4, baseNote + 7, baseNote + 10], velocity, curBeat);
   MIDI.chordOff(0, [baseNote, baseNote + 4, baseNote + 7, baseNote + 10], velocity, curBeat + duration);
   curBeat += duration;
@@ -223,15 +214,6 @@ function walk(note) {
   MIDI.noteOn(2, note+9, velocity, tempo*(basecurBeat++));
   MIDI.noteOn(2, note+7, velocity, tempo*(basecurBeat++));
   MIDI.noteOn(2, note+4, velocity, tempo*(basecurBeat++));
-  
-  /*bass.play({pitch: midiMap.musicNote(note), wait: tempo*(basecurBeat++)});
-  bass.play({pitch: midiMap.musicNote(note+4), wait: tempo*(basecurBeat++)});
-  bass.play({pitch: midiMap.musicNote(note+7), wait: tempo*(basecurBeat++)});
-  bass.play({pitch: midiMap.musicNote(note+9), wait: tempo*(basecurBeat++)});
-  bass.play({pitch: midiMap.musicNote(note+12), wait: tempo*(basecurBeat++)});
-  bass.play({pitch: midiMap.musicNote(note+9), wait: tempo*(basecurBeat++)});
-  bass.play({pitch: midiMap.musicNote(note+7), wait: tempo*(basecurBeat++)});
-  bass.play({pitch: midiMap.musicNote(note+4), wait: tempo*(basecurBeat++)});*/
 }
 
 function halfWalk(note) {
@@ -239,10 +221,6 @@ function halfWalk(note) {
   MIDI.noteOn(2, note+4, velocity, tempo*(basecurBeat++));
   MIDI.noteOn(2, note+7, velocity, tempo*(basecurBeat++));
   MIDI.noteOn(2, note+9, velocity, tempo*(basecurBeat++));
-  /*bass.play({pitch: midiMap.musicNote(note), wait: tempo*(basecurBeat++)});
-  bass.play({pitch: midiMap.musicNote(note+4), wait: tempo*(basecurBeat++)});
-  bass.play({pitch: midiMap.musicNote(note+7), wait: tempo*(basecurBeat++)});
-  bass.play({pitch: midiMap.musicNote(note+9), wait: tempo*(basecurBeat++)});*/
 }
 
 function playBassline() {
@@ -277,28 +255,37 @@ var ctx;
 function createPiano() {
   var octave = [0, 1, 0, 1, 0, 2, 0, 1, 0, 1, 0, 1, 0, 2];
   var currentKey;
-  var currentKeyNum = 36;
+  var currentKeyNum = 48;
   for(i = 0; i < 4*octave.length; i++) {
    currentKey = octave[i % octave.length];
    if (currentKey === 0) {
-     $('#piano-container').append("<paper-card id='k" + currentKeyNum + "' class='white key' elevation='1'></paper-card>");
+     $('#piano-container').append("<paper-card id='k" + currentKeyNum + "' class='white key' elevation='5'></paper-card>");
      console.log("appending white key!");
      currentKeyNum ++;
    }
    else if (currentKey == 1) {
-     $('#blackkeys').append("<paper-card id='k" + currentKeyNum + "' class='black key' elevation='1'></paper-card>");
+     $('#blackkeys').append("<paper-card id='k" + currentKeyNum + "' class='black key' elevation='5'></paper-card>");
      currentKeyNum++;  
    }
    else {
-     $('#blackkeys').append("<span class='empty'></span>");
+     $('#blackkeys').append("<div class='empty' elevation='1'></div>");
    }
   }
+}
+
+function startAccompanimentLoop() {
+  playAccompaniment();
+  
+  setInterval(playAccompaniment, Math.floor(tempo * 48 * 1000));
+  setInterval(playTune, tempo * 48 * 1000 << 0);
 }
 
 //init: start up MIDI
 window.addEventListener('load', function() {   
   createPiano();
   midiMap = new MidiMap();
+  $("#play-button").prop("disabled", true);
+  $("#play-button").click(startAccompanimentLoop);
   
   if (navigator.requestMIDIAccess) {
     navigator.requestMIDIAccess().then( onMIDIStarted, onMIDISystemError );
@@ -326,15 +313,13 @@ window.addEventListener('load', function() {
 		  MIDI.programChange(1, 0);
 		  MIDI.programChange(0,0);
 		  MIDI.programChange(2, 32);
-		  playAccompaniment();
-  
-      setInterval(playAccompaniment, Math.floor(tempo * 48 * 1000));
-      setInterval(playTune, tempo * 48 * 1000 << 0);
+		  
+		  $("#play-button").prop("disabled", false);
 		}
 	});
   
   var canvas = $('#mystaff')[0]; 
   renderer = new Vex.Flow.Renderer(canvas,
-  Vex.Flow.Renderer.Backends.CANVAS);
-  
+  Vex.Flow.Renderer.Backends.SVG);
+
 });
