@@ -13,21 +13,19 @@ function updateVisualPiano(note, isPressed) {
 }
 
 function handleKeyDown(event) {
-  console.log(String.fromCharCode(event.keyCode));
   var note = boardToMidi[String.fromCharCode(event.keyCode)];
-  noteOn(note);
+  piaNoteOn(MidiConstants.DEFAULT_CHANNEL, note, MidiConstants.MAX_VELOCITY, 0);
 }
 
 function handleKeyUp(event) {
   var note = boardToMidi[String.fromCharCode(event.keyCode)];
-  noteOff(note);
+  piaNoteOff(MidiConstants.DEFAULT_CHANNEL, note, 0);
 }
  
 var time = 0; 
  
-function noteOn(note) {
-  MIDI.noteOn(1, note, 127, 0);
-  //piano.play({pitch: midiMap.musicNote(note)});
+ 
+function updateTime() {
   var now = performance.now();
   
   if (time !== 0) {
@@ -35,37 +33,48 @@ function noteOn(note) {
     updateRhythms(timePassed);
   }
   time = now;
+}
+
+function piaNoteOn(channel, note, velocity, delay) {
+  MIDI.noteOn(channel, note, velocity, delay);
+  setTimeout(updateTime, delay);
   updateKeyMap(note);
-  updateVisualPiano(note, true);
+  setTimeout(function() { 
+    updateTime();
+    updateVisualPiano(note, true);
+  }, delay*1000);
 		
 }
 
-function noteOff(note) {
-  MIDI.noteOff(1, note, 0);
-  updateVisualPiano(note, false);
+function piaNoteOff(channel, note, delay) {
+  MIDI.noteOff(channel, note, delay);
+  setTimeout(function() {
+    updateVisualPiano(note, false);
+  }, delay*1000);
   
 }
 
-var NOTE_ON_CMD = 9;
-var NOTE_OFF_CMD = 8;
+const NOTE_ON_CMD = 9;
+const NOTE_OFF_CMD = 8;
 
 function midiMessageReceived(event) {
-  var cmd = event.data[0] >> 4;
+  var cmd = event.data[0] >> MidiConstants.CMD_SHIFT;
   var channel = event.data[0] & 0xf;
-  var noteNumber = event.data[1];
-  var velocity = event.data[2];
+  var noteNumber = event.data[MidiConstants.NOTE_IDX];
+  var velocity = event.data[MidiConstants.VELOCITY_IDX];
 
-  if (channel == 9) {
+  if (channel == MidiConstants.INVALID_CHANNEL) {
     return;
   }
   
-  if ( cmd==NOTE_OFF_CMD || ((cmd==NOTE_ON_CMD)&&(velocity===0)) ) { // with MIDI, note on with velocity zero is the same as note off
+  if ( cmd==MidiConstants.NOTE_OFF_CMD 
+    || ((cmd==MidiConstants.NOTE_ON_CMD)&&(velocity===0)) ) { // with MIDI, note on with velocity zero is the same as note off
     // note off
-    noteOff(noteNumber);
+    piaNoteOff(MidiConstants.DEFAULT_CHANNEL, noteNumber, 0);
   } 
-  else if (cmd == NOTE_ON_CMD) {
+  else if (cmd == MidiConstants.NOTE_ON_CMD) {
     // note on
-    noteOn(noteNumber);
+    piaNoteOn(MidiConstants.DEFAULT_CHANNEL, noteNumber, velocity, 0);
   }
   
 }
@@ -83,7 +92,6 @@ function onMIDIStarted( midi ) {
 }
 
 function onMIDISystemError( err ) {
-  document.getElementById("synthbox").className = "error";
   console.log( "MIDI not initialized - error encountered:" + err.code );
 }
 

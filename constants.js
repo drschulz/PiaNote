@@ -1,0 +1,11 @@
+const MidiConstants = {
+  DEFAULT_CHANNEL: 1,
+  INVALID_CHANNEL: 9,
+  CMD_SHIFT: 4,
+  NOTE_IDX: 1,
+  VELOCITY_IDX: 2,
+  NOTE_ON_CMD: 9,
+  NOTE_OFF_CMD: 8,
+  MAX_VELOCITY: 127
+};
+

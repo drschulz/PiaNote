@@ -40,7 +40,6 @@ function updateRhythms(temp) {
     updateMap(closestRhythm, rhythms, lastRhythm);
   }
   lastRhythm = closestRhythm;
-  console.log(closestRhythm);
 }
 
 var keyMap = new Array(96);
@@ -109,9 +108,11 @@ function playTune() {
       currentDur = 0;
     }
     
-    MIDI.noteOn(1, note, velocity, tempo*songcurBeat/8.0);
+    piaNoteOn(MidiConstants.DEFAULT_CHANNEL, note, velocity, tempo*(songcurBeat/8.0));
+    //MIDI.noteOn(1, note, velocity, tempo*songcurBeat/8.0);
     songcurBeat += rhythmWholeMap[dur];
-    MIDI.noteOff(1, note, velocity, tempo*(songcurBeat/8.0));
+    piaNoteOff(MidiConstants.DEFAULT_CHANNEL, note, tempo*(songcurBeat/8.0));
+    //MIDI.noteOff(1, note, velocity, tempo*(songcurBeat/8.0));
     if (dur.indexOf("d") != -1) {
       sheetNote = new Vex.Flow.StaveNote({ keys: [midiMap.sheetNote(note)], duration: dur}).addDotToAll();
     }
@@ -238,7 +239,6 @@ function createPiano() {
    currentKey = octave[i % octave.length];
    if (currentKey === 0) {
      $('#piano-container').append("<paper-card id='k" + currentKeyNum + "' class='white key' elevation='5'></paper-card>");
-     console.log("appending white key!");
      currentKeyNum ++;
    }
    else if (currentKey == 1) {
@@ -279,11 +279,12 @@ function initializeSheetMusic() {
 }
 
 function initializeMidi() {
+  MIDI.loader = new sketch.ui.Timer;
   MIDI.loadPlugin({
 		soundfontUrl: "./soundFonts/FluidR3_GM/",
 		instrument: ["acoustic_grand_piano", "acoustic_bass"],
 		onprogress: function(state, progress) {
-			console.log(state, progress);
+			MIDI.loader.setValue(progress * 100);
 		},
 		onsuccess: function() {
 		  //MIDI.setVolume(0, 127);
