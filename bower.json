@@ -11,6 +11,8 @@
     "vexflow": "~1.2.36",
     "paper-elements": "PolymerElements/paper-elements#^1.0.1",
     "midi": "*",
-    "raphael": "~2.1.4"
+    "raphael": "~2.1.4",
+    "Progress.js": "progressjs#~0.1.0",
+    "animate.css": "~3.4.0"
   }
 }

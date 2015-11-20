@@ -1,25 +1,13 @@
 var midiIn = null;
 
-function updateVisualPiano(note, isPressed) {
-  var e = document.getElementById("k" + note);
-  if (e) {
-    if (isPressed) {
-      e.classList.add("pressed");
-    }
-    else {
-      e.classList.remove("pressed");
-    }
-  }
-}
-
 function handleKeyDown(event) {
   var note = boardToMidi[String.fromCharCode(event.keyCode)];
-  piaNoteOn(MidiConstants.DEFAULT_CHANNEL, note, MidiConstants.MAX_VELOCITY, 0);
+  piaNoteOn(note, MidiConstants.MAX_VELOCITY);
 }
 
 function handleKeyUp(event) {
   var note = boardToMidi[String.fromCharCode(event.keyCode)];
-  piaNoteOff(MidiConstants.DEFAULT_CHANNEL, note, 0);
+  piaNoteOff(note, 0);
 }
  
 var time = 0; 
@@ -35,27 +23,15 @@ function updateTime() {
   time = now;
 }
 
-function piaNoteOn(channel, note, velocity, delay) {
-  MIDI.noteOn(channel, note, velocity, delay);
-  setTimeout(updateTime, delay);
+function piaNoteOn(note, velocity) {
+  main_piano.instrument.noteOn(note, velocity, 0);
   updateKeyMap(note);
-  setTimeout(function() { 
-    updateTime();
-    updateVisualPiano(note, true);
-  }, delay*1000);
-		
+  updateTime();
 }
 
-function piaNoteOff(channel, note, delay) {
-  MIDI.noteOff(channel, note, delay);
-  setTimeout(function() {
-    updateVisualPiano(note, false);
-  }, delay*1000);
-  
+function piaNoteOff(note) {
+  main_piano.instrument.noteOff(note, 0);
 }
-
-const NOTE_ON_CMD = 9;
-const NOTE_OFF_CMD = 8;
 
 function midiMessageReceived(event) {
   var cmd = event.data[0] >> MidiConstants.CMD_SHIFT;
@@ -70,11 +46,11 @@ function midiMessageReceived(event) {
   if ( cmd==MidiConstants.NOTE_OFF_CMD 
     || ((cmd==MidiConstants.NOTE_ON_CMD)&&(velocity===0)) ) { // with MIDI, note on with velocity zero is the same as note off
     // note off
-    piaNoteOff(MidiConstants.DEFAULT_CHANNEL, noteNumber, 0);
+    piaNoteOff(noteNumber);
   } 
   else if (cmd == MidiConstants.NOTE_ON_CMD) {
     // note on
-    piaNoteOn(MidiConstants.DEFAULT_CHANNEL, noteNumber, velocity, 0);
+    piaNoteOn(noteNumber, velocity);
   }
   
 }

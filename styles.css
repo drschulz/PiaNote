@@ -1,3 +1,23 @@
+/* blue theme, like iOS 7 progress bar */
+.progressjs-theme-red .progressjs-inner {
+    height: 4px;
+    -webkit-transition: all 0.3s ease-out;
+    -moz-transition: all 0.3s ease-out;
+    -o-transition: all 0.3s ease-out;
+    transition: all 0.3s ease-out;
+    background-color: #FF0000;
+}
+.progressjs-theme-red.progressjs-end {
+    -webkit-transition: opacity 0.2s ease-out;
+    -moz-transition: opacity 0.2s ease-out;
+    -o-transition: opacity 0.2s ease-out;
+    transition: opacity 0.2s ease-out;
+    opacity: 0;
+}
+.progressjs-theme-red .progressjs-percent {
+    display: none;
+}
+
 
 body {
   font-family: Roboto, sans-serif;
