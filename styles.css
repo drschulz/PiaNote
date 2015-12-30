@@ -18,6 +18,13 @@
     display: none;
 }
 
+textarea.editor {
+  display: none;
+}
+
+.vex-canvas {
+  color: red;
+}
 
 body {
   font-family: Roboto, sans-serif;

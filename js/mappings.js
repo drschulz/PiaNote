@@ -1,3 +1,5 @@
+
+
 var rhythmMap = {
   "w": 4,
   "h": 2,
@@ -67,6 +69,8 @@ var boardToMidi = {
 };
 
 var octaveMap = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+var octaveMapSharps = ['C', 'C#']; 
+
 
 function MidiMap() {
   this.midiMap = new Array(96);
@@ -75,10 +79,11 @@ function MidiMap() {
   
   for (i = 0; i < 96; i++) {
     note = octaveMap[i%12];
-    octaveNum = (i / 12) << 0;
+    octaveNum = ((i / 12) << 0) - 1;
     this.midiMap[i] = {
       note:  note + octaveNum,
-      sheetNote: note.toLowerCase() + '/' + octaveNum
+      sheetNote: note.toLowerCase() + '/' + octaveNum,
+      noteAndOctave: {letter: note, octave: octaveNum}
     };
   }
 }
@@ -90,3 +95,20 @@ MidiMap.prototype.musicNote = function(midiNum) {
 MidiMap.prototype.sheetNote = function(midiNum) {
   return this.midiMap[midiNum].sheetNote;
 };
+
+MidiMap.prototype.noteAndOctave = function(midiNum) {
+  return this.midiMap[midiNum].noteAndOctave;
+};
+
+function midiToNote(midi) {
+  var noteInd = midi%12;
+  
+  return {
+    note: {
+      'n': naturalBase[noteInd],
+      '#': sharpBase[noteInd],
+      '@': flatBase[noteInd]
+    }, 
+    octave: ((midi/12) << 0) - 1
+  };
+}

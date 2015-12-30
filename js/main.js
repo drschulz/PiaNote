@@ -5,7 +5,7 @@ var rhythms = {};
 
 function findClosest(query, obj) {
   var best = '';
-  var min = 10000.0;
+  var min = Number.MAX_VALUE;
   
   for (var value in obj) {
     var num = Math.abs(obj[value] - query);
@@ -32,7 +32,7 @@ function updateMap(valueToAdd, map, key) {
 
 function updateRhythms(temp) {
   temp = temp / tempo;
-  if (temp < 0.125) {
+  if (temp < SHORTEST_RHYTHM) {
     return;
   }
   var closestRhythm = findClosest(temp, rhythmMap);
@@ -149,9 +149,19 @@ function startAccompanimentLoop() {
   setInterval(playTune, tempo * 48 * 1000 << 0);
 }
 
+var metronome;
+
+function playMetronome() {
+  metronome.play();
+}
+
 function initializeButtons() {
   $("#play-button").prop("disabled", true);
-  $("#play-button").click(startAccompanimentLoop);
+  //$("#play-button").click(startAccompanimentLoop);
+  $("#play-button").click(playMetronome);
+  
+  $("#generate-button").click(generateSong);
+  
 }
 
 function initializeMaps() {
@@ -184,8 +194,173 @@ function initializeMidi() {
 		  initializeAccompaniment();
 		  main_piano = new UserPiano("#piano-container");
 		  $("#play-button").prop("disabled", false);
+		  
+		  console.log(MIDI.supports);
+      var player = MIDI.Player;
+      player.timeWarp = 1;
+      player.loadFile('http://localhost:54007/PiaNote/sounds/entrtanr.mid', player.start, function() {
+        console.log("hello..");
+      }, function(e) {
+        console.log('could not load!');
+        console.log(e);
+      });
 		}
 	});
+}
+
+function initializeMetronome() {
+  //found from http://soundbible.com/2044-Tick.html
+  metronome = new Wad({source: 'http://localhost:54007/PiaNote/sounds/Tick.mp3'});
+}
+
+function createSong() {
+  var tones = [61, 62, 64, 65, 67, 69, 71, 72];
+  var notes = [];
+  tones.forEach(function(e) {
+    console.log(e);
+    notes.push(new Note({tone: e, rhythm: "q"}));
+  });
+  
+  return notes;
+}
+
+function createOtherSong() {
+  var tones = [72, 74, 76, 77, 79, 81, 83, 84];
+  var notes = [];
+  tones.forEach(function(e) {
+    console.log(e);
+    notes.push(new Note({tone: e, rhythm: "q"}));
+  });
+  
+  return notes;
+}
+
+function generateIntervals() {
+  var tones = [];
+  var intervals = Object.keys(Intervals);
+  
+  var interval;
+  
+  for(i = 0; i < 8; i++) {
+    interval = (Math.random() * intervals.length) << 0;
+    tones.push(Intervals[intervals[interval]]);
+  }
+  
+  return tones;
+}
+
+function generateKey() {
+  return keys[(Math.random() * keys.length) << 0];
+}
+
+function transpose(intervals, key) {
+  var tones = [];
+  var baseOfKey;
+  for (var indx in key) {
+    baseOfKey = key[indx];
+  }
+  console.log(baseOfKey);
+  intervals.forEach(function(e) {
+    tones.push(MIDDLE_C + baseOfKey + e);
+  });
+  
+  return tones;
+}
+
+function renderSong(piece) {
+  $("#mystave").empty();
+  var canvas = $('#mystave')[0];
+  var renderer = new Vex.Flow.Renderer(canvas,
+  Vex.Flow.Renderer.Backends.RAPHAEL);
+  
+  console.log(renderer);
+  
+  var artist = new Artist(10, 10, 900, {scale: 1.0});
+
+  var vextab = new VexTab(artist);
+
+  try {
+   console.log(piece.vexdump());
+   var elements = vextab.parse(piece.vexdump());
+   console.log(elements);
+   artist.render(renderer);
+  }
+  catch (e) {
+    console.log(e.message);
+  }
+}
+
+function generateSong() {
+  var intervals = generateIntervals();
+  var key = generateKey();
+  var tones = transpose(intervals, key);
+  
+  var notes = [];
+  console.log(tones);
+  tones.forEach(function(e) {
+    console.log(e);
+    notes.push(new Note({tone: e, rhythm: "q"}));
+  });
+  
+  var keyLetter = Object.keys(key)[0];
+  
+  var config = {
+    time: "4/4",
+    clef: "treble",
+    key: keyLetter,
+    notes: notes,
+    isSharpKey: sharpKeys.indexOf(keyLetter) > 0 ? true : false,
+  };
+  
+  var piece = new Musical_Piece(config);
+  
+  renderSong(piece);
+  
+}
+
+function initializeSong() {
+  var notes = createSong();
+  
+  var config = {
+    time: "4/4",
+    clef: "treble",
+    key: "C#",
+    notes: notes,
+    isSharpKey: true
+  };
+  
+  var piece = new Musical_Piece(config);
+  
+  var canvas = $('#mystave')[0]; 
+  var renderer = new Vex.Flow.Renderer(canvas,
+  Vex.Flow.Renderer.Backends.RAPHAEL);
+  
+  console.log(renderer);
+  
+  var artist = new Artist(10, 10, 900, {scale: 1.0});
+
+  var vextab = new VexTab(artist);
+
+  try {
+   var elements = vextab.parse(piece.vexdump());
+   console.log(elements);
+   artist.render(renderer);
+  }
+  catch (e) {
+    console.log(e.message);
+  }
+  /*config.notes = createOtherSong();
+  
+  renderer.ctx.setFillStyle("red");
+  renderer.ctx.setStrokeStyle("red");
+  
+  piece = new Musical_Piece(config);
+  vextab.parse(piece.vexdump());
+  artist.render(renderer);*/
+  
+  
+  //$("#stave").find(".editor").val(piece.vexdump());
+  //$("#stave").find(".editor").keyup();
 }
 
 function initializePiaNote() {
@@ -193,9 +368,14 @@ function initializePiaNote() {
   initializeMaps();
   initializeTempo();
   initializeUserInput();
-  initializeSheetMusic();
+  //initializeSheetMusic();
   initializeMidi();
+  initializeMetronome();
+  generateSong();
+  //initializeSong();
 }
+
+var song;
 
 //init: start up MIDI
 window.addEventListener('load', function() {   
