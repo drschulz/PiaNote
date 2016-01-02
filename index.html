@@ -53,12 +53,37 @@
     <div class="horizontal center-justified layout">
       <paper-button raised id="play-button">
         <iron-icon icon="av:play-circle-outline"></iron-icon>
-        Start
+        Start Metronome
+      </paper-button>
+    </div>
+    <div class="horizontal center-justified layout">
+      <paper-button raised id="stop-button">
+        <iron-icon icon="av:stop"></iron-icon>
+        Stop Metronome
       </paper-button>
     </div>
     <div id="stave" class="horizontal center-justified layout"
           width=900 height=500> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
       <svg id="mystave"></svg>
+      <!--options space=20
+      stave
+        key=A time=4/4
+    
+        notes :q =|: (5/2.5/3.7/4) :8 7-5h6/3 ^3^ 5h6-7/5 ^3^ :q 7V/4 |
+        notes :8 t12p7/4 s5s3/4 :8 3s:16:5-7/5 :h p5/4
+        text :w, |#segno, ,|, :hd, , #tr
+    
+      
+      stave key=A
+      notes :q C/4 D/4 E/4 F/4 | | |
+      stave key=A
+      notes | | | 
+      
+      options space=25-->
+    </div>
+    <div id="stave" class="horizontal center-justified layout"
+          width=900 height=500> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
+      <svg id="playerstave"></svg>
       <!--options space=20
       stave
         key=A time=4/4

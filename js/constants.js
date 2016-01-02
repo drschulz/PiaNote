@@ -65,3 +65,24 @@ const flatKeys = ['C', 'F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb'];
 const naturalBase =   ['C',       undefined,  'D',        undefined,  'E',        'F',        undefined,  'G',        undefined,  'A',        undefined,  'B'];
 const sharpBase =     ['B',       'C',        undefined,  'D',        undefined,  'E',        'F',        undefined,  'G',        undefined,  'A',        undefined];
 const flatBase =      [undefined, 'D',        undefined,  'E',        'F',        undefined,  'G',        undefined,  'A',        undefined,  'B',        'C'];
+
+const MATCH_SCORES = {
+  TONE_MISMATCH: -3,
+  LETTER_MISMATCH: -2,
+  OCTAVE_MISMATCH: -1,
+  TONE_MATCH: 3,
+  
+  INTERVAL_MATCH: 1,
+  INTERVAL_MISMATCH: 0,
+  
+  RHYTHM_MATCH: 2,
+  RHYTHM_MISMATCH: -2,
+  
+  INSERTION_DELETION: -4,
+};
+
+const MatchDirection = {
+  DIAG: 1,
+  LEFT: 2,
+  TOP: 3
+};

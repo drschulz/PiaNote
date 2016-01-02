@@ -33,22 +33,6 @@ Note.prototype.vexdump = function() {
 Note.prototype.vextext = function() {
   return ":" + this.rhythm + "," + this.letter;
 };
-
-
-const MATCH_SCORES = {
-  TONE_MISMATCH: -3,
-  LETTER_MISMATCH: -2,
-  OCTAVE_MISMATCH: -1,
-  TONE_MATCH: 3,
-  
-  INTERVAL_MATCH: 1,
-  INTERVAL_MISMATCH: 0,
-  
-  RHYTHM_MATCH: 2,
-  RHYTHM_MISMATCH: -2,
-  
-  INSERTION_DELETION: -4,
-};
   
 
 Note.prototype.match = function(note) {
@@ -88,5 +72,6 @@ Note.prototype.match = function(note) {
     tone: noteScore,
     inteval: intervalScore,
     rhythm: rhythmScore,
+    dir: MatchDirection.DIAG
   };
 };

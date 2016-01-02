@@ -65,6 +65,13 @@ iron-toolbar {
   color: #fff;
 }
 
+#stop-button {
+  margin-top: 1em;
+  background: red;
+  color: #fff;
+  display: none;
+}
+
 #blackkeys {
   position: absolute; 
   z-index: 1; 

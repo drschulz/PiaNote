@@ -151,14 +151,35 @@ function startAccompanimentLoop() {
 
 var metronome;
 
-function playMetronome() {
+function playBeat() {
   metronome.play();
 }
+
+var metronomeInterval;
+
+function playMetronome() {
+  metronomeInterval = setInterval(playBeat, tempo * 1000 << 0);
+}
+
+function stopMetronome() {
+  clearInterval(metronomeInterval);
+}
+
 
 function initializeButtons() {
   $("#play-button").prop("disabled", true);
   //$("#play-button").click(startAccompanimentLoop);
-  $("#play-button").click(playMetronome);
+  $("#play-button").click(function() {
+    playMetronome();
+    $("#play-button").hide();
+    $("#stop-button").show();
+  });
+  
+  $("#stop-button").click(function() {
+    stopMetronome();
+    $("#stop-button").hide();
+    $("#play-button").show();
+  });
   
   $("#generate-button").click(generateSong);
   
@@ -169,7 +190,7 @@ function initializeMaps() {
 }
 
 function initializeTempo() {
-  var bpm = 160;
+  var bpm = 100;
   tempo = SECONDS_IN_MINUTE / bpm;
 }
 
@@ -210,7 +231,30 @@ function initializeMidi() {
 
 function initializeMetronome() {
   //found from http://soundbible.com/2044-Tick.html
-  metronome = new Wad({source: 'http://localhost:54007/PiaNote/sounds/Tick.mp3'});
+  metronome = new Wad({source: 'http://127.0.0.1:51792/PiaNote/sounds/Tick.mp3'});
+}
+
+var playerSheetIndex = 0;
+
+function updateSheetMusic(noteNumber, duration) {
+  if (duration === undefined) {
+    var note = new Note({tone: noteNumber, rhythm: "q"});
+    //playerPiece.piece.notes.push(note);
+    playerPiece.piece.notes[playerSheetIndex] = note;
+    
+  }
+  else {
+    var temp = duration / tempo;
+    if (temp < SHORTEST_RHYTHM) {
+      return;
+    }
+    var closestRhythm = findClosest(temp, rhythmMap);
+    playerPiece.piece.notes[playerSheetIndex].rhythm = closestRhythm;
+    playerSheetIndex++;
+    //playerPiece.piece.notes[playerPiece.piece.notes.length - 1].rhythm = closestRhythm;
+  }
+  
+  renderSong(playerPiece, "#playerstave", "blue");
 }
 
 function createSong() {
@@ -267,14 +311,18 @@ function transpose(intervals, key) {
   return tones;
 }
 
-function renderSong(piece) {
-  $("#mystave").empty();
-  var canvas = $('#mystave')[0];
+function renderSong(piece, location, color) {
+  $(location).empty();
+  var canvas = $(location)[0];
+  console.log(location);
+  console.log(canvas);
   var renderer = new Vex.Flow.Renderer(canvas,
   Vex.Flow.Renderer.Backends.RAPHAEL);
   
-  console.log(renderer);
   
+  console.log(renderer);
+  renderer.ctx.setFillStyle(color);
+  renderer.ctx.setStrokeStyle(color);
   var artist = new Artist(10, 10, 900, {scale: 1.0});
 
   var vextab = new VexTab(artist);
@@ -289,6 +337,8 @@ function renderSong(piece) {
     console.log(e.message);
   }
 }
+
+var playerPiece;
 
 function generateSong() {
   var intervals = generateIntervals();
@@ -314,7 +364,26 @@ function generateSong() {
   
   var piece = new Musical_Piece(config);
   
-  renderSong(piece);
+  renderSong(piece, "#mystave", "black");
+  
+  var playerNotes = [];
+  playerSheetIndex = 0;
+  
+  for(i = 0; i < 8; i++) {
+    playerNotes.push(new Note({tone: 12, rhythm: "q"}));
+  }
+  
+  var playerConfig = {
+    time: "4/4",
+    clef: "treble",
+    key: keyLetter,
+    notes: playerNotes,
+    isSharpKey: sharpKeys.indexOf(keyLetter) > 0 ? true : false,
+  };
+  
+  playerPiece = new Musical_Piece(playerConfig);
+  
+  renderSong(playerPiece, "#playerstave", "#455ede");
   
 }
 

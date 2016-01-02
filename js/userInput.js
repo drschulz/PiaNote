@@ -11,7 +11,8 @@ function handleKeyUp(event) {
 }
  
 var time = 0; 
- 
+
+var currentNote; 
  
 function updateTime() {
   var now = performance.now();
@@ -25,12 +26,25 @@ function updateTime() {
 
 function piaNoteOn(note, velocity) {
   main_piano.instrument.noteOn(note, velocity, 0);
-  updateKeyMap(note);
-  updateTime();
+  //updateKeyMap(note);
+  
+  currentNote = note;
+  start = performance.now();
+  
+  updateSheetMusic(note);
+  
+  //updateTime();
 }
 
 function piaNoteOff(note) {
+  stop = performance.now();
+  var duration = (stop - start) / 1000.0;
+  
+  updateSheetMusic(note, duration);
+  
+  
   main_piano.instrument.noteOff(note, 0);
+  
 }
 
 function midiMessageReceived(event) {
