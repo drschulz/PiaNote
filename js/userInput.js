@@ -13,21 +13,32 @@ function handleKeyUp(event) {
 var time = 0; 
 
 var currentNote; 
- 
+var previousNote; 
+
 function updateTime() {
   var now = performance.now();
   
   if (time !== 0) {
     var timePassed = (now - time) / 1000.0;
-    updateRhythms(timePassed);
+    if (previousNote !== undefined) {
+      updateSheetMusic(previousNote, timePassed);
+      previousNote = undefined;
+    }
+    //updateRhythms(timePassed);
   }
   time = now;
+  
+  
+}
+
+function resetTime() {
+  time = 0;
 }
 
 function piaNoteOn(note, velocity) {
   main_piano.instrument.noteOn(note, velocity, 0);
   //updateKeyMap(note);
-  
+  updateTime();
   currentNote = note;
   start = performance.now();
   
@@ -37,10 +48,11 @@ function piaNoteOn(note, velocity) {
 }
 
 function piaNoteOff(note) {
-  stop = performance.now();
-  var duration = (stop - start) / 1000.0;
+  previousNote = note;
+  //stop = performance.now();
+  //var duration = (stop - start) / 1000.0;
   
-  updateSheetMusic(note, duration);
+  //updateSheetMusic(note, duration);
   
   
   main_piano.instrument.noteOff(note, 0);

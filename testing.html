@@ -1,0 +1,164 @@
+<!doctype html>
+
+<html>
+<head>
+  <title>PiaNote</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <script src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+  <script src="bower_components/jquery/dist/jquery.js"></script>
+  <script src="bower_components/Wad/build/wad.js"></script>
+  <script src="bower_components/raphael/raphael.js"></script>
+  <script src="bower_components/vexflow/releases/vexflow-debug.js"></script>
+  <script src="bower_components/vexflow/releases/vexflow-min.js"></script>
+  <script src="bower_components/midi/inc/shim/Base64.js" type="text/javascript"></script>
+	<script src="bower_components/midi/inc/shim/Base64binary.js" type="text/javascript"></script>
+	<script src="bower_components/midi/inc/jasmid/stream.js" type="text/javascript"></script>
+	<script src="bower_components/midi/inc/jasmid/midifile.js" type="text/javascript"></script>
+	<script src="bower_components/midi/inc/jasmid/replayer.js" type="text/javascript"></script>
+	<script src="bower_components/midi/examples/inc/timer.js"></script>
+	<script src="bower_components/Progress.js/minified/progress.min.js"></script>
+  <script src="bower_components/midi/build/MIDI.js"></script>
+  <script src="bower_components/vextab/releases/vextab-div.js"></script>
+  <script src="bower_components/requirejs/require.js"></script>
+  <link rel="import" href="bower_components/font-roboto/roboto.html">
+  <link rel="import" href="bower_components/paper-elements/paper-elements.html">
+  <link rel="import" href="bower_components/iron-icons/av-icons.html">
+  <link rel="import" href="bower_components/iron-icons/image-icons.html">
+  <link rel="import" href="bower_components/iron-flex-layout/iron-flex-layout.html"/>
+  <link rel="stylesheet" href="bower_components/Progress.js/minified/progressjs.min.css"/> 
+  <link rel="stylesheet" href="bower_components/animate.css/animate.min.css"/>
+  <link rel="stylesheet" href="bower_components/vextab/releases/vextab.css"/>
+  <script src="js/constants.js"></script>
+  <script src="js/mappings.js"></script>
+  <script src="js/note.js"></script>
+  <script src="js/musical_piece.js"></script>
+  <script src="js/instruments.js"></script>
+  <script src="js/accompaniment.js"></script>
+  <script src="js/main_piano.js"></script>
+  <script src="js/userInput.js"></script>
+  <script src="js/testing.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body unresolved class="fullbleed layout vertical">
+  <paper-header-panel class="flex" id="main-panel">
+    <paper-toolbar>
+      <iron-icon icon="image:music-note"></iron-icon>
+      <div>PiaNote</div>
+    </paper-toolbar>
+    <div class="horizontal center-justified layout">
+      <paper-button raised id="play-button">
+        <iron-icon icon="av:play-circle-outline"></iron-icon>
+        Start Metronome
+      </paper-button>
+    </div>
+    <div class="horizontal center-justified layout">
+      <paper-button raised id="stop-button">
+        <iron-icon icon="av:stop"></iron-icon>
+        Stop Metronome
+      </paper-button>
+    </div>
+    <h2>Test 1: Wrong Rhythms, Correct Notes</h2>
+    <div id="stave" class="horizontal center-justified layout"
+          width=900 height=500> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
+      <svg id="expected1"></svg>
+    </div>
+    <div id="stave" class="horizontal center-justified layout"
+          width=900 height=500> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
+      <svg id="actual1"></svg>
+    </div>
+    <div id="stave" class="horizontal center-justified layout"
+          width=900 height=500> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
+      <svg id="matched1"></svg>
+    </div>
+    
+    <h2>Test 2: Wrong Notes, Correct Rhythms</h2>
+    <div id="stave" class="horizontal center-justified layout"
+          width=900 height=500> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
+      <svg id="expected2"></svg>
+    </div>
+    <div id="stave" class="horizontal center-justified layout"
+          width=900 height=500> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
+      <svg id="actual2"></svg>
+    </div>
+    <div id="stave" class="horizontal center-justified layout"
+          width=900 height=500> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
+      <svg id="matched2"></svg>
+    </div>
+    
+    <h2>Test 3: Some misentered notes (In the case of slipped hand)</h2>
+    <div id="stave" class="horizontal center-justified layout"
+          width=900 height=500> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
+      <svg id="expected3"></svg>
+    </div>
+    <div id="stave" class="horizontal center-justified layout"
+          width=900 height=500> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
+      <svg id="actual3"></svg>
+    </div>
+    <div id="stave" class="horizontal center-justified layout"
+          width=900 height=500> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
+      <svg id="matched3"></svg>
+    </div>
+    
+    <h2>Test 4: Couple Missed Note</h2>
+    <div id="stave" class="horizontal center-justified layout"
+          width=900 height=500> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
+      <svg id="expected4"></svg>
+    </div>
+    <div id="stave" class="horizontal center-justified layout"
+          width=900 height=500> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
+      <svg id="actual4"></svg>
+    </div>
+    <div id="stave" class="horizontal center-justified layout"
+          width=900 height=500> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
+      <svg id="matched4"></svg>
+    </div>
+    
+    <h2>Test 5: Note Skip</h2>
+    <div id="stave" class="horizontal center-justified layout"
+          width=900 height=500> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
+      <svg id="expected5"></svg>
+    </div>
+    <div id="stave" class="horizontal center-justified layout"
+          width=900 height=500> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
+      <svg id="actual5"></svg>
+    </div>
+    <div id="stave" class="horizontal center-justified layout"
+          width=900 height=500> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
+      <svg id="matched5"></svg>
+    </div>
+    
+    <h2>Test 6: First Note Skip</h2>
+    <div id="stave" class="horizontal center-justified layout"
+          width=900 height=500> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
+      <svg id="expected6"></svg>
+    </div>
+    <div id="stave" class="horizontal center-justified layout"
+          width=900 height=500> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
+      <svg id="actual6"></svg>
+    </div>
+    <div id="stave" class="horizontal center-justified layout"
+          width=900 height=500> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
+      <svg id="matched6"></svg>
+    </div>
+    
+    <div class="horizontal center-justified layout">
+      <paper-button raised id="generate-button">
+       <iron-icon icon="icons:refresh"></iron-icon>
+        New Song
+      </paper-button>
+    </div>
+    <br>
+    <br>
+    <!--<div id="staff-container">
+       <svg id="mystaff" width="2000" height="300"></svg>
+    </div>-->
+    <div id="piano-container" class="horizontal center-justified layout"></div>
+    
+  </paper-header-panel>
+</body>
+</html>

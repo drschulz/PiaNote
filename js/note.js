@@ -12,9 +12,15 @@ const rhythmToString = {
 function Note(config) {
   this.tone = config.tone;
   this.rhythm = config.rhythm;
-  var letterAndOctave = midiMap.noteAndOctave(config.tone);
-  this.letter = letterAndOctave.letter;
-  this.octave = letterAndOctave.octave;
+  if (this.tone == REST) {
+    this.letter = REST;
+    this.octave = REST;
+  }
+  else {
+    var letterAndOctave = midiMap.noteAndOctave(config.tone);
+    this.letter = letterAndOctave.letter;
+    this.octave = letterAndOctave.octave;
+  }
   if (config.last_tone === undefined) {
     this.interval = 0;
   }
@@ -25,11 +31,14 @@ function Note(config) {
   this.dynamic = config.dynamic;
 }
 
+//NOT CURRENTLY USED
 Note.prototype.vexdump = function() {
   return ":" + this.rhythm + " " +  this.letter 
     + "/" + this.octave;
 };
 
+
+//NOT CURRENTLY USED
 Note.prototype.vextext = function() {
   return ":" + this.rhythm + "," + this.letter;
 };
@@ -44,10 +53,10 @@ Note.prototype.match = function(note) {
   if (this.tone == note.tone) {
     noteScore = MATCH_SCORES.TONE_MATCH;  
   }
-  else if (this.letter == note.letter && this.octave != note.octave) {
+  else if (this.tone != REST && this.letter == note.letter && this.octave != note.octave) {
     noteScore = MATCH_SCORES.OCTAVE_MISMATCH;
   }
-  else if (this.octave == note.octave && this.letter != note.letter) {
+  else if (this.tone != REST && this.octave == note.octave && this.letter != note.letter) {
     noteScore = MATCH_SCORES.LETTER_MISMATCH;
   }
   else {    

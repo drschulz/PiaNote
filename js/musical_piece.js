@@ -57,19 +57,38 @@ Musical_Piece.prototype.vexdump = function() {
     
   //notes  
   if (this.piece.notes.length > 0) {
-    vextab += "notes ";  
+    vextab += "notes ";
+    var measureRhythm = 0;
     this.piece.notes.forEach(function(e) {
-      var tone = midiToNote(e.tone);
       var sheetNote;
-      
-      if (tone.note['n'] !== undefined) {
-        sheetNote = getSheetNote(tone.note, 'n');
+      if (e.tone == REST) {
+        sheetNote = "##";
       }
       else {
-        sheetNote = that.piece.isSharpKey ? getSheetNote(tone.note, '#') : getSheetNote(tone.note, '@');
+        var tone = midiToNote(e.tone);
+        var sheetNote;
+        
+        if (tone.note['n'] !== undefined) {
+          sheetNote = getSheetNote(tone.note, 'n');
+        }
+        else {
+          sheetNote = that.piece.isSharpKey ? getSheetNote(tone.note, '#') : getSheetNote(tone.note, '@');
+        }
+        
+        sheetNote += "/" + tone.octave;
       }
       
-      vextab += ":" + e.rhythm + " " + sheetNote + "/" + tone.octave + " ";
+      if (measureRhythm + rhythmMap[e.rhythm] > 4) {
+        var difference = 4 - measureRhythm;
+        if (difference > 0) {
+          vextab += ":" + rhythmToString[difference] + " ## "; 
+        }
+        vextab += "| ";
+        measureRhythm = 0;
+      }
+      measureRhythm += rhythmMap[e.rhythm];
+      
+      vextab += ":" + e.rhythm + " " + sheetNote + " ";
     });
     
     vextab += "\n";
@@ -111,18 +130,18 @@ Musical_Piece.prototype.match = function(notes) {
   
   var matrix = (function() {
     var mat = [];
-    
+    console.log(that);
     for (i = 0; i < that.piece.notes.length + 1; i++) {
-      mat.push(new Array(notes.piece.length + 1));
+      mat.push(new Array(notes.piece.notes.length + 1));
       mat[i][0] = {
-        raw: MATCH_SCORES.INSERTION_DELETION * (i + 1),
+        raw: MATCH_SCORES.INSERTION_DELETION * i,
         dir: MatchDirection.TOP
       };
     }
     
-    for (j = 0; j < notes.piece.length + 1; i++) {
+    for (j = 0; j < notes.piece.notes.length + 1; j++) {
       mat[0][j] = {
-        raw: MATCH_SCORES.INSERTION_DELETION * (j + 1),
+        raw: MATCH_SCORES.INSERTION_DELETION * j,
         dir: MatchDirection.LEFT
       };
     }
@@ -153,16 +172,44 @@ Musical_Piece.prototype.match = function(notes) {
     }
   }
   
+  var results = {
+    notes: [],
+    scores: []
+  };
   
-  for (i = matrix.length - 1; i > 0; i++) {
-    for (j = matrix[i].length - 1; j > 0; j++) {
-      
+  var current;
+  var i = matrix.length - 1;
+  var j = matrix[i].length - 1;
+  
+  while(i > 0 || j > 0) {
+    current = matrix[i][j];
+    var expectedNote = this.piece.notes[i-1];
+    var actualNote = notes.piece.notes[j-1];
+    
+    if (current.dir == MatchDirection.DIAG) {
+      results.notes.unshift(actualNote);
+      results.scores.unshift(current);
+      i--;
+      j--;
     }
+    else if (current.dir == MatchDirection.LEFT) {
+      //Note insertion on user's side, we ignore it.
+      j--;
+    }
+    else if (current.dir == MatchDirection.TOP) {
+      //Note deletion, count as the user resting.
+      results.notes.unshift(new Note({tone: REST, rhythm: expectedNote.rhythm}));
+      results.scores.unshift(current);
+      i--;
+    }
+    
   }
   
+  while (i > 0) {
+    results.notes.unshift(new Note({tone: REST, rhythm: this.piece.notes[i-1].rhythm}));
+    results.scores.unshift(matrix[i][j]);
+    i--;
+  }
   
-  
-  
-  
-  
+  return results;
 };

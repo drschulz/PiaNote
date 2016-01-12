@@ -66,6 +66,8 @@ const naturalBase =   ['C',       undefined,  'D',        undefined,  'E',      
 const sharpBase =     ['B',       'C',        undefined,  'D',        undefined,  'E',        'F',        undefined,  'G',        undefined,  'A',        undefined];
 const flatBase =      [undefined, 'D',        undefined,  'E',        'F',        undefined,  'G',        undefined,  'A',        undefined,  'B',        'C'];
 
+const REST = -1;
+
 const MATCH_SCORES = {
   TONE_MISMATCH: -3,
   LETTER_MISMATCH: -2,

@@ -18,6 +18,21 @@ function findClosest(query, obj) {
   return best;
 }
 
+function findBestMatch(query, obj) {
+  var best = 'w';
+  var min = Number.MAX_VALUE;
+  
+  for (var value in obj) {
+    var num = obj[value] - query;
+    if (num > 0 && num < min) {
+      min = num;
+      best = value;
+    }
+  }
+  
+  return best;
+}
+
 var lastRhythm = '';
 
 function updateMap(valueToAdd, map, key) {
@@ -231,7 +246,7 @@ function initializeMidi() {
 
 function initializeMetronome() {
   //found from http://soundbible.com/2044-Tick.html
-  metronome = new Wad({source: 'http://127.0.0.1:51792/PiaNote/sounds/Tick.mp3'});
+  metronome = new Wad({source: 'http://' + window.location.host + '/PiaNote/sounds/Tick.mp3'});
 }
 
 var playerSheetIndex = 0;
@@ -239,8 +254,8 @@ var playerSheetIndex = 0;
 function updateSheetMusic(noteNumber, duration) {
   if (duration === undefined) {
     var note = new Note({tone: noteNumber, rhythm: "q"});
-    //playerPiece.piece.notes.push(note);
-    playerPiece.piece.notes[playerSheetIndex] = note;
+    playerPiece.piece.notes.push(note);
+    //playerPiece.piece.notes[playerSheetIndex] = note;
     
   }
   else {
@@ -249,9 +264,9 @@ function updateSheetMusic(noteNumber, duration) {
       return;
     }
     var closestRhythm = findClosest(temp, rhythmMap);
-    playerPiece.piece.notes[playerSheetIndex].rhythm = closestRhythm;
-    playerSheetIndex++;
-    //playerPiece.piece.notes[playerPiece.piece.notes.length - 1].rhythm = closestRhythm;
+    //playerPiece.piece.notes[playerSheetIndex].rhythm = closestRhythm;
+    //playerSheetIndex++;
+    playerPiece.piece.notes[playerPiece.piece.notes.length - 1].rhythm = closestRhythm;
   }
   
   renderSong(playerPiece, "#playerstave", "blue");
@@ -341,6 +356,7 @@ function renderSong(piece, location, color) {
 var playerPiece;
 
 function generateSong() {
+  resetTime();
   var intervals = generateIntervals();
   var key = generateKey();
   var tones = transpose(intervals, key);
@@ -366,18 +382,18 @@ function generateSong() {
   
   renderSong(piece, "#mystave", "black");
   
-  var playerNotes = [];
-  playerSheetIndex = 0;
+  /*var playerNotes = [];
+   playerSheetIndex = 0;
   
   for(i = 0; i < 8; i++) {
     playerNotes.push(new Note({tone: 12, rhythm: "q"}));
-  }
+  }*/ 
   
   var playerConfig = {
     time: "4/4",
     clef: "treble",
     key: keyLetter,
-    notes: playerNotes,
+    notes: [],
     isSharpKey: sharpKeys.indexOf(keyLetter) > 0 ? true : false,
   };
   
