@@ -10,7 +10,6 @@
 
   <script src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
   <script src="bower_components/jquery/dist/jquery.js"></script>
-  <script src="bower_components/Wad/build/wad.js"></script>
   <script src="bower_components/raphael/raphael.js"></script>
   <script src="bower_components/vexflow/releases/vexflow-debug.js"></script>
   <script src="bower_components/vexflow/releases/vexflow-min.js"></script>
@@ -32,15 +31,16 @@
   <link rel="stylesheet" href="bower_components/Progress.js/minified/progressjs.min.css"/> 
   <link rel="stylesheet" href="bower_components/animate.css/animate.min.css"/>
   <link rel="stylesheet" href="bower_components/vextab/releases/vextab.css"/>
-  <script src="js/constants.js"></script>
   <script src="js/mappings.js"></script>
+  <script src="js/constants.js"></script>
   <script src="js/note.js"></script>
   <script src="js/musical_piece.js"></script>
   <script src="js/instruments.js"></script>
-  <script src="js/accompaniment.js"></script>
   <script src="js/main_piano.js"></script>
   <script src="js/userInput.js"></script>
-  <script src="js/main.js"></script>
+  <script src="js/metronome.js"></script>
+  <script src="js/pianote.js"></script>
+  <script src="js/otherMain.js"></script>
   <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -65,43 +65,16 @@
     <div id="stave" class="horizontal center-justified layout"
           width=900 height=500> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
       <svg id="mystave"></svg>
-      <!--options space=20
-      stave
-        key=A time=4/4
-    
-        notes :q =|: (5/2.5/3.7/4) :8 7-5h6/3 ^3^ 5h6-7/5 ^3^ :q 7V/4 |
-        notes :8 t12p7/4 s5s3/4 :8 3s:16:5-7/5 :h p5/4
-        text :w, |#segno, ,|, :hd, , #tr
-    
-      
-      stave key=A
-      notes :q C/4 D/4 E/4 F/4 | | |
-      stave key=A
-      notes | | | 
-      
-      options space=25-->
     </div>
     <div id="stave" class="horizontal center-justified layout"
           width=900 height=500> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
       <svg id="playerstave"></svg>
-      <!--options space=20
-      stave
-        key=A time=4/4
-    
-        notes :q =|: (5/2.5/3.7/4) :8 7-5h6/3 ^3^ 5h6-7/5 ^3^ :q 7V/4 |
-        notes :8 t12p7/4 s5s3/4 :8 3s:16:5-7/5 :h p5/4
-        text :w, |#segno, ,|, :hd, , #tr
-    
-      
-      stave key=A
-      notes :q C/4 D/4 E/4 F/4 | | |
-      stave key=A
-      notes | | | 
-      
-      options space=25-->
     </div>
     <div class="horizontal center-justified layout">
-      <paper-button raised id="generate-button">
+      <paper-button raised id="score-button" disabled>
+        Score Performance
+      </paper-button>
+      <paper-button raised id="generate-button" disabled>
        <iron-icon icon="icons:refresh"></iron-icon>
         New Song
       </paper-button>
@@ -112,7 +85,9 @@
        <svg id="mystaff" width="2000" height="300"></svg>
     </div>-->
     <div id="piano-container" class="horizontal center-justified layout"></div>
-    
+    <audio id="metronome" style="display:none;">
+      <source src="sounds/Tick.mp3" type="audio/mpeg">
+    </audio>
   </paper-header-panel>
 </body>
 </html>

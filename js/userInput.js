@@ -1,103 +1,65 @@
-var midiIn = null;
-
-function handleKeyDown(event) {
-  var note = boardToMidi[String.fromCharCode(event.keyCode)];
-  piaNoteOn(note, MidiConstants.MAX_VELOCITY);
-}
-
-function handleKeyUp(event) {
-  var note = boardToMidi[String.fromCharCode(event.keyCode)];
-  piaNoteOff(note, 0);
-}
- 
-var time = 0; 
-
-var currentNote; 
-var previousNote; 
-
-function updateTime() {
-  var now = performance.now();
-  
-  if (time !== 0) {
-    var timePassed = (now - time) / 1000.0;
-    if (previousNote !== undefined) {
-      updateSheetMusic(previousNote, timePassed);
-      previousNote = undefined;
+function UserInput(config) {
+  var midiIn = null;
+  this.noteOn = config.noteOn;
+  this.noteOff = config.noteOff;
+  var that = this;
+  function addEvent(element, eventName, callback) {
+    if (element.addEventListener) {
+        element.addEventListener(eventName, callback, false);
+    } else if (element.attachEvent) {
+        element.attachEvent("on" + eventName, callback);
     }
-    //updateRhythms(timePassed);
-  }
-  time = now;
-  
-  
-}
-
-function resetTime() {
-  time = 0;
-}
-
-function piaNoteOn(note, velocity) {
-  main_piano.instrument.noteOn(note, velocity, 0);
-  //updateKeyMap(note);
-  updateTime();
-  currentNote = note;
-  start = performance.now();
-  
-  updateSheetMusic(note);
-  
-  //updateTime();
-}
-
-function piaNoteOff(note) {
-  previousNote = note;
-  //stop = performance.now();
-  //var duration = (stop - start) / 1000.0;
-  
-  //updateSheetMusic(note, duration);
-  
-  
-  main_piano.instrument.noteOff(note, 0);
-  
-}
-
-function midiMessageReceived(event) {
-  var cmd = event.data[0] >> MidiConstants.CMD_SHIFT;
-  var channel = event.data[0] & 0xf;
-  var noteNumber = event.data[MidiConstants.NOTE_IDX];
-  var velocity = event.data[MidiConstants.VELOCITY_IDX];
-
-  if (channel == MidiConstants.INVALID_CHANNEL) {
-    return;
   }
   
-  if ( cmd==MidiConstants.NOTE_OFF_CMD 
-    || ((cmd==MidiConstants.NOTE_ON_CMD)&&(velocity===0)) ) { // with MIDI, note on with velocity zero is the same as note off
-    // note off
-    piaNoteOff(noteNumber);
-  } 
-  else if (cmd == MidiConstants.NOTE_ON_CMD) {
-    // note on
-    piaNoteOn(noteNumber, velocity);
+  function handleKeyDown(event) {
+    var note = boardToMidi[String.fromCharCode(event.keyCode)];
+    that.noteOn(note, MidiConstants.MAX_VELOCITY);
   }
   
-}
-
-function onMIDIStarted( midi ) {
-  var preferredIndex = 0;
-
-  midiAccess = midi;
-  midiIn = midiAccess.inputs.values().next().value;
-  
-  if (midiIn) {
-    console.log("midi connected");
-    midiIn.onmidimessage = midiMessageReceived;
+  function handleKeyUp(event) {
+    var note = boardToMidi[String.fromCharCode(event.keyCode)];
+    that.noteOff(note, 0);
   }
-}
+  
+  function onMIDIStarted( midi ) {
+    var preferredIndex = 0;
+  
+    midiAccess = midi;
+    midiIn = midiAccess.inputs.values().next().value;
+    
+    if (midiIn) {
+      console.log("midi connected");
+      midiIn.onmidimessage = midiMessageReceived;
+    }
+  }
+  
+  function onMIDISystemError( err ) {
+    console.log( "MIDI not initialized - error encountered:" + err.code );
+  }
 
-function onMIDISystemError( err ) {
-  console.log( "MIDI not initialized - error encountered:" + err.code );
-}
+  function midiMessageReceived(event) {
+    var cmd = event.data[0] >> MidiConstants.CMD_SHIFT;
+    var channel = event.data[0] & 0xf;
+    var noteNumber = event.data[MidiConstants.NOTE_IDX];
+    var velocity = event.data[MidiConstants.VELOCITY_IDX];
+  
+    if (channel == MidiConstants.INVALID_CHANNEL) {
+      return;
+    }
+    
+    if ( cmd==MidiConstants.NOTE_OFF_CMD 
+      || ((cmd==MidiConstants.NOTE_ON_CMD)&&(velocity===0)) ) { // with MIDI, note on with velocity zero is the same as note off
+      // note off
+      that.noteOff(noteNumber);
+    } 
+    else if (cmd == MidiConstants.NOTE_ON_CMD) {
+      // note on
+      that.noteOn(noteNumber, velocity);
+    }
+    
+  }
 
-function initializeUserInput() {
+  
   if (navigator.requestMIDIAccess) {
     navigator.requestMIDIAccess().then( onMIDIStarted, onMIDISystemError );
   }

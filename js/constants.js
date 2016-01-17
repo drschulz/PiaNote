@@ -1,3 +1,5 @@
+var midiMap = new MidiMap();
+
 const MidiConstants = {
   DEFAULT_CHANNEL: 1,
   INVALID_CHANNEL: 9,
@@ -88,3 +90,6 @@ const MatchDirection = {
   LEFT: 2,
   TOP: 3
 };
+
+const BPMS = [80, 90, 100, 120];
+

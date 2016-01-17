@@ -22,7 +22,6 @@ Musical_Piece.prototype.vexdump = function() {
       
       for(i = 0; i < indx; i++) {
         staveNote = (3 + 4*i)%7;
-        console.log(staveNote);
         accidentals[staveNotes[(3 + 4*i)%7]] = '#';
       }
     }
