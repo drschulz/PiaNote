@@ -77,6 +77,7 @@ function scorePerformance() {
   var results = pianote.scorePerformance();
 
   renderSong(pianote.scoredPiece, "#playerstave", "#455ede");
+  renderSong(pianote.expectedPiece, "#mystave", "black");
   displayResults(results);
 }
 

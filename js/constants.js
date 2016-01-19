@@ -10,8 +10,6 @@ const MidiConstants = {
   NOTE_OFF_CMD: 8,
   MAX_VELOCITY: 127,
   MAX_VOLUME: 127,
-  
-  
 };
 
 const GeneralMIDI = {

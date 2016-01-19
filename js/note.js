@@ -10,6 +10,7 @@ const rhythmToString = {
 };
 
 function Note(config) {
+  this.text = " ";
   this.tone = config.tone;
   this.rhythm = config.rhythm;
   if (this.tone == REST) {
@@ -37,10 +38,13 @@ Note.prototype.vexdump = function() {
     + "/" + this.octave;
 };
 
+Note.prototype.setText = function(text) {
+  this.text = text;
+};
 
 //NOT CURRENTLY USED
 Note.prototype.vextext = function() {
-  return ":" + this.rhythm + "," + this.letter;
+  return ":" + this.rhythm + "," + this.text;
 };
   
 

@@ -93,15 +93,15 @@ Musical_Piece.prototype.vexdump = function() {
     vextab += "\n";
   }
   //text above notes if needed
-  if (this.piece.textOn) {
-    vextab += "text 0.1";
+  //if (this.piece.textOn) {
+    vextab += "text ";
     
     this.piece.notes.forEach(function(e) {
-      vextab += ", " + e.vextext();
+      vextab += e.vextext() + ", ";
     });
-    
+    vextab += ":";
     vextab += "\n";
-  }
+  //}
   
   vextab += "options space=45\n";
     
@@ -172,6 +172,7 @@ Musical_Piece.prototype.match = function(notes) {
   }
   
   var results = {
+    expectedNotes: that.piece.notes, 
     notes: [],
     scores: [],
     totals: {
@@ -200,6 +201,7 @@ Musical_Piece.prototype.match = function(notes) {
       }
       else {
         results.totals.notesMissed++;
+        //this.piece.notes[i-1].setText("Missed Note");
       }
       
       if (current.rhythm == MATCH_SCORES.RHYTHM_MATCH) {
@@ -207,6 +209,7 @@ Musical_Piece.prototype.match = function(notes) {
       }
       else {
         results.totals.rhythmsMissed++;
+        //this.piece.notes[i-1].setText("Missed Rhythm");
       }
       i--;
       j--;
@@ -221,6 +224,7 @@ Musical_Piece.prototype.match = function(notes) {
       results.scores.unshift(current);
       results.totals.notesMissed ++;
       results.totals.rhythmsMissed ++;
+      //this.piece.notes[i-1].setText("Missed");
       i--;
     }
     
@@ -231,6 +235,7 @@ Musical_Piece.prototype.match = function(notes) {
     results.scores.unshift(matrix[i][j]);
     results.totals.notesMissed++;
     results.totals.rhythmsMissed++;
+    //this.piece.notes[i-1].setText("Missed");
     i--;
   }
   
