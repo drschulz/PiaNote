@@ -173,7 +173,14 @@ Musical_Piece.prototype.match = function(notes) {
   
   var results = {
     notes: [],
-    scores: []
+    scores: [],
+    totals: {
+      notesMissed: 0,
+      notesHit: 0,
+      rhythmsHit: 0,
+      rhythmsMissed: 0,
+      overallAccuracy: 0
+    },
   };
   
   var current;
@@ -188,6 +195,19 @@ Musical_Piece.prototype.match = function(notes) {
     if (current.dir == MatchDirection.DIAG) {
       results.notes.unshift(actualNote);
       results.scores.unshift(current);
+      if(current.tone == MATCH_SCORES.TONE_MATCH) {
+        results.totals.notesHit++;
+      }
+      else {
+        results.totals.notesMissed++;
+      }
+      
+      if (current.rhythm == MATCH_SCORES.RHYTHM_MATCH) {
+        results.totals.rhythmsHit++;
+      }
+      else {
+        results.totals.rhythmsMissed++;
+      }
       i--;
       j--;
     }
@@ -199,6 +219,8 @@ Musical_Piece.prototype.match = function(notes) {
       //Note deletion, count as the user resting.
       results.notes.unshift(new Note({tone: REST, rhythm: expectedNote.rhythm}));
       results.scores.unshift(current);
+      results.totals.notesMissed ++;
+      results.totals.rhythmsMissed ++;
       i--;
     }
     
@@ -207,8 +229,14 @@ Musical_Piece.prototype.match = function(notes) {
   while (i > 0) {
     results.notes.unshift(new Note({tone: REST, rhythm: this.piece.notes[i-1].rhythm}));
     results.scores.unshift(matrix[i][j]);
+    results.totals.notesMissed++;
+    results.totals.rhythmsMissed++;
     i--;
   }
+  
+  results.totals.overallAccuracy = 
+    (results.totals.notesHit + results.totals.rhythmsHit) /
+    (results.notes.length * 2) * 100;
   
   return results;
 };

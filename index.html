@@ -24,10 +24,12 @@
   <script src="bower_components/vextab/releases/vextab-div.js"></script>
   <script src="bower_components/requirejs/require.js"></script>
   <link rel="import" href="bower_components/font-roboto/roboto.html">
+  <link rel="import" href="bower_components/paper-styles/paper-styles.html">
   <link rel="import" href="bower_components/paper-elements/paper-elements.html">
   <link rel="import" href="bower_components/iron-icons/av-icons.html">
   <link rel="import" href="bower_components/iron-icons/image-icons.html">
   <link rel="import" href="bower_components/iron-flex-layout/iron-flex-layout.html"/>
+  <link rel="import" href="bower_components/google-chart/google-chart.html"/>
   <link rel="stylesheet" href="bower_components/Progress.js/minified/progressjs.min.css"/> 
   <link rel="stylesheet" href="bower_components/animate.css/animate.min.css"/>
   <link rel="stylesheet" href="bower_components/vextab/releases/vextab.css"/>
@@ -43,7 +45,22 @@
   <script src="js/otherMain.js"></script>
   <link rel="stylesheet" href="styles.css">
 </head>
-
+<style is="custom-style">
+                .container {
+                  display: inline-block;
+                  margin-left: 30px;
+                  margin-right: 30px;
+                }
+                /* Need to position the badge to look like a text superscript */
+                .container > paper-badge {
+                  --paper-badge-margin-left: 20px;
+                  --paper-badge-margin-bottom: 0px;
+                }
+                
+                .result-hit {
+                  --paper-badge-background: #00C853;
+                }
+</style>
 <body unresolved class="fullbleed layout vertical">
   <paper-header-panel class="flex" id="main-panel">
     <paper-toolbar>
@@ -69,6 +86,70 @@
     <div id="stave" class="horizontal center-justified layout"
           width=900 height=500> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
       <svg id="playerstave"></svg>
+    </div>
+    <div class="horizontal center-justified layout">
+      <paper-card heading="Performance Results" id="results-card">
+        <div class="card-content">
+        <div class="layout wrap inline center-center">
+          <paper-header-panel class="results-panel" id="note-results">
+            <paper-toolbar class="paper-header">
+              <div>Notes</div>
+            </paper-toolbar>
+            <div class="content">
+              <table class="results">
+                <tr>
+                  <td>Notes Hit</td>
+                  <td class="result good" id="n-h">13</td>
+                </tr>
+                <tr>
+                  <td>Notes Missed</td>
+                  <td class="result bad" id="n-m">42</td>
+                </tr>
+              </table>
+            </div>
+          </paper-header-panel>
+          <paper-header-panel class="results-panel" id="rhythm-results">
+            <paper-toolbar class="paper-header">
+              <div>Rhythms</div>
+            </paper-toolbar>
+            <div class="content horizontal-section">
+              <table class="results">
+                <tr>
+                  <td>Rhythms Hit</td>
+                  <td class="result good" id="r-h">13</td>
+                </tr>
+                <tr>
+                  <td>Rhythms Missed</td>
+                  <td class="result bad" id="r-m">42</td>
+                </tr>
+              </table>
+            </div>
+            
+          </paper-header-panel>
+          </div>
+          <div class="horizontal center-justified layout">
+              <table class="accuracy">
+                <td>Overall Accuracy</td>
+                <td class="result" id="accurate"></td>
+              </table>
+          </div>
+          <br>
+          <div class="horizontal center-justified layout">
+            <h2>Current Session</h2>
+          </div>
+          <div class="horizontal center-justified layout">
+            <google-chart id="session-chart"
+              type='combo'
+              options='{"seriesType": "bars", "series": {"2": {"type": "line"}}}'
+              cols='[{"label": "Song", "type": "string"}, 
+                      {"label": "Note Accuracy", "type": "number"},
+                      {"label": "Rhythm Accuracy", "type": "number"},
+                      {"label": "Overall", "type": "number"}]'
+              rows='[]'>
+            </google-chart>
+          </div>
+        </div>
+      </paper-card>
     </div>
     <div class="horizontal center-justified layout">
       <paper-button raised id="score-button" disabled>

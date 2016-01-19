@@ -31,7 +31,45 @@ function generateNextMelody() {
   renderSong(pianote.playerPiece, "#playerstave", "#455ede");
 }
 
+var song = 1;
+var rows = [];
+
+function populateTables(results) {
+  $("#n-h").empty();
+  $("#n-m").empty();
+  $("#r-h").empty();
+  $("#r-hm").empty();
+  $("#accurate").empty();
+  
+  $("#n-h").html(results.totals.notesHit);
+  $("#n-m").html(results.totals.notesMissed);
+  $("#r-h").html(results.totals.rhythmsHit);
+  $("#r-m").html(results.totals.rhythmsMissed);
+  $("#accurate").html(results.totals.overallAccuracy + "%");  
+}
+
+function updateChart(results) {
+  var chart = document.getElementById("session-chart"); 
+  
+  var rhythmAccuracy = results.totals.rhythmsHit / results.notes.length * 100;
+  var noteAccuracy = results.totals.notesHit / results.notes.length * 100;
+  
+  var newRowData = rows.concat([["song " + song, 
+    noteAccuracy, 
+    rhythmAccuracy, 
+    results.totals.overallAccuracy << 0]]);
+    
+  chart.rows = newRowData;
+  rows = newRowData;
+  
+  song++;
+  
+  $("#results-card").show();
+}
+
 function displayResults(results) {
+  populateTables(results);
+  updateChart(results);
   //TODO
 }
 
@@ -56,7 +94,10 @@ function initializeButtons() {
     $("#play-button").show();
   });
   
-  $("#generate-button").click(generateNextMelody);
+  $("#generate-button").click(function() {
+    $("#results-card").hide();
+    generateNextMelody();
+  });
   
   $("#score-button").click(scorePerformance);
   

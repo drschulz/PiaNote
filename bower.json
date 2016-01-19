@@ -15,6 +15,7 @@
     "Progress.js": "progressjs#~0.1.0",
     "animate.css": "~3.4.0",
     "vextab": "0xfe/vextab#~2.0.10",
-    "requirejs": "~2.1.22"
+    "requirejs": "~2.1.22",
+    "google-chart": "GoogleWebComponents/google-chart#~1.0.4"
   }
 }
