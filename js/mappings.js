@@ -8,7 +8,17 @@ var rhythmMap = {
   "8": 0.5,
   "8d": 0.75,
   "16": 0.25,
-  "16d": 0.375,
+  //"16d": 0.375,
+};
+
+var rhythmABC = {
+  "w": "16",
+  "h": "8",
+  "qd": "5",
+  "q": "4",
+  "8d": "3",
+  "8": "2",
+  "16": "1",
 };
 
 var restMap = {
@@ -105,10 +115,12 @@ function midiToNote(midi) {
   
   return {
     note: {
-      'n': naturalBase[noteInd],
-      '#': sharpBase[noteInd],
-      '@': flatBase[noteInd]
+      '=': naturalBase[noteInd],
+      '^': sharpBase[noteInd],
+      '_': flatBase[noteInd]
     }, 
     octave: ((midi/12) << 0) - 1
   };
 }
+
+

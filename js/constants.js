@@ -27,6 +27,8 @@ const SECONDS_IN_MINUTE = 60;
 const SHORTEST_RHYTHM = 0.125;
 
 const MIDDLE_C = 60;
+const HIGH_E = 88;
+const LOW_C = 36;
 
 const Intervals = {
   MJR_1ST: 0,
@@ -38,7 +40,15 @@ const Intervals = {
   MJR_6TH: 9,
   //MNR_7TH: 10,
   MJR_7TH: 11,
-  OCTAVE: 12 
+  OCTAVE: 12,
+  
+  OCTAVE_2ND: 14,
+  OCTAVE_3RD: 16,
+  OCTAVE_4TH: 17,
+  OCTAVE_5TH: 19,
+  OCTAVE_6TH: 21,
+  OCTAVE_7TH: 23,
+  OCTAVE_2: 24
 };
 
 const keys = [
@@ -90,4 +100,13 @@ const MatchDirection = {
 };
 
 const BPMS = [80, 90, 100, 120];
+
+const abcOctave = [",,,,",",,,",",,",",","","'", "''", "'''"];
+
+
+
+
+
+
+
 

@@ -46,6 +46,37 @@ a, a:hover {
   text-decoration: none;
 }
 
+#playerstave path {
+  fill: #455ede;
+}
+
+#mystave path.note_selected {
+  fill: #455ede;
+}
+
+#mystave svg {
+  display: block;
+  margin: 0 auto;
+}
+
+#mystave { 
+  width: 100% !important;
+  /*text-align: center;*/
+}
+
+#playerstave {
+  width: 100% !important;
+}
+
+#mystave .cursor {
+	background-color: rgba(196,196,196,.5);
+}
+
+#playerstave svg {
+  display: block;
+  margin: auto;
+}
+
 iron-toolbar {
   background-color: #455ede;
   box-shadow: 0px 3px 2px rgba(0, 0, 0, 0.2);

@@ -20,9 +20,11 @@ function PiaNote(config) {
   }
   
   this.updatePlayerPiece = function(noteNumber, duration) {
+    var voice = noteNumber >= MIDDLE_C ? that.playerPiece.piece.voice1 : that.playerPiece.piece.voice2;
+    
     if (duration === undefined) {
       var note = new Note({tone: noteNumber, rhythm: "q"});
-      that.playerPiece.piece.notes.push(note);
+      voice.push(note);
     }
     else {
       var temp = duration / that.playerPiece.piece.tempo;
@@ -30,7 +32,7 @@ function PiaNote(config) {
         return;
       }
       var closestRhythm = findClosest(temp, rhythmMap);
-      that.playerPiece.piece.notes[that.playerPiece.piece.notes.length - 1].rhythm = closestRhythm;
+      voice[voice.length - 1].rhythm = closestRhythm;
     }
   };
 
@@ -102,6 +104,29 @@ PiaNote.prototype.generateSong = function() {
     return tones;
   }
   
+  function generateNotes(key, lowLimit, highLimit) {
+    var tones = [];
+    var baseOfKey;
+    var intervals = Object.keys(Intervals);
+    for (var indx in key) {
+      baseOfKey = key[indx];
+    }
+    for(i=0; i < 16; i++) {
+      var tone;
+      var interval;
+      do {
+        var idx = (Math.random() * intervals.length) << 0;
+        interval = Intervals[intervals[idx]];
+        tone = lowLimit + baseOfKey + interval;
+        
+      } while(tone < lowLimit || tone >= highLimit);
+      
+      tones.push(tone);
+    }
+    
+    return tones;
+  }
+  
   function generateTempo() {
     var bpm = BPMS[Math.random() * BPMS.length << 0];
     
@@ -110,12 +135,19 @@ PiaNote.prototype.generateSong = function() {
   
   this.resetTime();
   var tempo = generateTempo();
-  var intervals = generateIntervals();
+  //var intervals = generateIntervals();
   var key = generateKey();
-  var tones = transpose(intervals, key);
-  var notes = [];
-  tones.forEach(function(e) {
-    notes.push(new Note({tone: e, rhythm: "q"}));
+  var tones1 = generateNotes(key, MIDDLE_C, HIGH_E);
+  //var tones = transpose(intervals, key);
+  var voice1 = [];
+  tones1.forEach(function(e) {
+    voice1.push(new Note({tone: e, rhythm: "q"}));
+  });
+  
+  var tones2 = generateNotes(key, LOW_C, MIDDLE_C);
+  var voice2 = [];
+  tones2.forEach(function(e) {
+    voice2.push(new Note({tone: e, rhythm: "q"}));
   });
   
   
@@ -126,7 +158,8 @@ PiaNote.prototype.generateSong = function() {
     time: "4/4",
     clef: "treble",
     key: keyLetter,
-    notes: notes,
+    voice1: voice1,
+    voice2: voice2,
     isSharpKey: sharpKeys.indexOf(keyLetter) > 0 ? true : false,
   };
   
@@ -137,7 +170,8 @@ PiaNote.prototype.generateSong = function() {
     time: "4/4",
     clef: "treble",
     key: keyLetter,
-    notes: [],
+    voice1: [],
+    voice2: [],
     isSharpKey: sharpKeys.indexOf(keyLetter) > 0 ? true : false,
   };
   
@@ -148,7 +182,8 @@ PiaNote.prototype.generateSong = function() {
     time: "4/4",
     clef: "treble",
     key: keyLetter,
-    notes: [],
+    voice1: [],
+    voice2: [],
     isSharpKey: sharpKeys.indexOf(keyLetter) > 0 ? true : false,
   };
 };
@@ -156,7 +191,8 @@ PiaNote.prototype.generateSong = function() {
 PiaNote.prototype.scorePerformance = function() {
   var matchResults = this.expectedPiece.match(this.playerPiece);
   
-  this.pieceConfig.notes = matchResults.notes;
+  this.pieceConfig.voice1 = matchResults[0].notes;
+  this.pieceConfig.voice2 = matchResults[1].notes;
   this.scoredPiece = new Musical_Piece(this.pieceConfig);
   
   return matchResults;

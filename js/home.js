@@ -2,33 +2,35 @@
 var pianote;
 var metronome;
 var main_piano;
-
+var tunObjectArray;
 //Sheet music rendering
 function renderSong(piece, location, color) {
   $(location).empty();
-  var canvas = $(location)[0];
-  var renderer = new Vex.Flow.Renderer(canvas,
+  /*var canvas = $(location)[0];
+   var renderer = new Vex.Flow.Renderer(canvas,
   Vex.Flow.Renderer.Backends.RAPHAEL);
   
   renderer.ctx.setFillStyle(color);
   renderer.ctx.setStrokeStyle(color);
   var artist = new Artist(10, 10, 900, {scale: 1.0});
 
-  var vextab = new VexTab(artist);
+  var vextab = new VexTab(artist);*/
 
-  try {
-   var elements = vextab.parse(piece.vexdump());
-   artist.render(renderer);
-  }
-  catch (e) {
-    console.log(e.message);
-  }
+  //try {
+  tuneObjectArray = ABCJS.renderAbc(location, piece.abcDump(), {},{add_classes: true },{});
+  console.log(tuneObjectArray);
+   //var elements = vextab.parse(piece.vexdump());
+   //artist.render(renderer);
+  //}
+  //catch (e) {
+    //console.log(e.message);
+  //}
 }
 
 function generateNextMelody() {
   pianote.generateSong();
-  renderSong(pianote.expectedPiece, "#mystave", "black");
-  renderSong(pianote.playerPiece, "#playerstave", "#455ede");
+  renderSong(pianote.expectedPiece, "mystave", "black");
+  renderSong(pianote.playerPiece, "playerstave", "#455ede");
 }
 
 var song = 1;
@@ -41,23 +43,23 @@ function populateTables(results) {
   $("#r-hm").empty();
   $("#accurate").empty();
   
-  $("#n-h").html(results.totals.notesHit);
-  $("#n-m").html(results.totals.notesMissed);
-  $("#r-h").html(results.totals.rhythmsHit);
-  $("#r-m").html(results.totals.rhythmsMissed);
-  $("#accurate").html(results.totals.overallAccuracy + "%");  
+  $("#n-h").html(results[0].totals.notesHit);
+  $("#n-m").html(results[0].totals.notesMissed);
+  $("#r-h").html(results[0].totals.rhythmsHit);
+  $("#r-m").html(results[0].totals.rhythmsMissed);
+  $("#accurate").html(results[0].totals.overallAccuracy + "%");  
 }
 
 function updateChart(results) {
   var chart = document.getElementById("session-chart"); 
   
-  var rhythmAccuracy = results.totals.rhythmsHit / results.notes.length * 100;
-  var noteAccuracy = results.totals.notesHit / results.notes.length * 100;
+  var rhythmAccuracy = results[0].totals.rhythmsHit / results[0].notes.length * 100;
+  var noteAccuracy = results[0].totals.notesHit / results[0].notes.length * 100;
   
   var newRowData = rows.concat([["song " + song, 
     noteAccuracy, 
     rhythmAccuracy, 
-    results.totals.overallAccuracy << 0]]);
+    results[0].totals.overallAccuracy << 0]]);
     
   chart.rows = newRowData;
   rows = newRowData;
@@ -76,8 +78,8 @@ function displayResults(results) {
 function scorePerformance() {
   var results = pianote.scorePerformance();
 
-  renderSong(pianote.scoredPiece, "#playerstave", "#455ede");
-  renderSong(pianote.expectedPiece, "#mystave", "black");
+  renderSong(pianote.scoredPiece, "playerstave", "#455ede");
+  renderSong(pianote.expectedPiece, "mystave", "black");
   displayResults(results);
 }
 
@@ -118,7 +120,7 @@ function initializeApplication() {
   function noteOn(note, velocity) {
     main_piano.instrument.noteOn(note, velocity, 0);
     pianote.noteOn(note, velocity);
-    renderSong(pianote.playerPiece, "#playerstave", "blue");
+    renderSong(pianote.playerPiece, "playerstave", "blue");
   }
   
   function noteOff(note) {

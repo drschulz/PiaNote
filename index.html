@@ -33,6 +33,7 @@
   <link rel="stylesheet" href="bower_components/Progress.js/minified/progressjs.min.css"/> 
   <link rel="stylesheet" href="bower_components/animate.css/animate.min.css"/>
   <link rel="stylesheet" href="bower_components/vextab/releases/vextab.css"/>
+  <script src="js/libs/abcjs_basic_2.3-min.js"></script>
   <script src="js/mappings.js"></script>
   <script src="js/constants.js"></script>
   <script src="js/note.js"></script>
@@ -63,13 +64,9 @@
         Stop Metronome
       </paper-button>
     </div>
-    <div id="stave" class="horizontal center-justified layout"
-          width=900 height=500> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
-      <svg id="mystave"></svg>
+    <div id="mystave" class="mystaveClass"> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
     </div>
-    <div id="stave" class="horizontal center-justified layout"
-          width=900 height=500> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
-      <svg id="playerstave"></svg>
+    <div id="playerstave"> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
     </div>
     <div class="horizontal center-justified layout">
       <paper-card heading="Performance Results" id="results-card">
