@@ -20,4 +20,7 @@ function UserStats() {
   for(i=LOW_C; i < HIGH_E; i++) {
     noteLevel[i] = median;
   }
+  
+  //scale from 0 to 24
+  this.maxIntervalJump = 7; //Major 5th
 }

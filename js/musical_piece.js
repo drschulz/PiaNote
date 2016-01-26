@@ -111,6 +111,22 @@ Musical_Piece.prototype.vexdump = function() {
 
 Musical_Piece.prototype.abcDump = function() {
   var that = this;
+  
+  function findClosest(query, obj) {
+    var best = '';
+    var min = Number.MAX_VALUE;
+    
+    for (var value in obj) {
+      var num = Math.abs(obj[value] - query);
+      if (num < min) {
+        min = num;
+        best = value;
+      }
+    }
+    
+    return best;
+  }
+  
   var currentAccidentals = (function() { 
     var staveNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
     var accidentals = {
@@ -162,6 +178,7 @@ Musical_Piece.prototype.abcDump = function() {
   abc += "M: " + this.piece.time + "\n" 
        + "L: 1/16\n" 
        + "K: " + this.piece.key + "\n"
+       + "Q: " + this.piece.bpm + "\n"
        + "V: V1 clef=treble\n"
        + "V: V2 clef=bass\n";
        
@@ -194,15 +211,39 @@ Musical_Piece.prototype.abcDump = function() {
       if (measureRhythm + rhythmMap[e.rhythm] > 4) {
         var difference = 4 - measureRhythm;
         if (difference > 0) {
-          abc += " z" + rhythmABC[rhythmToString[difference]] + " ";
-         
+          if (difference == 3) {
+            abc += "z" + rhythmABC["h"];
+            abc += "z" + rhythmABC["q"];
+          }
+          else {
+            abc += " z" + rhythmABC[rhythmToString[difference]]; //+ " ";
+          }
         }
         abc += "| ";
         measureRhythm = 0;
-      }
-      measureRhythm += rhythmMap[e.rhythm];
+        measureRhythm += rhythmMap[e.rhythm];
       
-      abc += sheetNote + rhythmABC[e.rhythm] + " ";
+        abc += sheetNote + rhythmABC[e.rhythm];// + " ";
+      }
+      //need to split up note to show beat 3 in measure
+      else if(measureRhythm > 0 && measureRhythm < 2 && measureRhythm + rhythmMap[e.rhythm] > 2) {
+        var diff = 2 - measureRhythm;
+        var overflow = rhythmMap[e.rhythm] - diff;
+        
+        var r1 = findClosest(diff, rhythmMap);
+        var r2 = findClosest(overflow, rhythmMap);
+        
+        abc += "(" + sheetNote + rhythmABC[r1] + sheetNote + rhythmABC[r2] + ")";
+        
+        measureRhythm += rhythmMap[e.rhythm];
+        
+      }
+      else {
+        measureRhythm += rhythmMap[e.rhythm];
+      
+        abc += sheetNote + rhythmABC[e.rhythm];// + " ";
+      }
+        
     });
     
   
@@ -232,15 +273,37 @@ Musical_Piece.prototype.abcDump = function() {
       if (measureRhythm + rhythmMap[e.rhythm] > 4) {
         var difference = 4 - measureRhythm;
         if (difference > 0) {
-          abc += " z" + rhythmABC[rhythmToString[difference]] + " ";
-         
+          if (difference == 3) {
+            abc += "z" + rhythmABC["h"];
+            abc += "z" + rhythmABC["q"];
+          }
+          else {
+            abc += "z" + rhythmABC[rhythmToString[difference]]; //+ " ";
+          }
         }
         abc += "| ";
         measureRhythm = 0;
+        abc += sheetNote + rhythmABC[e.rhythm];// + " ";
+        measureRhythm += rhythmMap[e.rhythm];
       }
-      measureRhythm += rhythmMap[e.rhythm];
+       //need to split up note to show beat 3 in measure
+      else if(measureRhythm > 0 && measureRhythm < 2 && measureRhythm + rhythmMap[e.rhythm] > 2) {
+        var diff = 2 - measureRhythm;
+        var overflow = rhythmMap[e.rhythm] - diff;
+        
+        var r1 = findClosest(diff, rhythmMap);
+        var r2 = findClosest(overflow, rhythmMap);
+        
+        abc += "(" + sheetNote + rhythmABC[r1] + sheetNote + rhythmABC[r2] + ")";
+        
+        measureRhythm += rhythmMap[e.rhythm];
+        
+      }
+      else {
+        measureRhythm += rhythmMap[e.rhythm];
       
-      abc += sheetNote + rhythmABC[e.rhythm] + " ";
+        abc += sheetNote + rhythmABC[e.rhythm];// + " ";
+      }
     });
     
     abc += "|";

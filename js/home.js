@@ -5,26 +5,8 @@ var main_piano;
 var tunObjectArray;
 //Sheet music rendering
 function renderSong(piece, location, color) {
-  $(location).empty();
-  /*var canvas = $(location)[0];
-   var renderer = new Vex.Flow.Renderer(canvas,
-  Vex.Flow.Renderer.Backends.RAPHAEL);
-  
-  renderer.ctx.setFillStyle(color);
-  renderer.ctx.setStrokeStyle(color);
-  var artist = new Artist(10, 10, 900, {scale: 1.0});
-
-  var vextab = new VexTab(artist);*/
-
-  //try {
   tuneObjectArray = ABCJS.renderAbc(location, piece.abcDump(), {},{add_classes: true },{});
   console.log(tuneObjectArray);
-   //var elements = vextab.parse(piece.vexdump());
-   //artist.render(renderer);
-  //}
-  //catch (e) {
-    //console.log(e.message);
-  //}
 }
 
 function generateNextMelody() {
