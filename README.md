@@ -1,4 +1,6 @@
-Welcome to PiaNote
+#PiaNote
+
+Welcome to PiaNote.
 
 PiaNote is an open source sight reading tool for piano players.
 
@@ -8,8 +10,8 @@ As a result, PiaNote provides a fully customized and tailored sight reading expe
 
 Thanks to:
 
-MidiJS
-abcjs
+[MIDI.js] (https://github.com/mudcube/MIDI.js/) 
+[abcjs] (https://github.com/paulrosen/abcjs)
 
 
 Needed to run this program:
