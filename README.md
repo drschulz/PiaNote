@@ -11,6 +11,7 @@ As a result, PiaNote provides a fully customized and tailored sight reading expe
 Thanks to:
 
 - [MIDI.js] (https://github.com/mudcube/MIDI.js/)
+- [midi-js-soundfonts] (https://github.com/gleitz/midi-js-soundfonts)
 - [abcjs] (https://github.com/paulrosen/abcjs)
 
 
