@@ -76,6 +76,8 @@ const naturalBase =   ['C',       undefined,  'D',        undefined,  'E',      
 const sharpBase =     ['B',       'C',        undefined,  'D',        undefined,  'E',        'F',        undefined,  'G',        undefined,  'A',        undefined];
 const flatBase =      [undefined, 'D',        undefined,  'E',        'F',        undefined,  'G',        undefined,  'A',        undefined,  'B',        'C'];
 
+const rhythmsList = ["w", "h", "q", "8", "qd", "16", "8d"];
+
 const REST = -1;
 
 const MATCH_SCORES = {

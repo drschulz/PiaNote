@@ -2,9 +2,9 @@ function UserPiano(id) {
   function createVisualPiano() {
     var octave = [0, 1, 0, 1, 0, 2, 0, 1, 0, 1, 0, 1, 0, 2];
     var currentKey;
-    var currentKeyNum = 48;
+    var currentKeyNum = 36;
     $(id).append("<div id='blackkeys'></div>");
-    for(i = 0; i < 4*octave.length; i++) {
+    for(i = 0; i <= 4*octave.length; i++) {
      currentKey = octave[i % octave.length];
      if (currentKey === 0) {
        $(id).append("<paper-card id='k" 

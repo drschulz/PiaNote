@@ -5,7 +5,19 @@ var main_piano;
 var tunObjectArray;
 //Sheet music rendering
 function renderSong(piece, location, color) {
-  tuneObjectArray = ABCJS.renderAbc(location, piece.abcDump(), {},{add_classes: true },{});
+  tuneObjectArray = ABCJS.renderAbc(location, 
+                                    piece.abcDump(), 
+                                    {},
+                                    {
+                                      add_classes: true, 
+                                      listener: {
+                                        highlight: function(abcElem) {
+                                          console.log(abcElem);
+                                        } 
+                                        
+                                      }
+                                    },
+                                    {});
   console.log(tuneObjectArray);
 }
 

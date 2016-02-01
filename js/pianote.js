@@ -97,7 +97,7 @@ PiaNote.prototype.generateSong = function() {
     var rhythmKeys = Object.keys(rhythmMap);
     var curMeasureCount = 0;
     while(curMeasure < numMeasures) {
-      var rhythm = rhythmKeys[(Math.random() * rhythmKeys.length) << 0];
+      var rhythm = rhythmsList[(Math.random() * that.playerStats.rhythmLevel) << 0];
       var rhythmDur = rhythmMap[rhythm];
       if (curMeasureCount + rhythmDur <= 4) {
         var totalDur = rhythmDur;
