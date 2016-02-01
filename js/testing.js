@@ -1,29 +1,6 @@
 
 function renderSong(piece, location, color) {
-  $(location).empty();
-  var canvas = $(location)[0];
-  console.log(location);
-  console.log(canvas);
-  var renderer = new Vex.Flow.Renderer(canvas,
-  Vex.Flow.Renderer.Backends.RAPHAEL);
-  
-  
-  console.log(renderer);
-  renderer.ctx.setFillStyle(color);
-  renderer.ctx.setStrokeStyle(color);
-  var artist = new Artist(10, 10, 900, {scale: 1.0});
-
-  var vextab = new VexTab(artist);
-
-  try {
-   console.log(piece.vexdump());
-   var elements = vextab.parse(piece.vexdump());
-   console.log(elements);
-   artist.render(renderer);
-  }
-  catch (e) {
-    console.log(e.message);
-  }
+  tuneObjectArray = ABCJS.renderAbc(location, piece.abcDump(), {},{add_classes: true },{});
 }
 
 function testPieceMatch(expectedNotes, actualNotes, testNum) {
@@ -32,7 +9,8 @@ function testPieceMatch(expectedNotes, actualNotes, testNum) {
     time: "4/4",
     clef: "treble",
     key: "C",
-    notes: expectedNotes,
+    voice1: expectedNotes,
+    voice2: [],
     isSharpKey: true
   };
   
@@ -42,29 +20,31 @@ function testPieceMatch(expectedNotes, actualNotes, testNum) {
     time: "4/4",
     clef: "treble",
     key: "C",
-    notes: actualNotes,
+    voice1: actualNotes,
+    voice2: [],
     isSharpKey: true
   };
   
   console.log(pieceTwoConfig);
   
   var expectedPiece = new Musical_Piece(pieceOneConfig);
-  renderSong(expectedPiece, "#expected" + testNum, "black");
+  renderSong(expectedPiece, "expected" + testNum, "black");
   var actualPiece = new Musical_Piece(pieceTwoConfig);
-  renderSong(actualPiece, "#actual" + testNum, "blue");
+  renderSong(actualPiece, "actual" + testNum, "blue");
   var matchResults = expectedPiece.match(actualPiece);
   
   var matchedPieceConfig = {
     time: "4/4",
     clef: "treble",
     key: "C",
-    notes: matchResults.notes,
+    voice1: matchResults[0].notes,
+    
     isSharpKey: true
   };
   
   var matchPiece = new Musical_Piece(matchedPieceConfig);
   
-  renderSong(matchPiece, "#matched" + testNum, "red");
+  renderSong(matchPiece, "matched" + testNum, "red");
   
 }
 
