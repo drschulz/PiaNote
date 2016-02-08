@@ -93,7 +93,7 @@ UserStats.prototype.getKeySignatureFitness = function() {
   
     if(curKey.numAppeared > 0) {
       var avgAccuracy = curKey.accuracySum / curKey.numAppeared;  
-      fitness[curKey.key] = Math.exp(-(avgAccuracy - focusedAccuracy)*(avgAccuracy - focusedAccuracy)/(2*(1/curKey.numAppeared)));
+      fitness[curKey.key] = Math.exp(-(avgAccuracy - focusedAccuracy)*(avgAccuracy - focusedAccuracy)/(2*(1/curKey.numAppeared)*(1/curKey.numAppeared)));
     }
     else {
       fitness[curKey.key] = 1;
