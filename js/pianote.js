@@ -143,13 +143,30 @@ PiaNote.prototype.generateSong = function() {
   }
   
   function generateKey() {
-    var isSharpKey = Math.random() < 0.5;
+    var keyFitness = that.playerStats.getKeySignatureFitness();
+    var iterations = 5;
+    var bestKey = 'C';
+    var bestFitness = 0;
+    for(i = 0; i < iterations; i++) {
+      var keyIdx = that.playerStats.userKeys[Math.random() * that.playerStats.keyLevel << 0];
+      //console.log(keyIdx);
+      //console.log(keyFitness[keyIdx]);
+      if (keyFitness[keyIdx] >= bestFitness) {
+        //console.log("here!");
+        bestKey = keyIdx;
+        bestFitness = keyFitness[keyIdx];
+      }
+    }
+    
+    return bestKey;
+    
+    /*var isSharpKey = Math.random() < 0.5;
     if (isSharpKey) {
       return sharpKeys[Math.random() * that.playerStats.sharpKeyLevel << 0];
     }
     else {
       return flatKeys[Math.random() * that.playerStats.flatKeyLevel << 0];
-    }
+    }*/
     //return keys[(Math.random() * keys.length) << 0];
   }
   
@@ -218,12 +235,13 @@ PiaNote.prototype.generateSong = function() {
     voice1.push(new Note({tone: tones1[i], rhythm: rhythms1[i]}));
   }
   
+  /*
   var rhythms2 = generateRhythms();
   var tones2 = generateNotes(key, LOW_C, MIDDLE_C, rhythms2.length);
   var voice2 = [];
   for (i = 0; i < rhythms2.length; i++) {
     voice2.push(new Note({tone: tones2[i], rhythm: rhythms2[i]}));
-  }
+  }*/
   
   var keyLetter = key;
   
@@ -234,7 +252,7 @@ PiaNote.prototype.generateSong = function() {
     clef: "treble",
     key: keyLetter,
     voice1: voice1,
-    voice2: voice2,
+    //voice2: voice2,
     isSharpKey: sharpKeys.indexOf(keyLetter) > 0 ? true : false,
   };
   
@@ -272,5 +290,6 @@ PiaNote.prototype.scorePerformance = function() {
   this.pieceConfig.voice2 = matchResults[1].notes;
   this.scoredPiece = new Musical_Piece(this.pieceConfig);
   
+  this.playerStats.updateKeyAccuracy(this.pieceConfig.key, matchResults[0].totals.overallAccuracy);
   return matchResults;
 };

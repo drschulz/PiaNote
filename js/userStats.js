@@ -3,8 +3,18 @@ function UserStats() {
   this.sharpKeyLevel = keyMedian;
   this.flatKeyLevel = keyMedian;
   
+  this.keyLevel = 6;
+  this.userKeys = ['C', 'G', 'F', 'D', 'Bb', 'A', 'Eb', 'E', 'Ab', 'B', 'Db', 'F#', 'Gb', 'C#', 'Cb'];
+  
+  //Tracks user's accuracy for a given key signature
+  this.keyAccuracy = [];
+  var that = this;
+  this.userKeys.forEach(function(e) {
+    that.keyAccuracy.push({key: e, accuracySum: 0, numAppeared: 0});
+  });
+  
   //from 0 to 7
-  this.rhythmLevel = 3;
+  this.rhythmLevel = 2;
   this.rhythmHitRate = {
     "w": {},
     "h": {},
@@ -14,7 +24,6 @@ function UserStats() {
     "16": {},
     "8d": {}
   };
-  
   
   for (var key in this.rhythmHitRate) {
     this.rhythmHitRate[key] = {numHit: 0, numAppeared: 0};
@@ -67,5 +76,55 @@ UserStats.prototype.getMostMissedNote = function() {
 };
 
 UserStats.prototype.getMostMissedRhythm = function() {
-  
+  return this.getMin(this.rhythmHitRate);
 };
+
+UserStats.prototype.getKeySignatureFitness = function() {
+  var proficientAccuracy = 95;
+  var sufficientAttempts = 5;
+  
+  var focusedAccuracy = 0.6; //The accuracy to hone in on
+
+  var fitness = {};
+  
+  for (i = 0; i < this.keyLevel; i++) {
+    var curKey = this.keyAccuracy[i];
+    
+  
+    if(curKey.numAppeared > 0) {
+      var avgAccuracy = curKey.accuracySum / curKey.numAppeared;  
+      fitness[curKey.key] = Math.exp(-(avgAccuracy - focusedAccuracy)*(avgAccuracy - focusedAccuracy)/(2*(1/curKey.numAppeared)));
+    }
+    else {
+      fitness[curKey.key] = 1;
+    }
+  }
+  
+  return fitness;
+};
+
+UserStats.prototype.updateKeyAccuracy = function(key, accuracy) {
+  
+  var idx = this.userKeys.indexOf(key);
+  
+  this.keyAccuracy[idx].accuracySum += accuracy;
+  this.keyAccuracy[idx].numAppeared ++;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

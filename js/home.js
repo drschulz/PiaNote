@@ -18,7 +18,7 @@ function renderSong(piece, location, color) {
                                       }
                                     },
                                     {});
-  console.log(tuneObjectArray);
+  //console.log(tuneObjectArray);
 }
 
 function generateNextMelody() {

@@ -308,7 +308,7 @@ Musical_Piece.prototype.abcDump = function() {
     
     abc += "|";
   }
-  console.log(abc);
+  //console.log(abc);
   
   return abc;
   
@@ -363,7 +363,7 @@ Musical_Piece.prototype.match = function(notes) {
   }
   
   var matrix1 = generateMatrix(this.piece.voice1, notes.piece.voice1);
-  var matrix2 = generateMatrix(this.piece.voice2, notes.piece.voice2);
+  //var matrix2 = generateMatrix(this.piece.voice2, notes.piece.voice2);
   
   /*var matrix1 = (function() {
     var mat = [];
@@ -486,8 +486,8 @@ Musical_Piece.prototype.match = function(notes) {
   }
   
   var voice1Results = matchVoice(this.piece.voice1, notes.piece.voice1, matrix1);
-  var voice2Results = matchVoice(this.piece.voice2, notes.piece.voice2, matrix2);
-
+  //var voice2Results = matchVoice(this.piece.voice2, notes.piece.voice2, matrix2);
+  var voice2Results = {};
   //return voice1Results;
   return [voice1Results, voice2Results];
   
