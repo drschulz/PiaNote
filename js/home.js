@@ -3,6 +3,7 @@ var pianote;
 var metronome;
 var main_piano;
 var tunObjectArray;
+var renderInterval = null;
 //Sheet music rendering
 function renderSong(piece, location, color) {
   tuneObjectArray = ABCJS.renderAbc(location, 
@@ -78,15 +79,24 @@ function scorePerformance() {
 }
 
 function initializeButtons() {
+  var render = function() {
+    renderSong(pianote.playerPiece, "playerstave", "blue");
+    //console.log("here!");
+  }
   //$("#play-button").click(startAccompanimentLoop);
   $("#play-button").click(function() {
-    metronome.play(pianote.expectedPiece.piece.tempo);
+    var bpm = $("#bpm").val();
+    metronome.play(SECONDS_IN_MINUTE / bpm);
+    pianote.monitorTempo(SECONDS_IN_MINUTE / bpm);
+    renderInterval = setInterval(render, SECONDS_IN_MINUTE / bpm * 1000 << 0);
     $("#play-button").hide();
     $("#stop-button").show();
   });
   
   $("#stop-button").click(function() {
     metronome.stop();
+    pianote.unMonitorTempo();
+    clearInterval(renderInterval);
     $("#stop-button").hide();
     $("#play-button").show();
   });
@@ -97,6 +107,20 @@ function initializeButtons() {
   });
   
   $("#score-button").click(scorePerformance);
+
+  $("#bpm").change(function() {
+    var bpm = $("#bpm").val();
+    if (metronome.isPlaying()) {
+      metronome.stop();
+      metronome.play(SECONDS_IN_MINUTE / bpm);
+    }
+    if (pianote.isMonitoring()) {
+      pianote.unMonitorTempo();
+      pianote.monitorTempo(SECONDS_IN_MINUTE / bpm);
+    }
+    clearInterval(renderInterval);
+    renderInterval = setInterval(render, SECONDS_IN_MINUTE / bpm * 1000 << 0);
+  });
   
 }
 
@@ -114,7 +138,7 @@ function initializeApplication() {
   function noteOn(note, velocity) {
     main_piano.instrument.noteOn(note, velocity, 0);
     pianote.noteOn(note, velocity);
-    renderSong(pianote.playerPiece, "playerstave", "blue");
+    //renderSong(pianote.playerPiece, "playerstave", "blue");
   }
   
   function noteOff(note) {

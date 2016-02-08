@@ -1,5 +1,5 @@
 function Metronome() {
-  this.metronomeInterval = undefined;
+  this.metronomeInterval = null;
   
   var that = this;
   this.playBeat = function() {
@@ -14,4 +14,9 @@ Metronome.prototype.play = function(tempo) {
 
 Metronome.prototype.stop = function() {
   clearInterval(this.metronomeInterval);
+  this.metronomeInterval = null;
 };
+
+Metronome.prototype.isPlaying = function() {
+	return this.metronomeInterval != null;
+}

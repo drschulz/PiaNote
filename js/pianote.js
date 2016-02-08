@@ -1,8 +1,12 @@
 function PiaNote(config) {
   var time = 0;
+  this.tempo = 120;
   this.previousNote = undefined;
-  this.currentNote = undefined;
+  this.currentNotes = {};
+  this.interval = null;
   var that = this;
+
+
   
   function findClosest(query, obj) {
     var best = '';
@@ -19,7 +23,7 @@ function PiaNote(config) {
     return best;
   }
   
-  this.updatePlayerPiece = function(noteNumber, duration) {
+  /*this.updatePlayerPiece = function(noteNumber, duration) {
     var voice = noteNumber >= MIDDLE_C ? that.playerPiece.piece.voice1 : that.playerPiece.piece.voice2;
     
     if (duration === undefined) {
@@ -34,9 +38,32 @@ function PiaNote(config) {
       var closestRhythm = findClosest(temp, rhythmMap);
       voice[voice.length - 1].rhythm = closestRhythm;
     }
-  };
+  };*/
 
-  this.updateTime = function() {
+  this.updatePlayerPiece = function() {
+    //console.log("updating");
+    var now = performance.now();
+
+    for(var note in this.currentNotes) {
+      
+      var n = this.currentNotes[note];
+      var timePassed = (now - n.start) / 1000.0;
+      var duration = timePassed / that.tempo;
+      if (duration < SHORTEST_RHYTHM) {
+        continue;
+      }
+      var closestRhythm = findClosest(duration, rhythmMap);
+      console.log(n.voice);
+      if(n.voice == 1) {
+        this.playerPiece.piece.voice1[n.idx].rhythm = closestRhythm;
+      }
+      else {
+        this.playerPiece.piece.voice2[n.idx].rhythm = closestRhythm;  
+      }
+    } 
+  }
+
+  /*this.updateTime = function() {
     var now = performance.now();
     
     if (time !== 0) {
@@ -47,7 +74,7 @@ function PiaNote(config) {
       }
     }
     time = now;
-  };
+  };*/
   
   this.resetTime = function() {
     time = 0;
@@ -62,16 +89,41 @@ function PiaNote(config) {
 }
 
 PiaNote.prototype.noteOn = function(note, velocity) {
-  this.updateTime();
+  var tone = new Note({tone: note, rhythm: "q"});
+  var voice = note >= MIDDLE_C ? this.playerPiece.piece.voice1 : this.playerPiece.piece.voice2;
+  voice.push(tone);
+  var whichVoice = note >= MIDDLE_C ? 1 : 2;
+  this.currentNotes[note] = {voice: whichVoice, idx: voice.length - 1, start: performance.now(), tone: note};
+  console.log("note on!");
+
+
+  /*this.updateTime();
   this.currentNote = note;
   start = performance.now();
   
-  this.updatePlayerPiece(note);
+  this.updatePlayerPiece(note);*/
 };
 
 PiaNote.prototype.noteOff = function(note) {
-  this.previousNote = note;
+  this.updatePlayerPiece();
+  delete this.currentNotes[note];
+  //this.previousNote = note;
 };
+
+PiaNote.prototype.monitorTempo = function(tempo) {
+  this.tempo = tempo;
+  this.interval = setInterval(this.updatePlayerPiece, this.tempo * 1000 << 0);
+};
+
+PiaNote.prototype.unMonitorTempo = function() {
+  clearInterval(this.interval);
+  this.interval = null;
+};
+
+PiaNote.prototype.isMonitoring = function() {
+  return this.interval != null;
+};
+
 
 PiaNote.prototype.generateSong = function() {
   var that = this;
@@ -149,10 +201,7 @@ PiaNote.prototype.generateSong = function() {
     var bestFitness = 0;
     for(i = 0; i < iterations; i++) {
       var keyIdx = that.playerStats.userKeys[Math.random() * that.playerStats.keyLevel << 0];
-      //console.log(keyIdx);
-      //console.log(keyFitness[keyIdx]);
       if (keyFitness[keyIdx] >= bestFitness) {
-        //console.log("here!");
         bestKey = keyIdx;
         bestFitness = keyFitness[keyIdx];
       }
@@ -223,7 +272,6 @@ PiaNote.prototype.generateSong = function() {
   }
   
   this.resetTime();
-  var tempo = generateTempo();
   var rhythms1 = generateRhythms();
   //var intervals = generateIntervals();
   var key = generateKey();
@@ -246,8 +294,6 @@ PiaNote.prototype.generateSong = function() {
   var keyLetter = key;
   
   var config = {
-    tempo: tempo,
-    bpm: SECONDS_IN_MINUTE / tempo << 0,
     time: "4/4",
     clef: "treble",
     key: keyLetter,
@@ -259,8 +305,6 @@ PiaNote.prototype.generateSong = function() {
   this.expectedPiece = new Musical_Piece(config);
   
   var playerConfig = {
-    tempo: tempo,
-    bpm: SECONDS_IN_MINUTE / tempo << 0,
     time: "4/4",
     clef: "treble",
     key: keyLetter,
@@ -272,8 +316,6 @@ PiaNote.prototype.generateSong = function() {
   this.playerPiece = new Musical_Piece(playerConfig);
   
   this.pieceConfig = {
-    tempo: tempo,
-    bpm: SECONDS_IN_MINUTE / tempo << 0,
     time: "4/4",
     clef: "treble",
     key: keyLetter,
