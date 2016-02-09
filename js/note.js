@@ -85,6 +85,8 @@ Note.prototype.match = function(note) {
     tone: noteScore,
     inteval: intervalScore,
     rhythm: rhythmScore,
-    dir: MatchDirection.DIAG
+    dir: MatchDirection.DIAG,
+    expected: this.tone,
+    expectedRhythm: this.rhythm
   };
 };

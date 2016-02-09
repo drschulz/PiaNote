@@ -395,12 +395,16 @@ Musical_Piece.prototype.match = function(notes) {
           
           left = {
             raw: MATCH_SCORES.INSERTION_DELETION + matrix[i][j-1].raw,
-            dir: MatchDirection.LEFT
+            dir: MatchDirection.LEFT,
+            expected: expectedNotes[i-1].tone,
+            expectedRhythm: expectedNotes[i-1].rhythm
           };
           
           top = {
             raw: MATCH_SCORES.INSERTION_DELETION + matrix[i-1][j].raw,
-            dir: MatchDirection.TOP
+            dir: MatchDirection.TOP,
+            expected: expectedNotes[i-1].tone,
+            expectedRhythm: expectedNotes[i-1].rhythm
           };
           
           final = max(diag, left, top);

@@ -149,13 +149,26 @@ PiaNote.prototype.generateSong = function() {
     var rhythmKeys = Object.keys(rhythmMap);
     var curMeasureCount = 0;
     while(curMeasure < numMeasures) {
-      var rhythm = rhythmsList[(Math.random() * that.playerStats.rhythmLevel) << 0];
-      var rhythmDur = rhythmMap[rhythm];
+      
+      var iterations = 5;
+      var bestRhythm = 'w';
+      var rhythmDur = 4;
+      var bestFitness = 0;
+      for(i = 0; i < iterations; i++) {
+        var rhythm = rhythmsList[(Math.random() * that.playerStats.rhythmLevel) << 0];
+        var fitness = that.playerStats.getRhythmFitness(rhythm);
+        if(fitness > bestFitness) {
+          bestRhythm = rhythm;
+          bestFitness = fitness;
+          rhythmDur = rhythmMap[rhythm];
+        }  
+      }
+      
       if (curMeasureCount + rhythmDur <= 4) {
         var totalDur = rhythmDur;
-        rhythms.push(rhythm);
+        rhythms.push(bestRhythm);
         
-        switch(rhythm) {
+        switch(bestRhythm) {
           case "8d":
             //add eighth note
             rhythms.push("16");
@@ -195,15 +208,16 @@ PiaNote.prototype.generateSong = function() {
   }
   
   function generateKey() {
-    var keyFitness = that.playerStats.getKeySignatureFitness();
     var iterations = 5;
     var bestKey = 'C';
     var bestFitness = 0;
     for(i = 0; i < iterations; i++) {
       var keyIdx = that.playerStats.userKeys[Math.random() * that.playerStats.keyLevel << 0];
-      if (keyFitness[keyIdx] >= bestFitness) {
+      console.log(keyIdx);
+      var fitness = that.playerStats.getKeySignatureFitness(keyIdx);
+      if (fitness >= bestFitness) {
         bestKey = keyIdx;
-        bestFitness = keyFitness[keyIdx];
+        bestFitness = fitness;
       }
     }
     
@@ -244,24 +258,44 @@ PiaNote.prototype.generateSong = function() {
     for(i=0; i < amount; i++) {
       var tone;
       var interval;
+      var iterations = 5;
+      var bestTone = lowLimit + baseOfKey;
+      var bestInterval = lastInterval;
+      var bestFitness = 0;
       do {
-        var idx = (Math.random() * intervals.length) << 0;
-        interval = Intervals[intervals[idx]];
-        tone = lowLimit + baseOfKey + interval;
-        
+        bestTone = lowLimit + baseOfKey;
+        bestInterval = lastInterval;
+        bestFitness = 0;
+        for(j = 0; j < iterations; j++) {
+          var idx = (Math.random() * intervals.length) << 0;
+          interval = Intervals[intervals[idx]];
+          tone = lowLimit + baseOfKey + interval;
+          var fitness = that.playerStats.getNoteFitness(tone);
+          if(fitness > bestFitness) {
+            bestTone = tone;
+            bestFitness = fitness;
+            bestInterval = interval; 
+          }
+        }
+
+        console.log(bestTone);
+
         if(lastInterval === undefined) {
-          intervalDiff = interval;
+          intervalDiff = 0;
         }
         else {
-          intervalDiff = Math.abs(lastInterval - interval);
+          intervalDiff = Math.abs(lastInterval - bestInterval);
         }
-        
-      } while(tone < lowLimit || tone >= highLimit || intervalDiff > that.playerStats.maxIntervalJump);
+        console.log("working...");
+      } while(bestTone < lowLimit || bestTone >= highLimit || intervalDiff > that.playerStats.maxIntervalJump);
       
-      tones.push(tone);
-      lastInterval = interval;
+      console.log("got one");
+      console.log(amount);  
+      tones.push(bestTone);
+      lastInterval = bestInterval;
     }
     
+
     return tones;
   }
   
@@ -333,5 +367,6 @@ PiaNote.prototype.scorePerformance = function() {
   this.scoredPiece = new Musical_Piece(this.pieceConfig);
   
   this.playerStats.updateKeyAccuracy(this.pieceConfig.key, matchResults[0].totals.overallAccuracy);
+  this.playerStats.updateNoteAccuracy(matchResults[0].scores);
   return matchResults;
 };

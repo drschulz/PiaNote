@@ -58,6 +58,16 @@ function UserStats() {
     return {key: bestKey, val: max};
   };
   
+  this.getFitness = function(sum, focusedAccuracy, numAppeared) {
+    if (numAppeared > 0) {
+      var avgAccuracy = sum / numAppeared;  
+      return Math.exp(-(avgAccuracy - focusedAccuracy)*(avgAccuracy - focusedAccuracy)/(2*(1/numAppeared)*(1/numAppeared)));
+    }
+    else {
+      return 1;
+    }
+  };
+
 }
 
 UserStats.prototype.getMostMissedVoice1Note = function() {
@@ -79,28 +89,11 @@ UserStats.prototype.getMostMissedRhythm = function() {
   return this.getMin(this.rhythmHitRate);
 };
 
-UserStats.prototype.getKeySignatureFitness = function() {
-  var proficientAccuracy = 95;
-  var sufficientAttempts = 5;
-  
+UserStats.prototype.getKeySignatureFitness = function(key) {
   var focusedAccuracy = 0.6; //The accuracy to hone in on
 
-  var fitness = {};
-  
-  for (i = 0; i < this.keyLevel; i++) {
-    var curKey = this.keyAccuracy[i];
-    
-  
-    if(curKey.numAppeared > 0) {
-      var avgAccuracy = curKey.accuracySum / curKey.numAppeared;  
-      fitness[curKey.key] = Math.exp(-(avgAccuracy - focusedAccuracy)*(avgAccuracy - focusedAccuracy)/(2*(1/curKey.numAppeared)*(1/curKey.numAppeared)));
-    }
-    else {
-      fitness[curKey.key] = 1;
-    }
-  }
-  
-  return fitness;
+  var idx = this.userKeys.indexOf(key);
+  return this.getFitness(this.keyAccuracy[idx].accuracySum, focusedAccuracy, this.keyAccuracy[idx].numAppeared);
 };
 
 UserStats.prototype.updateKeyAccuracy = function(key, accuracy) {
@@ -109,6 +102,54 @@ UserStats.prototype.updateKeyAccuracy = function(key, accuracy) {
   
   this.keyAccuracy[idx].accuracySum += accuracy;
   this.keyAccuracy[idx].numAppeared ++;
+};
+
+UserStats.prototype.getNoteFitness = function(note) {
+  var focusedAccuracy = 0.6;
+
+  if (note >= MIDDLE_C) {
+    return this.getFitness(this.noteHitRateVoice1[note].numHit, focusedAccuracy, this.noteHitRateVoice1[note].numAppeared);
+  }
+  else {
+    return this.getFitness(this.noteHitRateVoice2[note].numHit, focusedAccuracy, this.noteHitRateVoice2[note].numAppeared);
+  }
+}
+
+UserStats.prototype.getRhythmFitness = function(rhythm) {
+  var focusedAccuracy = 0.6;
+
+  return this.getFitness(this.rhythmHitRate[rhythm].numHit, focusedAccuracy, this.rhythmHitRate[rhythm].numAppeared);
+}
+
+UserStats.prototype.updateNoteAccuracy = function(scores) {
+  function updateNote(note, didHit) {
+    if (note >=MIDDLE_C) {
+      this.noteHitRateVoice1[note].numAppeared ++;
+
+      if(didHit) {
+        this.noteHitRateVoice1[note].numHit++;
+      }
+    }
+    else {
+      this.noteHitRateVoice2[note].numAppeared ++;
+
+      if(didHit) {
+        this.noteHitRateVoice2[note].numHit++;
+      }  
+    }
+  }
+
+  function updateRhythm(rhythm, didHit) {
+    this.rhythmHitRate[rhythm].numAppeared++;
+    if (didHit) {
+      this.rhythmHitRate[rhythm].numHit++;
+    }
+  }
+
+  scores.forEach(function(s) {
+    updateNote(s.expected, s.tone == MATCH_SCORES.TONE_MATCH);
+    updateRhythm(s.expectedRhythm, s.rhythm == MATCH_SCORES.RHYTHM_MATCH);
+  });
 };
 
 
