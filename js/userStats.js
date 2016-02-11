@@ -122,27 +122,29 @@ UserStats.prototype.getRhythmFitness = function(rhythm) {
 }
 
 UserStats.prototype.updateNoteAccuracy = function(scores) {
+  var that = this;
+
   function updateNote(note, didHit) {
     if (note >=MIDDLE_C) {
-      this.noteHitRateVoice1[note].numAppeared ++;
+      that.noteHitRateVoice1[note].numAppeared++;
 
       if(didHit) {
-        this.noteHitRateVoice1[note].numHit++;
+        that.noteHitRateVoice1[note].numHit++;
       }
     }
     else {
-      this.noteHitRateVoice2[note].numAppeared ++;
+      that.noteHitRateVoice2[note].numAppeared ++;
 
       if(didHit) {
-        this.noteHitRateVoice2[note].numHit++;
+        that.noteHitRateVoice2[note].numHit++;
       }  
     }
   }
 
   function updateRhythm(rhythm, didHit) {
-    this.rhythmHitRate[rhythm].numAppeared++;
+    that.rhythmHitRate[rhythm].numAppeared++;
     if (didHit) {
-      this.rhythmHitRate[rhythm].numHit++;
+      that.rhythmHitRate[rhythm].numHit++;
     }
   }
 
