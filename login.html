@@ -1,0 +1,59 @@
+<!doctype html>
+
+<html>
+<head>
+  <title>PiaNote</title>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <script src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
+  <script src="bower_components/jquery/dist/jquery.js"></script>
+  <link rel="import" href="bower_components/font-roboto/roboto.html">
+  <link rel="import" href="bower_components/paper-styles/paper-styles.html">
+  <link rel="import" href="bower_components/paper-elements/paper-elements.html">
+  <link rel="import" href="bower_components/iron-icons/av-icons.html">
+  <link rel="import" href="bower_components/iron-icons/image-icons.html">
+  <link rel="import" href="bower_components/iron-flex-layout/iron-flex-layout.html"/>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body unresolved class="fullbleed layout vertical">
+  <paper-header-panel class="flex" id="main-panel">
+    <paper-toolbar>
+      <iron-icon icon="image:music-note"></iron-icon>
+      <div>PiaNote</div>
+    </paper-toolbar>
+    <div class="horizontal center-justified layout">
+      <form is="iron-form" id="form" method="post" action="/login">
+        <paper-input name="name" label="Cal Poly Username"></paper-input>  
+      </form>
+    </div>
+    <div class="horizontal center-justified layout">
+      <paper-button raised id="login-button" onclick="submitForm()">
+        Login
+      </paper-button>
+    </div>
+</body>
+  <script>
+    var formPostSuccess = function(res) {
+      $.get(location.host + '/home');
+    }
+
+    var formPostError = function(res) {
+      console.log('error!')
+    }
+
+    function submitForm() {
+      $.ajax({
+                type: 'POST',
+                url: location.host + '/login',
+                contentType: 'text/plain',
+                processData: false,
+                data: "test",
+                success: formPostSuccess,
+                error: formPostError,
+        });
+    }
+  </script>
+</html>

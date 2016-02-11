@@ -94,7 +94,7 @@ function initializeButtons() {
   });
   
   $("#stop-button").click(function() {
-    metronome.stop();
+    metronome.play();
     pianote.unMonitorTempo();
     clearInterval(renderInterval);
     $("#stop-button").hide();
@@ -110,10 +110,7 @@ function initializeButtons() {
 
   $("#bpm").change(function() {
     var bpm = $("#bpm").val();
-    if (metronome.isPlaying()) {
-      metronome.stop();
-      metronome.play(SECONDS_IN_MINUTE / bpm);
-    }
+    metronome.setTempo(bpm);
     if (pianote.isMonitoring()) {
       pianote.unMonitorTempo();
       pianote.monitorTempo(SECONDS_IN_MINUTE / bpm);

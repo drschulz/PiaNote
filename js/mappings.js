@@ -87,7 +87,7 @@ function MidiMap() {
   var octaveNum;
   var note;
   
-  for (i = 0; i < 96; i++) {
+  for (i = 36; i < 89; i++) {
     note = octaveMap[i%12];
     octaveNum = ((i / 12) << 0) - 1;
     this.midiMap[i] = {

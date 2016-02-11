@@ -262,33 +262,30 @@ PiaNote.prototype.generateSong = function() {
       var bestTone = lowLimit + baseOfKey;
       var bestInterval = lastInterval;
       var bestFitness = 0;
-      do {
-        bestTone = lowLimit + baseOfKey;
-        bestInterval = lastInterval;
-        bestFitness = 0;
-        for(j = 0; j < iterations; j++) {
+
+      for(j = 0; j < iterations; j++) {
+        do {
           var idx = (Math.random() * intervals.length) << 0;
           interval = Intervals[intervals[idx]];
           tone = lowLimit + baseOfKey + interval;
-          var fitness = that.playerStats.getNoteFitness(tone);
-          if(fitness > bestFitness) {
-            bestTone = tone;
-            bestFitness = fitness;
-            bestInterval = interval; 
+          if(lastInterval === undefined) {
+            intervalDiff = 0;
+            console.log("hello");
           }
-        }
-
-        console.log(bestTone);
-
-        if(lastInterval === undefined) {
-          intervalDiff = 0;
-        }
-        else {
-          intervalDiff = Math.abs(lastInterval - bestInterval);
-        }
-        console.log("working...");
-      } while(bestTone < lowLimit || bestTone >= highLimit || intervalDiff > that.playerStats.maxIntervalJump);
+          else {
+            intervalDiff = Math.abs(lastInterval - interval);
+          }
+          console.log("working ...: " + tone);
+        } while(tone < lowLimit || tone >= highLimit || intervalDiff > that.playerStats.maxIntervalJump);
       
+        var fitness = that.playerStats.getNoteFitness(tone);
+        if(fitness > bestFitness) {
+          bestTone = tone;
+          bestFitness = fitness;
+          bestInterval = interval; 
+        }
+      }  
+
       console.log("got one");
       console.log(amount);  
       tones.push(bestTone);
