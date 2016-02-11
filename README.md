@@ -18,6 +18,7 @@ Thanks to:
 Needed to run this program:
 - bower
 - python (or some way to set up a local server)
+	- Flask (http://flask.pocoo.org/)
 - Google Chrome
 
 HOW TO RUN:
@@ -26,6 +27,8 @@ in the PiaNote directory, run:
 
 bower install
 
-After that completes, start up a server with python (python -m http.server 8888)
+After that completes, run:
 
-Open up Google Chrome on Localhost:8888
+python server.py
+
+Open up Google Chrome on Localhost:5000
