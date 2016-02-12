@@ -34,7 +34,7 @@ function UserInput(config) {
   }
   
   function onMIDISystemError( err ) {
-    console.log( "MIDI not initialized - error encountered:" + err.code );
+    alert( "MIDI not initialized - error encountered:" + err.code );
   }
 
   function midiMessageReceived(event) {

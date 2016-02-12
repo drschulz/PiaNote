@@ -160,6 +160,11 @@ td.result {
   margin-top: 2em;
 }
 
+.mainButton {
+  background: #1DD20B;
+  color: #fff;
+}
+
 #play-button {
   margin-top: 1em;
   background: #1DD20B;

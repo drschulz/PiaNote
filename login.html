@@ -30,10 +30,26 @@
       </form>
     </div>
     <div class="horizontal center-justified layout">
-      <paper-button raised id="login-button" onclick="submitForm()">
+      <paper-button class="mainButton" raised id="login-button" onclick="submitForm()">
         Login
       </paper-button>
+      <paper-button data-dialog="register-dialog" raised id="reg-button" onclick="openDialog()">
+        Register
+      </paper-button>
     </div>
+    <paper-dialog modal id="register-dialog">
+    <h2>Register for PiaNote</h2>
+    <paper-dialog-scrollable>
+      <form is="iron-form" id="registerForm" method="post" action="/register">
+        <paper-input name="name" id="registerUname" label="Cal Poly Username"></paper-input>  
+      </form>
+    </paper-dialog-scrollable>
+    <div class="buttons">
+      <paper-button raised dialog-dismiss>Close</paper-button>
+      <paper-button raised class="mainButton" id="register-button" onclick="submitRegistration()">Register</paper-button>
+    </div>
+  </paper-dialog>
+  <paper-toast id="toast" text="Successful Registration!"></paper-toast>
 </body>
   <script>
     var formPostSuccess = function(res) {
@@ -45,7 +61,8 @@
     }
 
     function submitForm() {
-      $.ajax({
+      document.getElementById("form").submit();
+      /*$.ajax({
                 type: 'POST',
                 url: location.host + '/login',
                 contentType: 'text/plain',
@@ -53,7 +70,39 @@
                 data: "test",
                 success: formPostSuccess,
                 error: formPostError,
-        });
+        });*/
+    }
+
+    function openDialog() {
+      document.getElementById('register-dialog').open();
+    }
+
+    function registerPostSuccess(res) {
+      var toast = document.getElementById('toast');
+      toast.open();
+    }
+
+    function registerPostError(res, status, error) {
+      alert("Unable to register!: " + status + ": " + error);
+    }
+
+    function submitRegistration() {
+      var name = $('#registerUname').val();
+
+      if (!name) {
+        alert("Please enter a username");
+        return;
+      }
+
+      $.ajax({
+              method: 'POST',
+              url: '/register',
+              processData: true,
+              data: {name: name},
+              dataType: 'text',
+              success: registerPostSuccess,
+              error: registerPostError,
+      });
     }
   </script>
 </html>
