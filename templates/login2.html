@@ -29,6 +29,9 @@
         <paper-input name="name" label="Cal Poly Username"></paper-input>  
       </form>
     </div>
+    {% for message in get_flashed_messages() %}
+      <div class=flash>{{ message }}</div>
+    {% endfor %}
     <div class="horizontal center-justified layout">
       <paper-button class="mainButton" raised id="login-button" onclick="submitForm()">
         Login
@@ -93,7 +96,7 @@
         alert("Please enter a username");
         return;
       }
-
+      
       $.ajax({
               method: 'POST',
               url: '/register',

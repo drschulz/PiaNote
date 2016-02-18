@@ -155,7 +155,7 @@ PiaNote.prototype.generateSong = function() {
       var rhythmDur = 4;
       var bestFitness = 0;
       for(i = 0; i < iterations; i++) {
-        var rhythm = rhythmsList[(Math.random() * that.playerStats.rhythmLevel) << 0];
+        var rhythm = rhythmsList[(Math.random() * that.playerStats.getStats().rhythmLevel) << 0];
         var fitness = that.playerStats.getRhythmFitness(rhythm);
         if(fitness > bestFitness) {
           bestRhythm = rhythm;
@@ -212,7 +212,7 @@ PiaNote.prototype.generateSong = function() {
     var bestKey = 'C';
     var bestFitness = 0;
     for(i = 0; i < iterations; i++) {
-      var keyIdx = that.playerStats.userKeys[Math.random() * that.playerStats.keyLevel << 0];
+      var keyIdx = that.playerStats.userKeys[Math.random() * that.playerStats.getStats().keyLevel << 0];
       console.log(keyIdx);
       var fitness = that.playerStats.getKeySignatureFitness(keyIdx);
       if (fitness >= bestFitness) {
@@ -276,7 +276,7 @@ PiaNote.prototype.generateSong = function() {
             intervalDiff = Math.abs(lastInterval - interval);
           }
           console.log("working ...: " + tone);
-        } while(tone < lowLimit || tone >= highLimit || intervalDiff > that.playerStats.maxIntervalJump);
+        } while(tone < lowLimit || tone >= highLimit || intervalDiff > that.playerStats.getStats().maxIntervalJump);
       
         var fitness = that.playerStats.getNoteFitness(tone);
         if(fitness > bestFitness) {
@@ -366,4 +366,8 @@ PiaNote.prototype.scorePerformance = function() {
   this.playerStats.updateKeyAccuracy(this.pieceConfig.key, matchResults[0].totals.overallAccuracy);
   this.playerStats.updateNoteAccuracy(matchResults[0].scores);
   return matchResults;
+};
+
+PiaNote.prototype.getCurrentStats = function() {
+  return this.playerStats.getStats();
 };

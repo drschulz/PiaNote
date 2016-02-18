@@ -1,16 +1,21 @@
 import os
-from flask import Flask, request, render_template, g
+from flask import Flask, request, session, render_template, g, redirect, url_for, flash
 from pianoteDB import PiaNoteDB
+import json
 app = Flask(__name__) #, static_url_path='', static_folder='')
 
 @app.route('/')
-def log():
+def ind():
+	if 'username' in session:
+		print(" .... uhhh")
+		return render_template('index.html', username=session['username'])
+
 	return render_template('login2.html')    
 
 
-@app.route('/home')
-def index():
-	return render_template('index.html')#app.send_static_file('index.html')
+@app.route('/home/<name>')
+def index(name):
+	return render_template('index.html', username=name)#app.send_static_file('index.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -19,27 +24,51 @@ def register():
 		username = request.form['name'];
 		print('also here!')
 		print(username);
-		pDB = get_db();
-		pDB.addNewUser(str(username));
+		#pDB = get_db();
+		g.db.addNewUser(str(username));
 		print("done!")
 
 		return "registered"
 	else:
 		return "hello"
 
+@app.route('/score', methods=['POST'])
+def saveScores():
+	data = request.get_json();
+
+	if 'username' in session:
+		g.db.submitUserData(session['username'], json.dumps(data))
+		return "data saved"
+
+	return "data not saved"
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
 	if request.method == 'POST':
 		print(str(request.form['name']));
-		pDB = get_db();
-		userExists = pDB.userExists(request.form['name']);
+		#pDB = get_db();
+		userExists = g.db.userExists(request.form['name']);
 
 		if userExists:
-			return render_template('index.html', username=request.form['name'])#app.send_static_file('index.html');
+			session['username'] = request.form['name'];
+			return redirect(url_for('ind'));
 		else:
+			flash("Invalid Username, please try again")
 			return render_template('login2.html')#app.send_static_file('login.html');
 	else:
+		print("hi there")
 		return render_template('login2.html')#app.send_static_file('login.html')
+
+
+@app.route('/logout')#, methods=['POST'])
+def logout():
+    # remove the username from the session if it's there
+	session.pop('username', None)
+	print("logging out!")
+    
+	return render_template('login2.html')#redirect(url_for('login'));
+
 
 
 def get_db():
@@ -48,6 +77,16 @@ def get_db():
         db = g._database = PiaNoteDB('pianote.db') 
     return db
 
+@app.before_request
+def before_request():
+    g.db = get_db()
+
+@app.teardown_request
+def teardown_request(exception):
+    db = getattr(g, 'db', None)
+    if db is not None:
+        db.closeConnection()
+
 @app.teardown_appcontext
 def close_connection(exception):
     db = getattr(g, '_database', None)
@@ -55,6 +94,7 @@ def close_connection(exception):
         db.closeConnection()
 
 def main():
+	app.secret_key = os.urandom(24)
 	app.run(debug=True)
 
 if __name__ == "__main__":

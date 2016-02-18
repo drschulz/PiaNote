@@ -56,8 +56,8 @@
          <iron-icon icon="icons:account-circle"></iron-icon>
          {{ username }}
         </paper-button>
-        <paper-button raised id="logout-button">
-         Logout
+        <paper-button raised id="logout-button" onclick="logout()">
+          Logout
         </paper-button>
     </paper-toolbar>
     <div class="horizontal center-justified layout">
@@ -164,5 +164,28 @@
       <source src='{{url_for("static", filename="sounds/Tick.mp3")}}' type="audio/mpeg">
     </audio>
   </paper-header-panel>
+  <paper-toast id="success-toast" text="saved current scores"></paper-toast>
+  <paper-toast id="fail-toast" text="failed to save current scores"></paper-toast>
 </body>
+<script>
+  function registerSuccess(res) {
+    console.log(res);
+    alert("uuhhhh");
+  }
+
+  function registerError() {
+    alert("error");
+  }
+
+  function logout() {
+    window.location = "http://" + location.host + "/logout"; 
+    //console.log("hello?");
+    /*$.ajax ({
+      method: 'GET',
+      url: '/logout',
+      success: registerSuccess,
+      error: registerError,
+    });*/
+  }
+</script>
 </html>

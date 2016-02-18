@@ -70,12 +70,45 @@ function displayResults(results) {
   //TODO
 }
 
+function saveUserStats() {
+  var stats = pianote.getCurrentStats();
+
+  function registerPostSuccess() {
+    var toast = document.getElementById('success-toast');
+    console.log(toast);
+    //toast.text = "saved current scores";
+    toast.open();
+    console.log("finished request");
+  }
+
+  function registerPostError() {
+    var toast = document.getElementById('fail-toast');
+    //toast.text = "error saving scores";
+    toast.open();  
+  }
+
+  console.log(stats);
+
+  $.ajax({
+    method: 'POST',
+    url: '/score',
+    contentType: 'application/json',
+    processData: true,
+    data: JSON.stringify(stats),
+    dataType: 'text',
+    success: registerPostSuccess,
+    error: registerPostError,
+  });
+}
+
 function scorePerformance() {
   var results = pianote.scorePerformance();
 
   renderSong(pianote.scoredPiece, "playerstave", "#455ede");
   renderSong(pianote.expectedPiece, "mystave", "black");
   displayResults(results);
+
+  saveUserStats();
 }
 
 function initializeButtons() {
@@ -159,7 +192,7 @@ function initializeApplication() {
 
 function initializeMidi(onProgress, onSuccess) {
   MIDI.loadPlugin({
-		soundfontUrl: "./static/soundFonts/FluidR3_GM/",
+		soundfontUrl: "http://" + location.host + "/static/soundFonts/FluidR3_GM/",
 		instrument: ["acoustic_grand_piano", "acoustic_bass"],
 		onprogress: onProgress,
 		onsuccess: onSuccess
