@@ -8,15 +8,15 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
 
-  <script src="bower_components/webcomponentsjs/webcomponents-lite.min.js"></script>
-  <script src="bower_components/jquery/dist/jquery.js"></script>
-  <link rel="import" href="bower_components/font-roboto/roboto.html">
-  <link rel="import" href="bower_components/paper-styles/paper-styles.html">
-  <link rel="import" href="bower_components/paper-elements/paper-elements.html">
-  <link rel="import" href="bower_components/iron-icons/av-icons.html">
-  <link rel="import" href="bower_components/iron-icons/image-icons.html">
-  <link rel="import" href="bower_components/iron-flex-layout/iron-flex-layout.html"/>
-  <link rel="stylesheet" href="styles.css">
+  <script src='{{url_for("static", filename="bower_components/webcomponentsjs/webcomponents-lite.min.js")}}'></script>
+  <script src='{{url_for("static", filename="bower_components/jquery/dist/jquery.js")}}'></script>
+  <link rel="import" href='{{url_for("static", filename="bower_components/font-roboto/roboto.html")}}'>
+  <link rel="import" href='{{url_for("static", filename="bower_components/paper-styles/paper-styles.html")}}'>
+  <link rel="import" href='{{url_for("static", filename="bower_components/paper-elements/paper-elements.html")}}'>
+  <link rel="import" href='{{url_for("static", filename="bower_components/iron-icons/av-icons.html")}}'>
+  <link rel="import" href='{{url_for("static", filename="bower_components/iron-icons/image-icons.html")}}'>
+  <link rel="import" href='{{url_for("static", filename="bower_components/iron-flex-layout/iron-flex-layout.html")}}'/>
+  <link rel="stylesheet" href='{{url_for("static", filename="styles.css")}}'>
 </head>
 <body unresolved class="fullbleed layout vertical">
   <paper-header-panel class="flex" id="main-panel">

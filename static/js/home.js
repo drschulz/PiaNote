@@ -159,7 +159,7 @@ function initializeApplication() {
 
 function initializeMidi(onProgress, onSuccess) {
   MIDI.loadPlugin({
-		soundfontUrl: "./soundFonts/FluidR3_GM/",
+		soundfontUrl: "./static/soundFonts/FluidR3_GM/",
 		instrument: ["acoustic_grand_piano", "acoustic_bass"],
 		onprogress: onProgress,
 		onsuccess: onSuccess
