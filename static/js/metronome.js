@@ -66,7 +66,7 @@ function Metronome() {
     that.metronomeSound.connect(that.context.destination);
     that.metronomeSound.start(0);
     
-    that.timerWorker = new Worker("js/libs/metronomeworker.js");
+    that.timerWorker = new Worker("static/js/libs/metronomeworker.js");
 
     that.timerWorker.onmessage = function(e) {
         if (e.data == "tick") {
@@ -85,7 +85,7 @@ function Metronome() {
   bufferLoader = new BufferLoader(
     this.context,
     [
-      'sounds/Tick.mp3'
+      'static/sounds/Tick.mp3'
     ],
     finishedLoading
     );

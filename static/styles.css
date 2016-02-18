@@ -26,6 +26,15 @@ textarea.editor {
   color: red;
 }
 
+#home-button {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+#main-panel {
+  background-color: #eee;
+}
+
 body {
   font-family: Roboto, sans-serif;
   color: #333;

@@ -46,8 +46,19 @@
 <body unresolved class="fullbleed layout vertical">
   <paper-header-panel class="flex" id="main-panel">
     <paper-toolbar>
-      <iron-icon icon="image:music-note"></iron-icon>
-      <div>PiaNote</div>
+        <div class="title">
+          <span id="home-button">
+              <iron-icon icon="image:music-note"></iron-icon>
+              PiaNote
+          </span>
+        </div>
+        <paper-button id="user-button">
+         <iron-icon icon="icons:account-circle"></iron-icon>
+         {{ username }}
+        </paper-button>
+        <paper-button raised id="logout-button">
+         Logout
+        </paper-button>
     </paper-toolbar>
     <div class="horizontal center-justified layout">
       <paper-button raised id="play-button">

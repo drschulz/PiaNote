@@ -35,7 +35,7 @@ def login():
 		userExists = pDB.userExists(request.form['name']);
 
 		if userExists:
-			return render_template('index.html')#app.send_static_file('index.html');
+			return render_template('index.html', username=request.form['name'])#app.send_static_file('index.html');
 		else:
 			return render_template('login2.html')#app.send_static_file('login.html');
 	else:
