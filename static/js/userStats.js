@@ -56,6 +56,7 @@ function UserStats(stats) {
   }
   else {
     this.stats = stats;
+    console.log("loading stats");
   }
 
   this.getMin = function(obj) {

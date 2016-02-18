@@ -160,8 +160,8 @@ function enableButtons() {
   $("#score-button").prop("disabled", false);
 }
 
-function initializeApplication() {
-  pianote = new PiaNote();
+function initializeApplication(statsData) {
+  pianote = new PiaNote(statsData);
   metronome = new Metronome();
   initializeButtons();
   
@@ -201,17 +201,40 @@ function initializeMidi(onProgress, onSuccess) {
 
 window.addEventListener('load', function() {   
   var progressBar = progressJs("#main-panel").setOption("theme", "red");
-  
+  var statsData = undefined;
+
   function loadProgress(state, progress) {
     progressBar.set(progress * 100);
   }
   
   function loadEnd() {
     progressBar.end();
-    initializeApplication();  
+    initializeApplication(statsData);  
   }
   
   progressBar.start();
   
-  initializeMidi(loadProgress, loadEnd);
+  
+
+  function init(res) {
+    console.log(res);
+    statsData = JSON.parse(res);
+    initializeMidi(loadProgress, loadEnd);
+  }
+
+  function initNewUser(obj, status, error) {
+    console.log("error getting user data");
+    initializeMidi(loadProgress, loadEnd);
+  }
+
+  console.log("hi I'm at the beginning ...");
+
+  $.ajax({
+    method: 'GET',
+    url: '/load',
+    dataType: 'text',
+    success: init,
+    error: initNewUser,
+  });
+
 });

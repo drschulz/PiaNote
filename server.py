@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, session, render_template, g, redirect, url_for, flash
+from flask import Flask, request, session, render_template, g, redirect, url_for, flash, abort, make_response
 from pianoteDB import PiaNoteDB
 import json
 app = Flask(__name__) #, static_url_path='', static_folder='')
@@ -31,6 +31,22 @@ def register():
 		return "registered"
 	else:
 		return "hello"
+
+
+@app.route('/load') 
+def loadScores():
+	if 'username' in session:
+		data = g.db.getUserData(session['username']);
+		print(data);
+		if data is None:
+			abort(404);
+		return data
+		#resp = make_response(data);
+		#resp.content_type = "application/json";
+		#return resp;
+
+	abort(404);
+	
 
 @app.route('/score', methods=['POST'])
 def saveScores():

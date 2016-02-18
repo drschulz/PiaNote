@@ -84,7 +84,7 @@ function PiaNote(config) {
   this.playerPiece = undefined;
   this.pieceConfig = undefined;
   this.scoredPiece = undefined;
-  this.playerStats = new UserStats();
+  this.playerStats = new UserStats(config);
 
 }
 
