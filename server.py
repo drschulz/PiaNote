@@ -45,7 +45,7 @@ def login():
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
-        db = g._database = PiaNoteDB('pianote.db')
+        db = g._database = PiaNoteDB('pianote.db') 
     return db
 
 @app.teardown_appcontext

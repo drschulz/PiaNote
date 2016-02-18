@@ -32,19 +32,8 @@ function Note(config) {
   this.dynamic = config.dynamic;
 }
 
-//NOT CURRENTLY USED
-Note.prototype.vexdump = function() {
-  return ":" + this.rhythm + " " +  this.letter 
-    + "/" + this.octave;
-};
-
 Note.prototype.setText = function(text) {
   this.text = text;
-};
-
-//NOT CURRENTLY USED
-Note.prototype.vextext = function() {
-  return ":" + this.rhythm + "," + this.text;
 };
   
 

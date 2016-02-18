@@ -40,7 +40,7 @@
     <paper-dialog modal id="register-dialog">
     <h2>Register for PiaNote</h2>
     <paper-dialog-scrollable>
-      <form is="iron-form" id="registerForm" method="post" action="/register">
+      <form is="iron-form" id="registerForm" method="post" onsubmit="submitRegistration()">
         <paper-input name="name" id="registerUname" label="Cal Poly Username"></paper-input>  
       </form>
     </paper-dialog-scrollable>
