@@ -23,11 +23,11 @@ Needed to run this program:
 
 HOW TO RUN:
 
-in the PiaNote directory, run:
+in the PiaNote directory, go to the static directory and run:
 
 bower install
 
-After that completes, run:
+After that completes, in the PiaNote directory, run:
 
 python server.py
 
