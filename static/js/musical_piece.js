@@ -47,7 +47,7 @@ Musical_Piece.prototype.abcDump = function() {
       
       for (i = 0; i < indx; i++) {
         //flat
-        accidentals[staveNotes[(7 + 3*i)%7]] = '_';
+        accidentals[staveNotes[(6 + 3*i)%7]] = '_';
       }
     }
     
@@ -78,7 +78,9 @@ Musical_Piece.prototype.abcDump = function() {
   //voice 1
   abc += "[V: V1]";
   
-  //voice 1 notes  
+  //voice 1 notes 
+  var successiveEighths = 0;
+  var successiveSixteenths = 0; 
   if (this.piece.voice1.length > 0) {
     var measureRhythm = 0;
     this.piece.voice1.forEach(function(e) {
@@ -114,6 +116,15 @@ Musical_Piece.prototype.abcDump = function() {
         abc += "| ";
         measureRhythm = 0;
         measureRhythm += rhythmMap[e.rhythm];
+        successiveEighths = 0; //reset successive 8ths
+        successiveSixteenths = 0; //reset successive 16ths
+
+        if (e.rhythm == '8') {
+          successiveEighths++;
+        }
+        if (e.rhythm == '16') {
+          successiveSixteenths++;
+        }
       
         abc += sheetNote + rhythmABC[e.rhythm];// + " ";
       }
@@ -128,12 +139,42 @@ Musical_Piece.prototype.abcDump = function() {
         abc += "(" + sheetNote + rhythmABC[r1] + sheetNote + rhythmABC[r2] + ")";
         
         measureRhythm += rhythmMap[e.rhythm];
-        
+        successiveEighths = 0; //reset successive 8ths
+        successiveSixteenths = 0; //reset successive 16ths
       }
       else {
         measureRhythm += rhythmMap[e.rhythm];
       
         abc += sheetNote + rhythmABC[e.rhythm];// + " ";
+
+        //If the rhythm is an eighth note, attach them
+        if(e.rhythm == '8') {
+          successiveEighths++;
+
+          //If this is the 4th eighth note, end the attachment
+          if(successiveEighths == 4) {
+            abc += " "; //this ends the attachment
+            successiveEighths = 0;
+          }
+        }
+        else {
+          successiveEighths = 0;
+        }
+
+        //If the rhythm is a sixteenth note, attach them
+        if(e.rhythm == '16') {
+          successiveSixteenths++;
+
+          //If this is the 4th sixteenth note, end the attachment
+          if(successiveSixteenths == 4) {
+            abc += " "; //this ends the attachment
+            successiveSixteenths = 0;
+          }
+        }
+        else {
+          successiveSixteenths = 0;
+        }
+
       }
         
     });
@@ -141,6 +182,8 @@ Musical_Piece.prototype.abcDump = function() {
   
   }
   abc += "|\n[V: V2]";
+  successiveEighths = 0;
+  successiveSixteenths = 0;
   if (this.piece.voice2 !== undefined && this.piece.voice2.length > 0) {
     var measureRhythm = 0;
     this.piece.voice2.forEach(function(e) {
@@ -177,6 +220,8 @@ Musical_Piece.prototype.abcDump = function() {
         measureRhythm = 0;
         abc += sheetNote + rhythmABC[e.rhythm];// + " ";
         measureRhythm += rhythmMap[e.rhythm];
+        successiveEighths = 0; //reset successive 8ths
+        successiveSixteenths = 0; //reset successive 16ths
       }
        //need to split up note to show beat 3 in measure
       else if(measureRhythm > 0 && measureRhythm < 2 && measureRhythm + rhythmMap[e.rhythm] > 2) {
@@ -189,18 +234,48 @@ Musical_Piece.prototype.abcDump = function() {
         abc += "(" + sheetNote + rhythmABC[r1] + sheetNote + rhythmABC[r2] + ")";
         
         measureRhythm += rhythmMap[e.rhythm];
+        successiveEighths = 0; //reset successive 8ths
+        successiveSixteenths = 0; //reset successive 16ths
         
       }
       else {
         measureRhythm += rhythmMap[e.rhythm];
       
         abc += sheetNote + rhythmABC[e.rhythm];// + " ";
+
+        //If the rhythm is an eighth note, attach them
+        if(e.rhythm == '8') {
+          successiveEighths++;
+
+          //If this is the 4th eighth note, end the attachment
+          if(successiveEighths == 4) {
+            abc += " "; //this ends the attachment
+            successiveEighths = 0;
+          }
+        }
+        else {
+          successiveEighths = 0;
+        }
+
+        //If the rhythm is a sixteenth note, attach them
+        if(e.rhythm == '16') {
+          successiveSixteenths++;
+
+          //If this is the 4th sixteenth note, end the attachment
+          if(successiveSixteenths == 4) {
+            abc += " "; //this ends the attachment
+            successiveSixteenths = 0;
+          }
+        }
+        else {
+          successiveSixteenths = 0;
+        }
       }
     });
     
     abc += "|";
   }
-  //console.log(abc);
+  console.log(abc);
   
   return abc;
   
@@ -242,6 +317,11 @@ Musical_Piece.prototype.match = function(notes) {
         raw: MATCH_SCORES.INSERTION_DELETION * i,
         dir: MatchDirection.TOP
       };
+
+      if (i > 0) {
+        mat[i][0].expected = expectedNotes[i-1].tone;
+        mat[i][0].expectedRhythm = expectedNotes[i-1].rhythm
+      }
     }
     
     for (j = 0; j < givenNotes.length + 1; j++) {
@@ -255,7 +335,7 @@ Musical_Piece.prototype.match = function(notes) {
   }
   
   var matrix1 = generateMatrix(this.piece.voice1, notes.piece.voice1);
-  //var matrix2 = generateMatrix(this.piece.voice2, notes.piece.voice2);
+  var matrix2 = generateMatrix(this.piece.voice2, notes.piece.voice2);
   
   /*var matrix1 = (function() {
     var mat = [];
@@ -382,8 +462,8 @@ Musical_Piece.prototype.match = function(notes) {
   }
   
   var voice1Results = matchVoice(this.piece.voice1, notes.piece.voice1, matrix1);
-  //var voice2Results = matchVoice(this.piece.voice2, notes.piece.voice2, matrix2);
-  var voice2Results = {};
+  var voice2Results = matchVoice(this.piece.voice2, notes.piece.voice2, matrix2);
+  //var voice2Results = {};
   //return voice1Results;
   return [voice1Results, voice2Results];
   

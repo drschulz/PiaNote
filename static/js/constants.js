@@ -51,6 +51,61 @@ const Intervals = {
   OCTAVE_2: 24
 };
 
+const NoteIntervals = [
+  0, //MJR 1st
+  2, //MJR 2nd
+  4, //MJR 3rd
+  5, //MJR 4th
+  7, //MJR 5th
+  9, //MJR 6th
+  11, //MJR 7th
+  12, //Octave
+  14, //Octave 2nd
+  16, //Octave 3rd
+  17, //Octave 4th
+  19, //Octave 5th
+  21, //Octave 6th
+  23, //Octave 7th
+  24, //2nd Octave
+];
+
+
+const MajorChordIntervals = [
+  0, //MJR 1st
+  4, //MJR 3rd
+  7, //MJR 5th
+  //11, //MJR 7th
+  12, //Octave
+  16, //Octave 3rd
+  19, //Octave 5th
+  //23, //Octave 7th
+  24, //Second Octave
+];
+
+const MinorChordIntervals = [
+  0, //1st
+  3, //MNR 3rd
+  7, //5th
+  10, //MNR 7th
+  12, //Octave
+  15, //Octave MNR 3rd
+  19, //Octave 5th
+  22, //Octave MNR 7th
+  24, //Second Octave
+];
+
+
+//Form MidiIntervalFromKeyBase: Major or Minor
+const ChordsForKey = {
+  0: 'M', //With key of C, chord C Major
+  2: 'm', //With key of C, chord D Minor
+  4: 'm', //WIth key of C, chord E Minor
+  5: 'M', //With key of C, chord F Major
+  7: 'M', //With key of C, chord G Major
+  9: 'm', //with key of C, chord A Minor 
+};
+
+
 const keys = {
   "Ab": -4,
   "A": -3,

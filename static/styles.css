@@ -119,11 +119,11 @@ paper-header-panel {
   height: 200px;
 }
 
-#note-results .paper-header {
+#lh-results .paper-header {
   background-color: #03A9F4;
 }
 
-#rhythm-results .paper-header {
+#rh-results .paper-header {
   background-color: #9C27B0;
 }
 

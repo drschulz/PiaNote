@@ -77,6 +77,12 @@
       <paper-input id="bpm" label="bpm" type="number" value="120">
       </paper-input>
     </div>
+    <div class="horizontal center-justified layout">
+      <paper-button raised id="play-song-button">
+        <iron-icon icon="av:play-circle-outline"></iron-icon>
+        Play Piece
+      </paper-button>
+    </div>
     <div id="mystave" class="mystaveClass"> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
     </div>
     <div id="playerstave"> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
@@ -85,36 +91,50 @@
       <paper-card heading="Performance Results" id="results-card">
         <div class="card-content">
         <div class="layout wrap inline center-center">
-          <paper-header-panel class="results-panel" id="note-results">
+          <paper-header-panel class="results-panel" id="lh-results">
             <paper-toolbar class="paper-header">
-              <div>Notes</div>
+              <div>Left Hand</div>
             </paper-toolbar>
             <div class="content">
               <table class="results">
-                <tr>
                   <td>Notes Hit</td>
-                  <td class="result good" id="n-h">13</td>
+                  <td class="result good" id="n-h2">13</td>
                 </tr>
                 <tr>
                   <td>Notes Missed</td>
-                  <td class="result bad" id="n-m">42</td>
+                  <td class="result bad" id="n-m2">42</td>
+                </tr>
+                <tr>
+                  <td>Rhythms Hit</td>
+                  <td class="result good" id="r-h2">13</td>
+                </tr>
+                <tr>
+                  <td>Rhythms Missed</td>
+                  <td class="result bad" id="r-m2">42</td>
                 </tr>
               </table>
             </div>
           </paper-header-panel>
-          <paper-header-panel class="results-panel" id="rhythm-results">
+          <paper-header-panel class="results-panel" id="rh-results">
             <paper-toolbar class="paper-header">
-              <div>Rhythms</div>
+              <div>Right Hand</div>
             </paper-toolbar>
             <div class="content horizontal-section">
               <table class="results">
+                  <td>Notes Hit</td>
+                  <td class="result good" id="n-h1">13</td>
+                </tr>
+                <tr>
+                  <td>Notes Missed</td>
+                  <td class="result bad" id="n-m1">42</td>
+                </tr>
                 <tr>
                   <td>Rhythms Hit</td>
-                  <td class="result good" id="r-h">13</td>
+                  <td class="result good" id="r-h1">13</td>
                 </tr>
                 <tr>
                   <td>Rhythms Missed</td>
-                  <td class="result bad" id="r-m">42</td>
+                  <td class="result bad" id="r-m1">42</td>
                 </tr>
               </table>
             </div>

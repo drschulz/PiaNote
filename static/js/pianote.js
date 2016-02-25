@@ -142,7 +142,7 @@ PiaNote.prototype.generateSong = function() {
     return tones;
   }
   
-  function generateRhythms() {
+  function generateRhythms(isVoice1) {
     var numMeasures = 4;
     var curMeasure = 0;
     var rhythms = [];
@@ -150,13 +150,13 @@ PiaNote.prototype.generateSong = function() {
     var curMeasureCount = 0;
     while(curMeasure < numMeasures) {
       
-      var iterations = 5;
+      var iterations = 10;
       var bestRhythm = 'w';
       var rhythmDur = 4;
       var bestFitness = 0;
       for(i = 0; i < iterations; i++) {
         var rhythm = rhythmsList[(Math.random() * that.playerStats.getStats().rhythmLevel) << 0];
-        var fitness = that.playerStats.getRhythmFitness(rhythm);
+        var fitness = that.playerStats.getRhythmFitness(rhythm, isVoice1);
         if(fitness > bestFitness) {
           bestRhythm = rhythm;
           bestFitness = fitness;
@@ -208,7 +208,7 @@ PiaNote.prototype.generateSong = function() {
   }
   
   function generateKey() {
-    var iterations = 5;
+    var iterations = 10;
     var bestKey = 'C';
     var bestFitness = 0;
     for(i = 0; i < iterations; i++) {
@@ -245,29 +245,40 @@ PiaNote.prototype.generateSong = function() {
     
     return tones;
   }
-  
-  function generateNotes(key, lowLimit, highLimit, amount) {
+
+  var chords = [];
+
+  function generateNotes(key, lowLimit, highLimit, amount, rhythms) {
     var tones = [];
     var baseOfKey = keys[key];
     console.log("key: " + key);
     console.log("base of key: " + baseOfKey);
-    var intervals = Object.keys(Intervals);
+    var measure = 0;
+    //var intervals = Object.keys(Intervals);
     
+    var baseTone = lowLimit + baseOfKey + chords[measure]; //Set the base tone to be the first note of the key
+    var chordType = ChordsForKey[chords[measure]];
     var lastInterval = undefined;
     var intervalDiff;
+    var measureDuration = 0;
     for(i=0; i < amount; i++) {
       var tone;
       var interval;
-      var iterations = 5;
-      var bestTone = lowLimit + baseOfKey;
+      var iterations = 10;
+      var bestTone = baseTone;
       var bestInterval = lastInterval;
       var bestFitness = 0;
 
       for(j = 0; j < iterations; j++) {
         do {
-          var idx = (Math.random() * intervals.length) << 0;
-          interval = Intervals[intervals[idx]];
-          tone = lowLimit + baseOfKey + interval;
+          //Pick a random note interval
+          //interval = NoteIntervals[(Math.random() * NoteIntervals.length) << 0];
+          interval = chordType == 'M' ? MajorChordIntervals[(Math.random() * MajorChordIntervals.length) << 0]
+                            : MinorChordIntervals[(Math.random() * MinorChordIntervals.length) << 0];
+
+          tone = baseTone + interval;
+
+          //find the "jump" distance from the last note to this one.
           if(lastInterval === undefined) {
             intervalDiff = 0;
             console.log("hello");
@@ -275,9 +286,11 @@ PiaNote.prototype.generateSong = function() {
           else {
             intervalDiff = Math.abs(lastInterval - interval);
           }
-          console.log("working ...: " + tone);
+
+        //Pick tones until one is found within limits and also does not exceed the interval jump set for the user
         } while(tone < lowLimit || tone >= highLimit || intervalDiff > that.playerStats.getStats().maxIntervalJump);
       
+        //check if this tone is the best one we've found for the player so far in our iterations
         var fitness = that.playerStats.getNoteFitness(tone);
         if(fitness > bestFitness) {
           bestTone = tone;
@@ -288,14 +301,110 @@ PiaNote.prototype.generateSong = function() {
 
       console.log("got one");
       console.log(amount);  
+      
+      //push the best tone
       tones.push(bestTone);
+      //save the interval
       lastInterval = bestInterval;
+
+      measureDuration += rhythmMap[rhythms[i]]; 
+      if (measureDuration >= 4) {
+        measure++;
+        //console.log("chord: " + chordInterval);
+        measureDuration = 0;
+        //chords.push(chordInterval);
+        //pick new chord for next measure
+        chordType = ChordsForKey[chords[measure]];
+        baseTone = lowLimit + baseOfKey + chords[measure];
+      }
     }
     
-
     return tones;
   }
   
+  function getnerateBaseClefNotes(key, lowLimit, highLimit, amount, rhythms) {
+    var tones = [];
+    var baseOfKey = keys[key];
+    
+    var lastInterval = undefined;
+    var intervalDiff;
+    var measureDuration = 0;
+
+    //pick initial chord
+    var chordIntervals = Object.keys(ChordsForKey);
+    var chordInterval = parseInt(chordIntervals[Math.random() * chordIntervals.length << 0]);
+    var chordType = ChordsForKey[chordInterval];
+    var baseOfChord = lowLimit + baseOfKey + chordInterval; //our lowest base point to the key base to the chord base
+    console.log("low limit: " + lowLimit);
+    console.log("baseOfKey: " + baseOfKey);
+    console.log("chordInterval: " + chordInterval);
+    console.log("base of chord: " + baseOfChord);
+    console.log("sum: " + (lowLimit + baseOfKey));
+    for(i=0; i < amount; i++) {
+    
+      var tone; //possible tone
+      var interval; //possible interval
+      var iterations = 10; //number of iterations to find notes (the lower iterations is, the more random the pick will be)
+      var bestTone = baseOfChord;
+      var bestInterval = lastInterval;
+      var bestFitness = 0;//initial fitness for base chord note
+
+      for(j = 0; j < iterations; j++) {
+        do {
+          //Pick a random interval based on the chord type
+          interval = chordType == 'M' ? MajorChordIntervals[(Math.random() * MajorChordIntervals.length) << 0]
+                            : MinorChordIntervals[(Math.random() * MinorChordIntervals.length) << 0];
+
+          tone = baseOfChord + interval;
+          
+          //find the "jump" distance from the last note to this one.
+          if(lastInterval === undefined) {
+            intervalDiff = 0;
+          }
+          else {
+            intervalDiff = Math.abs(lastInterval - interval);
+          }
+
+          //console.log("working: " + tone);
+
+          //Pick tones until one is found within limits and also does not exceed the interval jump set for the user.
+        } while(tone < lowLimit || tone >= highLimit || intervalDiff > that.playerStats.getStats().maxIntervalJump);
+      
+        
+        //check if this tone is the best one we've found for the player so far in our iterations
+        var fitness = that.playerStats.getNoteFitness(tone);
+        if(fitness > bestFitness) {
+          bestTone = tone;
+          bestFitness = fitness;
+          bestInterval = interval; 
+        }
+
+      }
+
+      //set the last interval to our best interval
+      lastInterval = bestInterval;
+      //add the tone to our song
+      tones.push(bestTone);
+
+      //update the measureDuration
+      measureDuration += rhythmMap[rhythms[i]]; 
+      if (measureDuration >= 4) {
+        console.log("chord: " + chordInterval);
+        measureDuration = 0;
+        chords.push(chordInterval);
+        //pick new chord for next measure
+        chordInterval = parseInt(chordIntervals[Math.random() * chordIntervals.length << 0]);
+        chordType = ChordsForKey[chordInterval];
+        baseOfChord = lowLimit + baseOfKey + chordInterval;
+      }
+    }
+    
+    console.log("finished base clef notes");
+
+    return tones;
+  }
+
+
   function generateTempo() {
     var bpm = BPMS[Math.random() * BPMS.length << 0];
     
@@ -303,24 +412,24 @@ PiaNote.prototype.generateSong = function() {
   }
   
   this.resetTime();
-  var rhythms1 = generateRhythms();
-  //var intervals = generateIntervals();
+  
+  var rhythms2 = generateRhythms(false);
   var key = generateKey();
-  var tones1 = generateNotes(key, MIDDLE_C, HIGH_E, rhythms1.length);
+  var tones2 = getnerateBaseClefNotes(key, LOW_C, MIDDLE_C, rhythms2.length, rhythms2);
+  var voice2 = [];
+  for (i = 0; i < rhythms2.length; i++) {
+    voice2.push(new Note({tone: tones2[i], rhythm: rhythms2[i]}));
+  }
+
+  var rhythms1 = generateRhythms(true);
+  //var intervals = generateIntervals();
+  var tones1 = generateNotes(key, MIDDLE_C, HIGH_E, rhythms1.length, rhythms1);
   console.log(tones1);
   //var tones = transpose(intervals, key);
   var voice1 = [];
   for(i = 0; i < rhythms1.length; i++) {
     voice1.push(new Note({tone: tones1[i], rhythm: rhythms1[i]}));
   }
-  
-  /*
-  var rhythms2 = generateRhythms();
-  var tones2 = generateNotes(key, LOW_C, MIDDLE_C, rhythms2.length);
-  var voice2 = [];
-  for (i = 0; i < rhythms2.length; i++) {
-    voice2.push(new Note({tone: tones2[i], rhythm: rhythms2[i]}));
-  }*/
   
   var keyLetter = key;
   
@@ -329,7 +438,7 @@ PiaNote.prototype.generateSong = function() {
     clef: "treble",
     key: keyLetter,
     voice1: voice1,
-    //voice2: voice2,
+    voice2: voice2,
     isSharpKey: sharpKeys.indexOf(keyLetter) > 0 ? true : false,
   };
   
@@ -363,8 +472,14 @@ PiaNote.prototype.scorePerformance = function() {
   this.pieceConfig.voice2 = matchResults[1].notes;
   this.scoredPiece = new Musical_Piece(this.pieceConfig);
   
+  console.log(matchResults);
+
   this.playerStats.updateKeyAccuracy(this.pieceConfig.key, matchResults[0].totals.overallAccuracy);
-  this.playerStats.updateNoteAccuracy(matchResults[0].scores);
+  this.playerStats.updateNoteAccuracy(matchResults[0].scores, true);
+
+  this.playerStats.updateKeyAccuracy(this.pieceConfig.key, matchResults[1].totals.overallAccuracy);
+  this.playerStats.updateNoteAccuracy(matchResults[1].scores, false);
+
   return matchResults;
 };
 

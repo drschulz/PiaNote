@@ -19,8 +19,18 @@ function UserStats(stats) {
     });
     
     //from 0 to 7
-    stats.rhythmLevel = 2;
+    stats.rhythmLevel = 4;
     stats.rhythmHitRate = {
+      "w": {},
+      "h": {},
+      "q": {},
+      "8": {},
+      "qd": {},
+      "16": {},
+      "8d": {}
+    };
+
+    stats.rhythmHitRateVoice2 = {
       "w": {},
       "h": {},
       "q": {},
@@ -32,6 +42,7 @@ function UserStats(stats) {
     
     for (var key in stats.rhythmHitRate) {
       stats.rhythmHitRate[key] = {numHit: 0, numAppeared: 0};
+      stats.rhythmHitRateVoice2[key] = {numHit: 0, numAppeared: 0};
     }
     
     stats.noteHitRateVoice1 = {};
@@ -80,7 +91,7 @@ function UserStats(stats) {
       return Math.exp(-(avgAccuracy - focusedAccuracy)*(avgAccuracy - focusedAccuracy)/(2*(1/numAppeared)*(1/numAppeared)));
     }
     else {
-      return 1;
+      return 0.7;
     }
   };
 
@@ -131,13 +142,18 @@ UserStats.prototype.getNoteFitness = function(note) {
   }
 }
 
-UserStats.prototype.getRhythmFitness = function(rhythm) {
+UserStats.prototype.getRhythmFitness = function(rhythm, isVoice1) {
   var focusedAccuracy = 0.6;
 
-  return this.getFitness(this.stats.rhythmHitRate[rhythm].numHit, focusedAccuracy, this.stats.rhythmHitRate[rhythm].numAppeared);
+  if (isVoice1) {
+    return this.getFitness(this.stats.rhythmHitRate[rhythm].numHit, focusedAccuracy, this.stats.rhythmHitRate[rhythm].numAppeared);
+  }
+  else {
+    return this.getFitness(this.stats.rhythmHitRateVoice2[rhythm].numHit, focusedAccuracy, this.stats.rhythmHitRate[rhythm].numAppeared);
+  }
 }
 
-UserStats.prototype.updateNoteAccuracy = function(scores) {
+UserStats.prototype.updateNoteAccuracy = function(scores, isVoice1) {
   var that = this;
 
   function updateNote(note, didHit) {
@@ -149,6 +165,7 @@ UserStats.prototype.updateNoteAccuracy = function(scores) {
       }
     }
     else {
+      console.log(note);
       that.stats.noteHitRateVoice2[note].numAppeared ++;
 
       if(didHit) {
@@ -158,9 +175,17 @@ UserStats.prototype.updateNoteAccuracy = function(scores) {
   }
 
   function updateRhythm(rhythm, didHit) {
-    that.stats.rhythmHitRate[rhythm].numAppeared++;
-    if (didHit) {
-      that.stats.rhythmHitRate[rhythm].numHit++;
+    if(isVoice1) {
+      that.stats.rhythmHitRate[rhythm].numAppeared++;
+      if (didHit) {
+        that.stats.rhythmHitRate[rhythm].numHit++;
+      }
+    }
+    else {
+      that.stats.rhythmHitRateVoice2[rhythm].numAppeared++;
+      if (didHit) {
+        that.stats.rhythmHitRateVoice2[rhythm].numHit++;
+      }  
     }
   }
 
@@ -173,21 +198,3 @@ UserStats.prototype.updateNoteAccuracy = function(scores) {
 UserStats.prototype.getStats = function () {
   return this.stats;
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -32,16 +32,20 @@ var song = 1;
 var rows = [];
 
 function populateTables(results) {
-  $("#n-h").empty();
-  $("#n-m").empty();
-  $("#r-h").empty();
-  $("#r-hm").empty();
+  //$("#n-h1").empty();
+  //$("#n-m1").empty();
+  //$("#r-h1").empty();
+  //$("#r-hm1").empty();
   $("#accurate").empty();
   
-  $("#n-h").html(results[0].totals.notesHit);
-  $("#n-m").html(results[0].totals.notesMissed);
-  $("#r-h").html(results[0].totals.rhythmsHit);
-  $("#r-m").html(results[0].totals.rhythmsMissed);
+  $("#n-h1").html(results[0].totals.notesHit);
+  $("#n-m1").html(results[0].totals.notesMissed);
+  $("#r-h1").html(results[0].totals.rhythmsHit);
+  $("#r-m1").html(results[0].totals.rhythmsMissed);
+  $("#n-h2").html(results[1].totals.notesHit);
+  $("#n-m2").html(results[1].totals.notesMissed);
+  $("#r-h2").html(results[1].totals.rhythmsHit);
+  $("#r-m2").html(results[1].totals.rhythmsMissed);
   $("#accurate").html(results[0].totals.overallAccuracy + "%");  
 }
 
@@ -111,6 +115,24 @@ function scorePerformance() {
   saveUserStats();
 }
 
+function playSong() {
+  var curBeat = 0;
+  for(i = 0; i < pianote.expectedPiece.piece.voice1.length; i++) {
+    var note = pianote.expectedPiece.piece.voice1[i];
+    main_piano.instrument.noteOn(note.tone, 127, curBeat);
+    main_piano.instrument.noteOff(note.tone, curBeat + SECONDS_IN_MINUTE/metronome.tempo*rhythmMap[note.rhythm]);
+    curBeat += SECONDS_IN_MINUTE/metronome.tempo*rhythmMap[note.rhythm];
+  }
+
+  curBeat = 0;
+  for (i = 0; i < pianote.expectedPiece.piece.voice2.length; i++) {
+    var note = pianote.expectedPiece.piece.voice2[i];
+    main_piano.instrument.noteOn(note.tone, 127, curBeat);
+    main_piano.instrument.noteOff(note.tone, curBeat + SECONDS_IN_MINUTE/metronome.tempo*rhythmMap[note.rhythm]);
+    curBeat += SECONDS_IN_MINUTE/metronome.tempo*rhythmMap[note.rhythm];  
+  }
+}
+
 function initializeButtons() {
   var render = function() {
     renderSong(pianote.playerPiece, "playerstave", "blue");
@@ -152,6 +174,9 @@ function initializeButtons() {
     renderInterval = setInterval(render, SECONDS_IN_MINUTE / bpm * 1000 << 0);
   });
   
+
+$("#play-song-button").click(playSong);
+
 }
 
 function enableButtons() {
