@@ -10,6 +10,7 @@ MarkupSafe==0.23
 oauth2client==1.5.1
 oauthlib==1.0.3
 praw==3.3.0
+psycopg2==2.5.2
 pyasn1==0.1.9
 pyasn1-modules==0.0.8
 requests==2.8.1
