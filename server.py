@@ -1,8 +1,11 @@
 import os
 from flask import Flask, request, session, render_template, g, redirect, url_for, flash, abort, make_response
+from flask.ext.sqlalchemy import SQLAlchemy
 from pianoteDB import PiaNoteDB
 import json
 app = Flask(__name__) #, static_url_path='', static_folder='')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ['DATABASE_URL']
+db = SQLAlchemy(app)
 
 @app.route('/')
 def ind():
