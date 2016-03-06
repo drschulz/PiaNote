@@ -94,7 +94,7 @@ PiaNote.prototype.noteOn = function(note, velocity) {
   voice.push(tone);
   var whichVoice = note >= MIDDLE_C ? 1 : 2;
   this.currentNotes[note] = {voice: whichVoice, idx: voice.length - 1, start: performance.now(), tone: note};
-  console.log("note on!");
+  //console.log("note on!");
 
 
   /*this.updateTime();
@@ -140,6 +140,65 @@ PiaNote.prototype.generateSong = function() {
     }
     
     return tones;
+  }
+
+  function generatePhraseRhythm(numMeasures) {
+    var rhythms = [];
+    var curMeasure = 0;
+    var curBeat = 0;
+
+    while(curMeasure < numMeasures) {
+      var rhythmIdx;
+
+      //Pick a good rhythm to end the phrase on
+      do {
+        rhythmIdx = Math.random() * 5 << 0;
+      }while(curMeasure == numMeasures - 1 && 
+          ((curBeat == 3 && rhythmIdx > 2) || (curBeat == 1 && rhythmIdx == 4)));
+
+      var rhythm = rhythmsList[rhythmIdx];
+      var rhythmDur = rhythmMap[rhythm];
+
+      //if the rhythm fits in the measure, add it
+      if(curBeat + rhythmDur <= 4) {
+        var totalDur = rhythmDur;
+        rhythms.push(rhythm);
+        
+        switch(rhythm) {
+          case "8d":
+            //add eighth note
+            rhythms.push("16");
+            totalDur += rhythmMap["16"];
+            break;
+          case "qd":
+          case "8":
+            //add eighth note
+            rhythms.push("8");
+            totalDur += rhythmMap["8"];  
+            break;
+          case "16":
+            //add three 16th notes
+            rhythms.push("16");
+            rhythms.push("16");
+            rhythms.push("16");
+            totalDur += rhythmMap["16"]*3;  
+            break;
+          
+          default:
+            break;
+        }
+        
+        if (curBeat + totalDur >= 4) {
+          curMeasure++;
+          curBeat = 0;
+        }
+        else {
+          curBeat += totalDur;
+        }
+      }
+    }
+
+    return rhythms;
   }
   
   function generateRhythms(isVoice1) {
@@ -248,6 +307,70 @@ PiaNote.prototype.generateSong = function() {
 
   var chords = [];
 
+  function generateNote(base, lowLimit, highLimit) {
+    var tone;
+
+    do {
+      var interval = NoteIntervals[Math.random() * NoteIntervals.length << 0];
+      tone = base + interval;
+    }while(tone < lowLimit || tone > highLimit);
+
+    return {tone: tone, interval: interval};
+
+  }
+
+  function randomIntFromInterval(min,max) {
+    return Math.floor(Math.random()*(max-min+1)+min);
+  }
+
+  function generatePhrase(key, lowLimit, highLimit, rhythms) {
+    var tones = [];
+    var baseOfKey = keys[key];
+    var measure = 0;
+    var baseTone = lowLimit + baseOfKey;
+
+    //pick random starting fingering
+    var startingFinger = (Math.random() * 4 + 1) << 0;
+    
+    //figure out how high and low we can go based on the fingering
+    downwardDistance = startingFinger - 1;
+    upwardDistance = 5 - startingFinger;
+
+    lowestStartingIntervalIdx = downwardDistance;
+    highestStartingIntervalIdx = NoteIntervals.length - upwardDistance;
+
+    //pick random starting note
+    var intervalIdx;
+    var startingTone;
+    do {
+      intervalIdx = randomIntFromInterval(lowestStartingIntervalIdx, highestStartingIntervalIdx);
+      var startingInterval = NoteIntervals[intervalIdx];
+      startingTone = baseTone + startingInterval;
+    }while(startingTone < lowLimit || startingTone > highLimit);    
+    tones.push(startingTone);
+
+    var lowestIntervalIdx = intervalIdx - downwardDistance;
+    var highestIntervalIdx = intervalIdx + upwardDistance;
+
+    console.log("lowest idx: " + lowestIntervalIdx);
+    console.log("highest idx: " + highestIntervalIdx);
+
+    //create rest of notes
+    for(i = 1; i < rhythms.length; i++) {
+      var tone;
+      do {
+        var idx = randomIntFromInterval(lowestIntervalIdx, highestIntervalIdx);
+        console.log(idx);
+        var interval = NoteIntervals[idx];
+        tone = baseTone + interval;
+      }
+      while(tone < lowLimit || tone > highLimit);
+      tones.push(tone);
+    }
+    
+    return tones;
+  }
+
   function generateNotes(key, lowLimit, highLimit, amount, rhythms) {
     var tones = [];
     var baseOfKey = keys[key];
@@ -320,6 +443,45 @@ PiaNote.prototype.generateSong = function() {
     }
     
     return tones;
+  }
+
+  function generatePhraseChords(key, lowLimit, rhythms) {
+    var tones = [];
+    var chords = [];
+    var phrase = {};
+
+    measureDuration = 0;
+
+    var baseOfKey = keys[key];
+    //pick initial chord
+
+    var chord = keyChords[Math.random()*keyChords.length << 0];
+    var chordInterval = chord.interval;
+    var chordType = chord.type;
+    chords.push(chord);
+    var baseOfChord = lowLimit + baseOfKey + chordInterval;
+    for(i = 0; i < rhythms.length; i++) {
+      var tone;
+      var interval;
+      tones.push(baseOfChord);
+
+      //update the measureDuration
+      measureDuration += rhythmMap[rhythms[i]]; 
+      if (measureDuration >= 4) {
+        measureDuration = 0;
+        //pick new chord for next measure
+        var chord = keyChords[Math.random()*keyChords.length << 0];
+        var chordInterval = chord.interval;
+        var chordType = chord.type;
+        chords.push(chord);
+        baseOfChord = lowLimit + baseOfKey + chordInterval;
+      }
+    }
+
+    phrase.chords = chords;
+    phrase.tones = tones;
+
+    return phrase;
   }
   
   function getnerateBaseClefNotes(key, lowLimit, highLimit, amount, rhythms) {
@@ -413,17 +575,17 @@ PiaNote.prototype.generateSong = function() {
   
   this.resetTime();
   
-  var rhythms2 = generateRhythms(false);
+  var rhythms2 = ['w', 'w', 'w', 'w'];//generateRhythms(false);
   var key = generateKey();
-  var tones2 = getnerateBaseClefNotes(key, LOW_C, MIDDLE_C, rhythms2.length, rhythms2);
+  var phrase = generatePhraseChords(key, LOW_C, rhythms2);//getnerateBaseClefNotes(key, LOW_C, MIDDLE_C, rhythms2.length, rhythms2);
   var voice2 = [];
   for (i = 0; i < rhythms2.length; i++) {
-    voice2.push(new Note({tone: tones2[i], rhythm: rhythms2[i]}));
+    voice2.push(new Note({tone: phrase.tones[i], rhythm: rhythms2[i]}));
   }
 
-  var rhythms1 = generateRhythms(true);
+  var rhythms1 = generatePhraseRhythm(4);  //generateRhythms(true);
   //var intervals = generateIntervals();
-  var tones1 = generateNotes(key, MIDDLE_C, HIGH_E, rhythms1.length, rhythms1);
+  var tones1 = generatePhrase(key, MIDDLE_C, HIGH_E, rhythms1); //generateNotes(key, MIDDLE_C, HIGH_E, rhythms1.length, rhythms1);
   console.log(tones1);
   //var tones = transpose(intervals, key);
   var voice1 = [];

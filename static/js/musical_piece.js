@@ -71,6 +71,7 @@ Musical_Piece.prototype.abcDump = function() {
   abc += "M: " + this.piece.time + "\n" 
        + "L: 1/16\n" 
        + "K: " + this.piece.key + "\n"
+       + "%%staves {V1 V2}\n"
        + "V: V1 clef=treble\n"
        + "V: V2 clef=bass\n";
        

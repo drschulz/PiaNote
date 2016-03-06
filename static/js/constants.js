@@ -28,7 +28,7 @@ const SHORTEST_RHYTHM = 0.125;
 
 const MIDDLE_C = 60;
 const HIGH_E = 88;
-const LOW_C = 36;
+const LOW_C = 48;//36;
 
 const Intervals = {
   MJR_1ST: 0,
@@ -60,13 +60,13 @@ const NoteIntervals = [
   9, //MJR 6th
   11, //MJR 7th
   12, //Octave
-  14, //Octave 2nd
-  16, //Octave 3rd
-  17, //Octave 4th
-  19, //Octave 5th
-  21, //Octave 6th
-  23, //Octave 7th
-  24, //2nd Octave
+//  14, //Octave 2nd
+//  16, //Octave 3rd
+//  17, //Octave 4th
+//  19, //Octave 5th
+//  21, //Octave 6th
+//  23, //Octave 7th
+//  24, //2nd Octave
 ];
 
 
@@ -94,6 +94,14 @@ const MinorChordIntervals = [
   24, //Second Octave
 ];
 
+const keyChords = [
+  {interval: 0, type: 'M'},
+  {interval: 2, type: 'm'},
+  {interval: 4, type: 'm'},
+  {interval: 5, type: 'M'},
+  {interval: 7, type: 'M'},
+  {interval: 8, type: 'm'},
+];
 
 //Form MidiIntervalFromKeyBase: Major or Minor
 const ChordsForKey = {

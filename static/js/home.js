@@ -171,7 +171,7 @@ function initializeButtons() {
       pianote.monitorTempo(SECONDS_IN_MINUTE / bpm);
     }
     clearInterval(renderInterval);
-    renderInterval = setInterval(render, SECONDS_IN_MINUTE / bpm * 1000 << 0);
+    renderInterval = setInterval(render, 2*SECONDS_IN_MINUTE / bpm * 1000 << 0);
   });
   
 
