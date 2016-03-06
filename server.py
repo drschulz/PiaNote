@@ -28,7 +28,7 @@ def register():
 		#print('also here!')
 		#print(username);
 		#pDB = get_db();
-		user = User(str(username));
+		user = Test2(str(username));
 		db.session.add(user);
 		db.session.commit();
 		g.db.addNewUser(str(username));
@@ -116,7 +116,7 @@ def close_connection(exception):
         db.closeConnection()
 
 
-class User(db.Model):
+class Test2(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True)
     data = db.Column(db.TEXT, unique=True)
