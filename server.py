@@ -23,11 +23,14 @@ def index(name):
 @app.route('/register', methods=['GET', 'POST'])
 def register():
 	if request.method == 'POST':
-		print('here!')
+		#print('here!')
 		username = request.form['name'];
-		print('also here!')
-		print(username);
+		#print('also here!')
+		#print(username);
 		#pDB = get_db();
+		user = User(str(username));
+		db.session.add(user);
+		db.session.commit();
 		g.db.addNewUser(str(username));
 		print("done!")
 
@@ -111,6 +114,19 @@ def close_connection(exception):
     db = getattr(g, '_database', None)
     if db is not None:
         db.closeConnection()
+
+
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True)
+    data = db.Column(db.TEXT, unique=True)
+
+    def __init__(self, username):
+        self.username = username
+
+    def __repr__(self):
+        return '<User %r>' % self.username
+
 
 def main():
 	port = int(os.environ.get("PORT", 5000))
