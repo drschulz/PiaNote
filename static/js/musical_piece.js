@@ -4,22 +4,12 @@ function Musical_Piece(config) {
 
 Musical_Piece.prototype.abcDump = function() {
   var that = this;
-  
-  function findClosest(query, obj) {
-    var best = '';
-    var min = Number.MAX_VALUE;
-    
-    for (var value in obj) {
-      var num = Math.abs(obj[value] - query);
-      if (num < min) {
-        min = num;
-        best = value;
-      }
-    }
-    
-    return best;
-  }
-  
+
+  var measureDuration = (this.piece.time.beats * 4 / this.piece.time.rhythm);
+
+  var measureAccent = Math.ceil(this.piece.time.beats / 2) * 4 / this.piece.time.rhythm;
+  var maxRhythmBlock = this.piece.time.beats % 2 == 0 ? measureAccent : 1;
+
   var currentAccidentals = (function() { 
     var staveNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
     var accidentals = {
@@ -54,242 +44,84 @@ Musical_Piece.prototype.abcDump = function() {
     return accidentals;
   })();
   
-  function getSheetNote(tone, accidental) {
-    var baseNote = tone[accidental];
-    
-    if (currentAccidentals[baseNote] != accidental) {
-      currentAccidentals[baseNote] = accidental;
-      return accidental + baseNote;
-    }
-    
-    return baseNote;
-  }
-  
   var abc = "";
   
   //initial stuff
-  abc += "M: " + this.piece.time + "\n" 
+  abc += "M: " + this.piece.time.beats + "/" + this.piece.time.rhythm + "\n" 
        + "L: 1/16\n" 
        + "K: " + this.piece.key + "\n"
        + "%%staves {V1 V2}\n"
        + "V: V1 clef=treble\n"
        + "V: V2 clef=bass\n";
-       
+
+  var that = this;
   
-  //voice 1
-  abc += "[V: V1]";
-  
-  //voice 1 notes 
-  var successiveEighths = 0;
-  var successiveSixteenths = 0; 
-  if (this.piece.voice1.length > 0) {
+  function getAbcVoice(voice, name) {
+    var voiceString = "[V: " + name + "]";
+
+    var successiveEighths = 0;
+    var successiveSixteenths = 0;
+    var successiveRhythms = 0;
     var measureRhythm = 0;
-    this.piece.voice1.forEach(function(e) {
-      var sheetNote;
-      if (e.tone == REST) {
-        sheetNote = "z";
-      }
-      else {
-        var tone = midiToNote(e.tone);
-        //var sheetNote;
-        
-        if (tone.note['='] !== undefined) {
-          sheetNote = getSheetNote(tone.note, '=');
-        }
-        else {
-          sheetNote = that.piece.isSharpKey ? getSheetNote(tone.note, '^') : getSheetNote(tone.note, '_');
-        }
-        
-        sheetNote += abcOctave[tone.octave];
-      }
+    for (var i = 0; i < voice.length; i++) {
+      var note = voice[i];
       
-      if (measureRhythm + rhythmMap[e.rhythm] > 4) {
+      //check if the rhythm goes over a measure
+      /*if (measureRhythm + rhythmMap[note.rhythm] > 4) {
         var difference = 4 - measureRhythm;
-        if (difference > 0) {
-          if (difference == 3) {
-            abc += "z" + rhythmABC["h"];
-            abc += "z" + rhythmABC["q"];
-          }
-          else {
-            abc += " z" + rhythmABC[rhythmToString[difference]]; //+ " ";
-          }
+        if (difference == 3) {
+          voiceString += "z" + rhythmABC["h"];
+          voiceString += "z" + rhythmABC["q"];
         }
-        abc += "| ";
+        else if (difference > 0) {
+          voiceString += " z" + rhythmABC[rhythmToString[difference]];
+        }
+
+        voiceString += "| ";
+
         measureRhythm = 0;
-        measureRhythm += rhythmMap[e.rhythm];
-        successiveEighths = 0; //reset successive 8ths
-        successiveSixteenths = 0; //reset successive 16ths
+        successiveEighths = 0;
+        successiveSixteenths = 0;
+      }*/
 
-        if (e.rhythm == '8') {
-          successiveEighths++;
-        }
-        if (e.rhythm == '16') {
-          successiveSixteenths++;
-        }
-      
-        abc += sheetNote + rhythmABC[e.rhythm];// + " ";
+      if (successiveRhythms + rhythmMap[note.rhythm] <= maxRhythmBlock && measureRhythm != measureAccent) {
+        successiveRhythms += rhythmMap[note.rhythm];
       }
-      //need to split up note to show beat 3 in measure
-      else if(measureRhythm > 0 && measureRhythm < 2 && measureRhythm + rhythmMap[e.rhythm] > 2) {
-        var diff = 2 - measureRhythm;
-        var overflow = rhythmMap[e.rhythm] - diff;
-        
-        var r1 = findClosest(diff, rhythmMap);
-        var r2 = findClosest(overflow, rhythmMap);
-        
-        abc += "(" + sheetNote + rhythmABC[r1] + sheetNote + rhythmABC[r2] + ")";
-        
-        measureRhythm += rhythmMap[e.rhythm];
-        successiveEighths = 0; //reset successive 8ths
-        successiveSixteenths = 0; //reset successive 16ths
+      /*//If the rhythm is an eighth note, is not the 4th one, and not on the middle of the measure attach them
+      if(note.rhythm == '8' && successiveEighths <= 4 && measureRhythm != 2) {
+        successiveEighths++;
+        successiveSixteenths = 0;
       }
+      //If the rhythm is a sixteenth note, is not the 4th one, and not on the middle of the measure attach them
+      else if(note.rhythm == '16'  && successiveEighths <= 4 && measureRhythm != 2) {
+        successiveSixteenths++;
+        successiveEighths = 0;
+      }*/ 
       else {
-        measureRhythm += rhythmMap[e.rhythm];
-      
-        abc += sheetNote + rhythmABC[e.rhythm];// + " ";
-
-        //If the rhythm is an eighth note, attach them
-        if(e.rhythm == '8') {
-          successiveEighths++;
-
-          //If this is the 4th eighth note, end the attachment
-          if(successiveEighths == 4) {
-            abc += " "; //this ends the attachment
-            successiveEighths = 0;
-          }
-        }
-        else {
-          successiveEighths = 0;
-        }
-
-        //If the rhythm is a sixteenth note, attach them
-        if(e.rhythm == '16') {
-          successiveSixteenths++;
-
-          //If this is the 4th sixteenth note, end the attachment
-          if(successiveSixteenths == 4) {
-            abc += " "; //this ends the attachment
-            successiveSixteenths = 0;
-          }
-        }
-        else {
-          successiveSixteenths = 0;
-        }
-
+        successiveEighths = 0;
+        successiveRhythms = 0;
+        successiveRhythms += rhythmMap[note.rhythm];
+        voiceString += " ";
       }
-        
-    });
-    
-  
+
+      var bundle = voice[i].abcDump(that.piece.isSharpKey, currentAccidentals, measureRhythm, measureDuration, measureAccent);
+
+      voiceString += bundle.sheetNote;
+      currentAccidentals = bundle.accidentals;
+
+      measureRhythm = (measureRhythm + rhythmMap[note.rhythm]) % 4;
+    }
+
+    voiceString += "\n";
+    return voiceString;
   }
-  abc += "|\n[V: V2]";
-  successiveEighths = 0;
-  successiveSixteenths = 0;
-  if (this.piece.voice2 !== undefined && this.piece.voice2.length > 0) {
-    var measureRhythm = 0;
-    this.piece.voice2.forEach(function(e) {
-      var sheetNote;
-      if (e.tone == REST) {
-        sheetNote = "z";
-      }
-      else {
-        var tone = midiToNote(e.tone);
-        //var sheetNote;
-        
-        if (tone.note['='] !== undefined) {
-          sheetNote = getSheetNote(tone.note, '=');
-        }
-        else {
-          sheetNote = that.piece.isSharpKey ? getSheetNote(tone.note, '^') : getSheetNote(tone.note, '_');
-        }
-        
-        sheetNote += abcOctave[tone.octave];
-      }
-      
-      if (measureRhythm + rhythmMap[e.rhythm] > 4) {
-        var difference = 4 - measureRhythm;
-        if (difference > 0) {
-          if (difference == 3) {
-            abc += "z" + rhythmABC["h"];
-            abc += "z" + rhythmABC["q"];
-          }
-          else {
-            abc += "z" + rhythmABC[rhythmToString[difference]]; //+ " ";
-          }
-        }
-        abc += "| ";
-        measureRhythm = 0;
-        abc += sheetNote + rhythmABC[e.rhythm];// + " ";
-        measureRhythm += rhythmMap[e.rhythm];
-        successiveEighths = 0; //reset successive 8ths
-        successiveSixteenths = 0; //reset successive 16ths
-      }
-       //need to split up note to show beat 3 in measure
-      else if(measureRhythm > 0 && measureRhythm < 2 && measureRhythm + rhythmMap[e.rhythm] > 2) {
-        var diff = 2 - measureRhythm;
-        var overflow = rhythmMap[e.rhythm] - diff;
-        
-        var r1 = findClosest(diff, rhythmMap);
-        var r2 = findClosest(overflow, rhythmMap);
-        
-        abc += "(" + sheetNote + rhythmABC[r1] + sheetNote + rhythmABC[r2] + ")";
-        
-        measureRhythm += rhythmMap[e.rhythm];
-        successiveEighths = 0; //reset successive 8ths
-        successiveSixteenths = 0; //reset successive 16ths
-        
-      }
-      else {
-        measureRhythm += rhythmMap[e.rhythm];
-      
-        abc += sheetNote + rhythmABC[e.rhythm];// + " ";
 
-        //If the rhythm is an eighth note, attach them
-        if(e.rhythm == '8') {
-          successiveEighths++;
+  abc += getAbcVoice(this.piece.voice1, "V1");
+  abc += getAbcVoice(this.piece.voice2, "V2");
 
-          //If this is the 4th eighth note, end the attachment
-          if(successiveEighths == 4) {
-            abc += " "; //this ends the attachment
-            successiveEighths = 0;
-          }
-        }
-        else {
-          successiveEighths = 0;
-        }
-
-        //If the rhythm is a sixteenth note, attach them
-        if(e.rhythm == '16') {
-          successiveSixteenths++;
-
-          //If this is the 4th sixteenth note, end the attachment
-          if(successiveSixteenths == 4) {
-            abc += " "; //this ends the attachment
-            successiveSixteenths = 0;
-          }
-        }
-        else {
-          successiveSixteenths = 0;
-        }
-      }
-    });
-    
-    abc += "|";
-  }
   console.log(abc);
   
   return abc;
-  
-  /*return "X: 1\n"
-  + "T: Test\n"
-  + "M: 4/4\n"
-  + "L: 1/4\n"
-  + "%%staves (1) (2)\n"
-  + "K: Bb\n"
-  + "V: 1\n"
-  + "B A C G | E A A C |\n"
-  + "V: 2\n"
-  + "[K: Bb bass] A,, G,,/B,,/ C,//F,//C,//F,// C, |   A, D, G,, C,|";*/
 }
 
 Musical_Piece.prototype.match = function(notes) {

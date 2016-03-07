@@ -13,7 +13,7 @@ function Note(config) {
   this.text = " ";
   this.tone = config.tone;
   this.rhythm = config.rhythm;
-  if (this.tone == REST) {
+  /*if (this.tone == REST) {
     this.letter = REST;
     this.octave = REST;
   }
@@ -21,7 +21,7 @@ function Note(config) {
     var letterAndOctave = midiMap.noteAndOctave(config.tone);
     this.letter = letterAndOctave.letter;
     this.octave = letterAndOctave.octave;
-  }
+  }*/
   if (config.last_tone === undefined) {
     this.interval = 0;
   }
@@ -35,6 +35,119 @@ function Note(config) {
 Note.prototype.setText = function(text) {
   this.text = text;
 };
+
+Note.prototype.abcDump = function(isSharpKey, currentAccidentals, measureBeat, measureDuration, measureAccent) {
+  function findClosest(query, obj) {
+    var best = '';
+    var min = Number.MAX_VALUE;
+    
+    for (var value in obj) {
+      var num = Math.abs(obj[value] - query);
+      if (num < min) {
+        min = num;
+        best = value;
+      }
+    }
+    
+    return best;
+  }
+
+  var that = this;
+  var bundle = {};
+
+  //get the correct note accidental
+  function getAccidentalledNote(sheetTone, accidental) {
+    var baseNote = sheetTone[accidental];
+    
+    if (currentAccidentals[baseNote] != accidental) {
+      currentAccidentals[baseNote] = accidental;
+      return accidental + baseNote;
+    }
+    
+    return baseNote;
+  }
+
+  function getIndividualNote(tone, rhythm) {
+
+    var sheetTone = midiToNote(tone);
+
+    //always check if the natural version of the note is available
+    if (sheetTone.note['='] !== undefined) {
+      sheetNote = getAccidentalledNote(sheetTone.note, '=');
+    }
+    else {
+      sheetNote = isSharpKey ? getAccidentalledNote(sheetTone.note, '^') : getAccidentalledNote(sheetTone.note, '_');
+    }
+
+    //get the correct note octave
+    sheetNote += abcOctave[sheetTone.octave];
+
+    //get the correct rhythm
+    sheetNote += rhythmABC[rhythm];
+
+    return sheetNote;
+  }
+
+  function getSheetNote(tone, rhythm) {
+    var sheetNote = "";
+
+    //check if this note is a chord
+    if(Array.isArray(tone)) {
+      sheetNote += "[";
+      for (var i = 0; i < tone.length; i++) {
+        sheetNote += getIndividualNote(tone[i], rhythm);
+      }
+      sheetNote += "]";
+    }
+    else {
+      sheetNote = getIndividualNote(tone, rhythm);
+    }
+
+    return sheetNote;
+  }
+
+  if (this.tone == REST) {
+    bundle.sheetNote = 'z' + rhythmABC[this.rhythm];
+  }
+  else {
+    var sheetNote = "";
+
+    //If note goes through the third beat, split it up
+    if(measureBeat > 0 && measureBeat < measureAccent && measureBeat + rhythmMap[this.rhythm] > measureAccent) {
+      var diff = measureAccent - measureBeat;
+      var overflow = rhythmMap[this.rhythm] - diff;
+      
+      var r1 = findClosest(diff, rhythmMap);
+      var r2 = findClosest(overflow, rhythmMap);
+      
+      sheetNote = "(" + getSheetNote(this.tone, r1) + getSheetNote(this.tone, r2) + ")";
+      
+      //measureRhythm += rhythmMap[e.rhythm];
+      //successiveEighths = 0; //reset successive 8ths
+      //successiveSixteenths = 0; //reset successive 16ths
+    }
+    else if (measureBeat + rhythmMap[this.rhythm] > measureDuration) {
+      var diff = measureDuration - measureBeat;
+      var overflow = rhythmMap[this.rhythm] - diff;
+
+      var r1 = findClosest(diff, rhythmMap);
+      var r2 = findClosest(overflow, rhythmMap);
+
+      sheetNote = "(" + getSheetNote(this.tone, r1) + "| " + getSheetNote(this.tone, r2) + ")";
+    }
+    else {
+      sheetNote = getSheetNote(this.tone, this.rhythm);
+      if (measureBeat + rhythmMap[this.rhythm] == measureDuration) {
+        sheetNote += "| ";
+      }
+    }
+
+    bundle.sheetNote = sheetNote;
+  }
+
+  bundle.accidentals = currentAccidentals;
+  return bundle;
+};
   
 
 Note.prototype.match = function(note) {
@@ -46,19 +159,18 @@ Note.prototype.match = function(note) {
   if (this.tone == note.tone) {
     noteScore = MATCH_SCORES.TONE_MATCH;  
   }
-  else if (this.tone != REST && this.letter == note.letter && this.octave != note.octave) {
+  /*else if (this.tone != REST && this.letter == note.letter && this.octave != note.octave) {
     noteScore = MATCH_SCORES.OCTAVE_MISMATCH;
   }
   else if (this.tone != REST && this.octave == note.octave && this.letter != note.letter) {
     noteScore = MATCH_SCORES.LETTER_MISMATCH;
-  }
+  }*/
   else {    
     noteScore = MATCH_SCORES.TONE_MISMATCH;
   }
   
   score += noteScore;
-  
-  
+    
   intervalScore = this.interval == note.interval ? MATCH_SCORES.INTERVAL_MATCH 
     : MATCH_SCORES.INTERVAL_MISMATCH;
   

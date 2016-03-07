@@ -117,18 +117,40 @@ function scorePerformance() {
 
 function playSong() {
   var curBeat = 0;
-  for(i = 0; i < pianote.expectedPiece.piece.voice1.length; i++) {
+  for(var i = 0; i < pianote.expectedPiece.piece.voice1.length; i++) {
     var note = pianote.expectedPiece.piece.voice1[i];
-    main_piano.instrument.noteOn(note.tone, 127, curBeat);
-    main_piano.instrument.noteOff(note.tone, curBeat + SECONDS_IN_MINUTE/metronome.tempo*rhythmMap[note.rhythm]);
+    if (Array.isArray(note.tone)) {
+      for(var j = 0; j < note.length; j++) {
+        var n = note[j];
+        main_piano.instrument.noteOn(n, 127, curBeat);
+        main_piano.instrument.noteOff(n, curBeat + SECONDS_IN_MINUTE/metronome.tempo*rhythmMap[note.rhythm]);    
+      }
+    }
+    else {
+      main_piano.instrument.noteOn(note.tone, 127, curBeat);
+      main_piano.instrument.noteOff(note.tone, curBeat + SECONDS_IN_MINUTE/metronome.tempo*rhythmMap[note.rhythm]);  
+    }
+    
     curBeat += SECONDS_IN_MINUTE/metronome.tempo*rhythmMap[note.rhythm];
   }
 
   curBeat = 0;
-  for (i = 0; i < pianote.expectedPiece.piece.voice2.length; i++) {
+  for (var i = 0; i < pianote.expectedPiece.piece.voice2.length; i++) {
     var note = pianote.expectedPiece.piece.voice2[i];
-    main_piano.instrument.noteOn(note.tone, 127, curBeat);
-    main_piano.instrument.noteOff(note.tone, curBeat + SECONDS_IN_MINUTE/metronome.tempo*rhythmMap[note.rhythm]);
+    if (Array.isArray(note.tone)) {
+      for(var j = 0; j < note.tone.length; j++) {
+        var n = note.tone[j];
+        main_piano.instrument.noteOn(n, 127, curBeat);
+        main_piano.instrument.noteOff(n, curBeat + SECONDS_IN_MINUTE/metronome.tempo*rhythmMap[note.rhythm]);    
+      }
+    }
+    else {
+      main_piano.instrument.noteOn(note.tone, 127, curBeat);
+      main_piano.instrument.noteOff(note.tone, curBeat + SECONDS_IN_MINUTE/metronome.tempo*rhythmMap[note.rhythm]);  
+    }
+
+    //main_piano.instrument.noteOn(note.tone, 127, curBeat);
+    //main_piano.instrument.noteOff(note.tone, curBeat + SECONDS_IN_MINUTE/metronome.tempo*rhythmMap[note.rhythm]);
     curBeat += SECONDS_IN_MINUTE/metronome.tempo*rhythmMap[note.rhythm];  
   }
 }
@@ -188,6 +210,7 @@ function enableButtons() {
 function initializeApplication(statsData) {
   pianote = new PiaNote(statsData);
   metronome = new Metronome();
+  main_piano = new UserPiano("#piano-container");
   initializeButtons();
   
   function noteOn(note, velocity) {
@@ -211,7 +234,7 @@ function initializeApplication(statsData) {
   
   enableButtons();
   generateNextMelody();
-  main_piano = new UserPiano("#piano-container");
+  
 }
 
 

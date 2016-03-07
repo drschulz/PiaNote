@@ -42,7 +42,7 @@ def register():
 @app.route('/load') 
 def loadScores():
 	if 'username' in session:
-		data = g.db.getUserData(session['username']);
+		data = Users.query.filter_by(username=session['username']).first().data; #g.db.getUserData(session['username']);
 		print(data);
 		if data is None:
 			abort(404);
@@ -59,7 +59,10 @@ def saveScores():
 	data = request.get_json();
 
 	if 'username' in session:
-		g.db.submitUserData(session['username'], json.dumps(data))
+		user = Users.query.filter_by(username=session['username']).first();
+		user.data = json.dumps(data);
+		db.session.commit();
+		#g.db.submitUserData(session['username'], json.dumps(data))
 		return "data saved"
 
 	return "data not saved"
@@ -70,7 +73,8 @@ def login():
 	if request.method == 'POST':
 		print(str(request.form['name']));
 		#pDB = get_db();
-		userExists = g.db.userExists(request.form['name']);
+		name = str(request.form['name']);
+		userExists = db.session.query(Users.query.filter_by(username=name).exists()); #g.db.userExists(request.form['name']);
 
 		if userExists:
 			session['username'] = request.form['name'];

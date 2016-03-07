@@ -80,6 +80,7 @@ const MajorChordIntervals = [
   19, //Octave 5th
   //23, //Octave 7th
   24, //Second Octave
+  -5, //MJR 5th under 1st
 ];
 
 const MinorChordIntervals = [
@@ -92,6 +93,7 @@ const MinorChordIntervals = [
   19, //Octave 5th
   22, //Octave MNR 7th
   24, //Second Octave
+  -5, //5th under 1st
 ];
 
 const keyChords = [
@@ -100,7 +102,7 @@ const keyChords = [
   {interval: 4, type: 'm'},
   {interval: 5, type: 'M'},
   {interval: 7, type: 'M'},
-  {interval: 8, type: 'm'},
+  {interval: 9, type: 'm'},
 ];
 
 //Form MidiIntervalFromKeyBase: Major or Minor

@@ -147,6 +147,7 @@ PiaNote.prototype.generateSong = function() {
     var curMeasure = 0;
     var curBeat = 0;
 
+    var measureRhythms = [];
     while(curMeasure < numMeasures) {
       var rhythmIdx;
 
@@ -162,25 +163,25 @@ PiaNote.prototype.generateSong = function() {
       //if the rhythm fits in the measure, add it
       if(curBeat + rhythmDur <= 4) {
         var totalDur = rhythmDur;
-        rhythms.push(rhythm);
+        measureRhythms.push(rhythm);
         
         switch(rhythm) {
           case "8d":
             //add eighth note
-            rhythms.push("16");
+            measureRhythms.push("16");
             totalDur += rhythmMap["16"];
             break;
           case "qd":
           case "8":
             //add eighth note
-            rhythms.push("8");
+            measureRhythms.push("8");
             totalDur += rhythmMap["8"];  
             break;
           case "16":
             //add three 16th notes
-            rhythms.push("16");
-            rhythms.push("16");
-            rhythms.push("16");
+            measureRhythms.push("16");
+            measureRhythms.push("16");
+            measureRhythms.push("16");
             totalDur += rhythmMap["16"]*3;  
             break;
           
@@ -191,6 +192,8 @@ PiaNote.prototype.generateSong = function() {
         if (curBeat + totalDur >= 4) {
           curMeasure++;
           curBeat = 0;
+          rhythms.push(measureRhythms);
+          measureRhythms = [];
         }
         else {
           curBeat += totalDur;
@@ -198,71 +201,6 @@ PiaNote.prototype.generateSong = function() {
       }
     }
 
-    return rhythms;
-  }
-  
-  function generateRhythms(isVoice1) {
-    var numMeasures = 4;
-    var curMeasure = 0;
-    var rhythms = [];
-    var rhythmKeys = Object.keys(rhythmMap);
-    var curMeasureCount = 0;
-    while(curMeasure < numMeasures) {
-      
-      var iterations = 10;
-      var bestRhythm = 'w';
-      var rhythmDur = 4;
-      var bestFitness = 0;
-      for(i = 0; i < iterations; i++) {
-        var rhythm = rhythmsList[(Math.random() * that.playerStats.getStats().rhythmLevel) << 0];
-        var fitness = that.playerStats.getRhythmFitness(rhythm, isVoice1);
-        if(fitness > bestFitness) {
-          bestRhythm = rhythm;
-          bestFitness = fitness;
-          rhythmDur = rhythmMap[rhythm];
-        }  
-      }
-      
-      if (curMeasureCount + rhythmDur <= 4) {
-        var totalDur = rhythmDur;
-        rhythms.push(bestRhythm);
-        
-        switch(bestRhythm) {
-          case "8d":
-            //add eighth note
-            rhythms.push("16");
-            totalDur += rhythmMap["16"];
-            break;
-          case "qd":
-          case "8":
-            //add eighth note
-            rhythms.push("8");
-            totalDur += rhythmMap["8"];  
-            break;
-          case "16":
-            //add three 16th notes
-            rhythms.push("16");
-            rhythms.push("16");
-            rhythms.push("16");
-            totalDur += rhythmMap["16"]*3;  
-            break;
-          
-          default:
-            break;
-        }
-        
-        if (curMeasureCount + totalDur >= 3.999) {
-          console.log("hello");
-          curMeasure++;
-          curMeasureCount = 0;
-        }
-        else {
-          curMeasureCount += totalDur;
-        }
-      }
-    }
-    
-    console.log(rhythms);
     return rhythms;
   }
   
@@ -323,139 +261,96 @@ PiaNote.prototype.generateSong = function() {
     return Math.floor(Math.random()*(max-min+1)+min);
   }
 
-  function generatePhrase(key, lowLimit, highLimit, rhythms) {
+  function generatePhrase(key, lowLimit, highLimit, rhythms, chords) {
     var tones = [];
     var baseOfKey = keys[key];
     var measure = 0;
     var baseTone = lowLimit + baseOfKey;
 
-    //pick random starting fingering
-    var startingFinger = (Math.random() * 4 + 1) << 0;
-    
-    //figure out how high and low we can go based on the fingering
-    downwardDistance = startingFinger - 1;
-    upwardDistance = 5 - startingFinger;
+    function getPossibleIntervalsForChord(chord, intervals) {
+      var chordIntervals = chord.type == 'M' ? MajorChordIntervals : MinorChordIntervals;
+      var chordIntervalsMappedToKey = chordIntervals.map(function(i) {
+          return chord.interval + i;
+      });
 
-    lowestStartingIntervalIdx = downwardDistance;
-    highestStartingIntervalIdx = NoteIntervals.length - upwardDistance;
+      var possibleIntervals = [];
 
-    //pick random starting note
-    var intervalIdx;
-    var startingTone;
-    do {
-      intervalIdx = randomIntFromInterval(lowestStartingIntervalIdx, highestStartingIntervalIdx);
-      var startingInterval = NoteIntervals[intervalIdx];
-      startingTone = baseTone + startingInterval;
-    }while(startingTone < lowLimit || startingTone > highLimit);    
-    tones.push(startingTone);
-
-    var lowestIntervalIdx = intervalIdx - downwardDistance;
-    var highestIntervalIdx = intervalIdx + upwardDistance;
-
-    console.log("lowest idx: " + lowestIntervalIdx);
-    console.log("highest idx: " + highestIntervalIdx);
-
-    //create rest of notes
-    for(i = 1; i < rhythms.length; i++) {
-      var tone;
-      do {
-        var idx = randomIntFromInterval(lowestIntervalIdx, highestIntervalIdx);
-        console.log(idx);
-        var interval = NoteIntervals[idx];
-        tone = baseTone + interval;
-      }
-      while(tone < lowLimit || tone > highLimit);
-      tones.push(tone);
-    }
-    
-    return tones;
-  }
-
-  function generateNotes(key, lowLimit, highLimit, amount, rhythms) {
-    var tones = [];
-    var baseOfKey = keys[key];
-    console.log("key: " + key);
-    console.log("base of key: " + baseOfKey);
-    var measure = 0;
-    //var intervals = Object.keys(Intervals);
-    
-    var baseTone = lowLimit + baseOfKey + chords[measure]; //Set the base tone to be the first note of the key
-    var chordType = ChordsForKey[chords[measure]];
-    var lastInterval = undefined;
-    var intervalDiff;
-    var measureDuration = 0;
-    for(i=0; i < amount; i++) {
-      var tone;
-      var interval;
-      var iterations = 10;
-      var bestTone = baseTone;
-      var bestInterval = lastInterval;
-      var bestFitness = 0;
-
-      for(j = 0; j < iterations; j++) {
-        do {
-          //Pick a random note interval
-          //interval = NoteIntervals[(Math.random() * NoteIntervals.length) << 0];
-          interval = chordType == 'M' ? MajorChordIntervals[(Math.random() * MajorChordIntervals.length) << 0]
-                            : MinorChordIntervals[(Math.random() * MinorChordIntervals.length) << 0];
-
-          tone = baseTone + interval;
-
-          //find the "jump" distance from the last note to this one.
-          if(lastInterval === undefined) {
-            intervalDiff = 0;
-            console.log("hello");
+      //find all intervals that the chord hits that are within the interval range
+      for(var i = 0; i < intervals.length; i++) {
+        for(var j = 0; j < chordIntervalsMappedToKey.length; j++) {
+          if(intervals[i] == chordIntervalsMappedToKey[j]) {
+            possibleIntervals.push(intervals[i]);
+            break;
           }
-          else {
-            intervalDiff = Math.abs(lastInterval - interval);
-          }
-
-        //Pick tones until one is found within limits and also does not exceed the interval jump set for the user
-        } while(tone < lowLimit || tone >= highLimit || intervalDiff > that.playerStats.getStats().maxIntervalJump);
-      
-        //check if this tone is the best one we've found for the player so far in our iterations
-        var fitness = that.playerStats.getNoteFitness(tone);
-        if(fitness > bestFitness) {
-          bestTone = tone;
-          bestFitness = fitness;
-          bestInterval = interval; 
         }
-      }  
-
-      console.log("got one");
-      console.log(amount);  
-      
-      //push the best tone
-      tones.push(bestTone);
-      //save the interval
-      lastInterval = bestInterval;
-
-      measureDuration += rhythmMap[rhythms[i]]; 
-      if (measureDuration >= 4) {
-        measure++;
-        //console.log("chord: " + chordInterval);
-        measureDuration = 0;
-        //chords.push(chordInterval);
-        //pick new chord for next measure
-        chordType = ChordsForKey[chords[measure]];
-        baseTone = lowLimit + baseOfKey + chords[measure];
       }
+
+      return possibleIntervals;
+
     }
+
+    function generateMeasureNotes(rhythms, possibleIntervals, chord, isLastMeasure) {
+      var tones = [];
+
+      //get all intervals that the chord hits that are within the interval range 
+      var chordIntervals = getPossibleIntervalsForChord(chord, possibleIntervals);
+
+      //generate first note by taking an interval that is in the chord      
+      var interval = chordIntervals[Math.random()*chordIntervals.length << 0];
+      var tone = baseTone + interval; 
+      tones.push(tone);
+
+      //generate next notes
+      for(var i = 1; i < rhythms.length; i++) {
+        //Make sure last note of the song ends on a chord note
+        if(i == rhythms.length - 1 && isLastMeasure) {
+          interval = chordIntervals[Math.random()*chordIntervals.length << 0];
+        }
+        else {
+          interval = possibleIntervals[Math.random()*possibleIntervals.length << 0];  
+        }
+        tone = baseTone + interval;
+        tones.push(tone);
+      }
+
+      return tones;
+    }
+
+    //pick random thumb position (between the first and 4th interval)
+    var thumbPosition = Math.random() * 4 << 0;
     
+    //interval range (assuming hand and fingers cannot move)
+    var lowestIntervalIdx = thumbPosition;
+    var highestIntervalIdx = thumbPosition + 4;
+
+    var possibleIntervals = NoteIntervals.slice(lowestIntervalIdx, highestIntervalIdx);
+    var tones = [];
+
+    var lastMeasure = false;
+    for(var i = 0; i < rhythms.length; i++) {
+      if (i == rhythms.length - 1) {
+        lastMeasure = true;
+      }
+      tones = tones.concat(generateMeasureNotes(rhythms[i], possibleIntervals, chords[i], lastMeasure));
+    }
+
     return tones;
   }
 
-  function generatePhraseChords(key, lowLimit, rhythms) {
+  function generatePhraseChords(key, lowLimit, rhythms, numMeasures) {
     var tones = [];
     var chords = [];
     var phrase = {};
 
-    measureDuration = 0;
+    var measureDuration = 0;
+    var measureCount = 1;
 
     var baseOfKey = keys[key];
     //pick initial chord
+    //First chord is ALWAYS the key chord (Ex. Key of C, first chord C)
 
-    var chord = keyChords[Math.random()*keyChords.length << 0];
+    //first chord
+    var chord = keyChords[0];
     var chordInterval = chord.interval;
     var chordType = chord.type;
     chords.push(chord);
@@ -463,14 +358,18 @@ PiaNote.prototype.generateSong = function() {
     for(i = 0; i < rhythms.length; i++) {
       var tone;
       var interval;
-      tones.push(baseOfChord);
+      var chordIntervals = chordType == 'M' ? MajorChordIntervals : MinorChordIntervals;
+      tones.push([baseOfChord, baseOfChord + chordIntervals[1], baseOfChord + chordIntervals[2]]);
 
       //update the measureDuration
       measureDuration += rhythmMap[rhythms[i]]; 
       if (measureDuration >= 4) {
         measureDuration = 0;
+        measureCount++;
+
         //pick new chord for next measure
-        var chord = keyChords[Math.random()*keyChords.length << 0];
+        //Last Chord is ALWAYS the key chord (Ex. Key of C, last chord C)
+        var chord = measureCount == numMeasures ? keyChords[0] : keyChords[Math.random()*keyChords.length << 0];
         var chordInterval = chord.interval;
         var chordType = chord.type;
         chords.push(chord);
@@ -566,7 +465,6 @@ PiaNote.prototype.generateSong = function() {
     return tones;
   }
 
-
   function generateTempo() {
     var bpm = BPMS[Math.random() * BPMS.length << 0];
     
@@ -577,7 +475,7 @@ PiaNote.prototype.generateSong = function() {
   
   var rhythms2 = ['w', 'w', 'w', 'w'];//generateRhythms(false);
   var key = generateKey();
-  var phrase = generatePhraseChords(key, LOW_C, rhythms2);//getnerateBaseClefNotes(key, LOW_C, MIDDLE_C, rhythms2.length, rhythms2);
+  var phrase = generatePhraseChords(key, LOW_C, rhythms2, 4);//getnerateBaseClefNotes(key, LOW_C, MIDDLE_C, rhythms2.length, rhythms2);
   var voice2 = [];
   for (i = 0; i < rhythms2.length; i++) {
     voice2.push(new Note({tone: phrase.tones[i], rhythm: rhythms2[i]}));
@@ -585,18 +483,27 @@ PiaNote.prototype.generateSong = function() {
 
   var rhythms1 = generatePhraseRhythm(4);  //generateRhythms(true);
   //var intervals = generateIntervals();
-  var tones1 = generatePhrase(key, MIDDLE_C, HIGH_E, rhythms1); //generateNotes(key, MIDDLE_C, HIGH_E, rhythms1.length, rhythms1);
+  var tones1 = generatePhrase(key, MIDDLE_C, HIGH_E, rhythms1, phrase.chords); //generateNotes(key, MIDDLE_C, HIGH_E, rhythms1.length, rhythms1);
   console.log(tones1);
+  console.log("tones length: " + tones1.length);
+  console.log("rhythms length: " + rhythms1.length);
+  var rhythmsConcatenated  = [];
+  for(i = 0; i < rhythms1.length; i++) {
+    rhythmsConcatenated = rhythmsConcatenated.concat(rhythms1[i]);
+  }
+
+  console.log("concatenated rhythms length: " + rhythmsConcatenated.length);
   //var tones = transpose(intervals, key);
   var voice1 = [];
-  for(i = 0; i < rhythms1.length; i++) {
-    voice1.push(new Note({tone: tones1[i], rhythm: rhythms1[i]}));
+  for(i = 0; i < rhythmsConcatenated.length; i++) {
+    console.log(tones1[i]);
+    voice1.push(new Note({tone: tones1[i], rhythm: rhythmsConcatenated[i]}));
   }
   
   var keyLetter = key;
   
   var config = {
-    time: "4/4",
+    time: {beats: 4, rhythm: 4},//"4/4",
     clef: "treble",
     key: keyLetter,
     voice1: voice1,
@@ -607,7 +514,7 @@ PiaNote.prototype.generateSong = function() {
   this.expectedPiece = new Musical_Piece(config);
   
   var playerConfig = {
-    time: "4/4",
+    time: {beats: 4, rhythm: 4},//"4/4",
     clef: "treble",
     key: keyLetter,
     voice1: [],
@@ -618,7 +525,7 @@ PiaNote.prototype.generateSong = function() {
   this.playerPiece = new Musical_Piece(playerConfig);
   
   this.pieceConfig = {
-    time: "4/4",
+    time: {beats: 4, rhythm: 4},//"4/4",
     clef: "treble",
     key: keyLetter,
     voice1: [],
