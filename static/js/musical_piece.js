@@ -5,10 +5,16 @@ function Musical_Piece(config) {
 Musical_Piece.prototype.abcDump = function() {
   var that = this;
 
-  var measureDuration = (this.piece.time.beats * 4 / this.piece.time.rhythm);
+  var beatValue = WHOLE_NOTE_VALUE / this.piece.time.rhythm;
+  var measureBeat = Math.floor(this.piece.time.beats / 2);
+  while (measureBeat % 2 == 0) {
+    measureBeat /= 2;
+  }
 
-  var measureAccent = Math.ceil(this.piece.time.beats / 2) * 4 / this.piece.time.rhythm;
-  var maxRhythmBlock = this.piece.time.beats % 2 == 0 ? measureAccent : 1;
+  measureBeat *= beatValue;
+
+  var measureDuration = this.piece.time.beats * beatValue;
+  var measureAccent = Math.ceil(this.piece.time.beats / 2) * beatValue;
 
   var currentAccidentals = (function() { 
     var staveNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
@@ -48,7 +54,7 @@ Musical_Piece.prototype.abcDump = function() {
   
   //initial stuff
   abc += "M: " + this.piece.time.beats + "/" + this.piece.time.rhythm + "\n" 
-       + "L: 1/16\n" 
+       + "L: 1/" + WHOLE_NOTE_VALUE + "\n" 
        + "K: " + this.piece.key + "\n"
        + "%%staves {V1 V2}\n"
        + "V: V1 clef=treble\n"
@@ -84,23 +90,14 @@ Musical_Piece.prototype.abcDump = function() {
         successiveSixteenths = 0;
       }*/
 
-      if (successiveRhythms + rhythmMap[note.rhythm] <= maxRhythmBlock && measureRhythm != measureAccent) {
-        successiveRhythms += rhythmMap[note.rhythm];
-      }
-      /*//If the rhythm is an eighth note, is not the 4th one, and not on the middle of the measure attach them
-      if(note.rhythm == '8' && successiveEighths <= 4 && measureRhythm != 2) {
-        successiveEighths++;
-        successiveSixteenths = 0;
-      }
-      //If the rhythm is a sixteenth note, is not the 4th one, and not on the middle of the measure attach them
-      else if(note.rhythm == '16'  && successiveEighths <= 4 && measureRhythm != 2) {
-        successiveSixteenths++;
-        successiveEighths = 0;
-      }*/ 
-      else {
-        successiveEighths = 0;
+      if (measureRhythm + note.rhythm >= measureDuration) {
         successiveRhythms = 0;
-        successiveRhythms += rhythmMap[note.rhythm];
+      }
+      else if (successiveRhythms + note.rhythm <= measureBeat && measureRhythm != measureAccent) {
+        successiveRhythms += note.rhythm;
+      }
+      else {
+        successiveRhythms = note.rhythm;
         voiceString += " ";
       }
 
@@ -109,10 +106,10 @@ Musical_Piece.prototype.abcDump = function() {
       voiceString += bundle.sheetNote;
       currentAccidentals = bundle.accidentals;
 
-      measureRhythm = (measureRhythm + rhythmMap[note.rhythm]) % 4;
+      measureRhythm = (measureRhythm + note.rhythm) % measureDuration;
     }
 
-    voiceString += "\n";
+    voiceString += "]\n";
     return voiceString;
   }
 
@@ -125,7 +122,22 @@ Musical_Piece.prototype.abcDump = function() {
 }
 
 Musical_Piece.prototype.match = function(notes) {
-  
+  function findClosest(query, obj) {
+    var best = 0;
+    var min = Number.MAX_VALUE;
+    
+    for (var value in obj) {
+      var num = Math.abs(obj[value] - query);
+      if (num < min) {
+        min = num;
+        best = obj[value];
+      }
+    }
+    
+    return best;
+  }
+
+
   var that = this;
   
   function max(diag, left, top) {
@@ -242,6 +254,7 @@ Musical_Piece.prototype.match = function(notes) {
         var actualNote = givenNotes[j-1];
         
         if (current.dir == MatchDirection.DIAG) {
+          expectedNote.performedTone = actualNote.tone;
           results.notes.unshift(actualNote);
           results.scores.unshift(current);
           if(current.tone == MATCH_SCORES.TONE_MATCH) {
@@ -253,9 +266,11 @@ Musical_Piece.prototype.match = function(notes) {
           }
           
           if (current.rhythm == MATCH_SCORES.RHYTHM_MATCH) {
+            expectedNote.performedRhythm = expectedNote.rhythm;
             results.totals.rhythmsHit++;
           }
           else {
+            expectedNote.performedRhythm = findClosest(actualNote.rhythm, NoteRhythms);
             results.totals.rhythmsMissed++;
             //this.piece.notes[i-1].setText("Missed Rhythm");
           }
@@ -268,6 +283,8 @@ Musical_Piece.prototype.match = function(notes) {
         }
         else if (current.dir == MatchDirection.TOP) {
           //Note deletion, count as the user resting.
+          expectedNote.performedRhythm = REST;
+          expectedNote.performedTone = REST;
           results.notes.unshift(new Note({tone: REST, rhythm: expectedNote.rhythm}));
           results.scores.unshift(current);
           results.totals.notesMissed ++;

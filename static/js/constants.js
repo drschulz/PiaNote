@@ -143,6 +143,19 @@ const flatBase =      [undefined, 'D',        undefined,  'E',        'F',      
 
 const rhythmsList = ["w", "h", "q", "8", "qd", "16", "8d"];
 
+const WHOLE_NOTE_VALUE = 16;
+
+const NoteRhythms = {
+  WHOLE: WHOLE_NOTE_VALUE,
+  HALF: WHOLE_NOTE_VALUE / 2,
+  D_HALF: WHOLE_NOTE_VALUE * 3 / 4,
+  QUARTER: WHOLE_NOTE_VALUE / 4,
+  D_QUARTER: WHOLE_NOTE_VALUE * 3 / 8,
+  EIGTH: WHOLE_NOTE_VALUE / 8,
+  D_EIGTH: WHOLE_NOTE_VALUE * 3 / 16,
+  SIXTEENTH: WHOLE_NOTE_VALUE / 16
+};
+
 const REST = -1;
 
 const MATCH_SCORES = {

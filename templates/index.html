@@ -83,10 +83,35 @@
         Play Piece
       </paper-button>
     </div>
-    <div id="mystave" class="mystaveClass"> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
+    <div class="horizontal center-justified layout">
+      <paper-card id="staff-card">
+        <div class="card-content">
+          <div id="mystave" class="mystaveClass"> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
+          </div>
+        </div>
+      </paper-card>
     </div>
     <div id="playerstave"> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
     </div>
+    <paper-dialog id="note-dialog">
+      <h2>Header</h2>
+      <paper-dialog-scrollable>
+        <table>
+          <tr>
+            <td>Note</td>
+            <td id="pianote-note-num"></td>
+          </tr>
+          <tr>
+            <td>Rhythm</td>
+            <td id="pianote-note-rhythm"></td> 
+          </tr>
+        </table>
+      </paper-dialog-scrollable>
+      <div class="buttons">
+        <paper-button dialog-dismiss>Cancel</paper-button>
+        <paper-button dialog-confirm>Accept</paper-button>
+      </div>
+    </paper-dialog>
     <div class="horizontal center-justified layout">
       <paper-card heading="Performance Results" id="results-card">
         <div class="card-content">

@@ -32,7 +32,7 @@ textarea.editor {
 }
 
 #main-panel {
-  background-color: #eee;
+  background-color: #ddd;
 }
 
 body {
@@ -56,16 +56,32 @@ a, a:hover {
 }
 
 #playerstave path {
-  fill: #455ede;
+  fill: red;//#455ede;
 }
 
 #mystave path.note_selected {
   fill: #455ede;
 }
 
+#note-dialog {
+  position: fixed;
+  width: 300px;
+  //height: 300px;
+}
+
+svg > rect {
+  cursor: pointer;
+}
+
 #mystave svg {
   display: block;
   margin: 0 auto;
+}
+
+#staff-card {
+  background-color: #eeeeee;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 #mystave { 

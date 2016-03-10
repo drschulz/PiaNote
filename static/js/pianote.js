@@ -49,16 +49,17 @@ function PiaNote(config) {
       var n = this.currentNotes[note];
       var timePassed = (now - n.start) / 1000.0;
       var duration = timePassed / that.tempo;
-      if (duration < SHORTEST_RHYTHM) {
-        continue;
-      }
-      var closestRhythm = findClosest(duration, rhythmMap);
-      console.log(n.voice);
+      //if (duration < SHORTEST_RHYTHM) {
+        //continue;
+      //}
+
+      //var closestRhythm = findClosest(duration, rhythmMap);
+      //console.log(n.voice);
       if(n.voice == 1) {
-        this.playerPiece.piece.voice1[n.idx].rhythm = closestRhythm;
+        this.playerPiece.piece.voice1[n.idx].rhythm = duration;//closestRhythm;
       }
       else {
-        this.playerPiece.piece.voice2[n.idx].rhythm = closestRhythm;  
+        this.playerPiece.piece.voice2[n.idx].rhythm = duration;//closestRhythm;  
       }
     } 
   }
@@ -94,6 +95,7 @@ PiaNote.prototype.noteOn = function(note, velocity) {
   voice.push(tone);
   var whichVoice = note >= MIDDLE_C ? 1 : 2;
   this.currentNotes[note] = {voice: whichVoice, idx: voice.length - 1, start: performance.now(), tone: note};
+  
   //console.log("note on!");
 
 
@@ -142,10 +144,20 @@ PiaNote.prototype.generateSong = function() {
     return tones;
   }
 
-  function generatePhraseRhythm(numMeasures) {
+  function generatePhraseRhythm(numMeasures, measureDuration) {
     var rhythms = [];
     var curMeasure = 0;
     var curBeat = 0;
+
+    var possibleRhythms = (function() {
+      var arr = [];
+
+      Object.keys(NoteRhythms).forEach(function(key) {
+        arr.push(NoteRhythms[key]);
+      });
+
+      return arr;
+    })();
 
     var measureRhythms = [];
     while(curMeasure < numMeasures) {
@@ -153,43 +165,45 @@ PiaNote.prototype.generateSong = function() {
 
       //Pick a good rhythm to end the phrase on
       do {
-        rhythmIdx = Math.random() * 5 << 0;
+        rhythmIdx = Math.random() * possibleRhythms.length << 0;
       }while(curMeasure == numMeasures - 1 && 
           ((curBeat == 3 && rhythmIdx > 2) || (curBeat == 1 && rhythmIdx == 4)));
 
-      var rhythm = rhythmsList[rhythmIdx];
-      var rhythmDur = rhythmMap[rhythm];
+      //var rhythm = rhythmsList[rhythmIdx];
+      //var rhythmDur = rhythmMap[rhythm];
+
+      var rhythm = possibleRhythms[rhythmIdx];
 
       //if the rhythm fits in the measure, add it
-      if(curBeat + rhythmDur <= 4) {
-        var totalDur = rhythmDur;
+      if(curBeat + rhythm <= measureDuration) {
+        var totalDur = rhythm;//rhythmDur;
         measureRhythms.push(rhythm);
         
         switch(rhythm) {
-          case "8d":
+          case NoteRhythms.D_EIGTH:
             //add eighth note
-            measureRhythms.push("16");
-            totalDur += rhythmMap["16"];
+            measureRhythms.push(NoteRhythms.SIXTEENTH);
+            totalDur += NoteRhythms.SIXTEENTH;
             break;
-          case "qd":
-          case "8":
+          case NoteRhythms.D_QUARTER:
+          case NoteRhythms.EIGTH:
             //add eighth note
-            measureRhythms.push("8");
-            totalDur += rhythmMap["8"];  
+            measureRhythms.push(NoteRhythms.EIGTH);
+            totalDur += NoteRhythms.EIGTH;  
             break;
-          case "16":
+          case NoteRhythms.SIXTEENTH:
             //add three 16th notes
-            measureRhythms.push("16");
-            measureRhythms.push("16");
-            measureRhythms.push("16");
-            totalDur += rhythmMap["16"]*3;  
+            measureRhythms.push(NoteRhythms.SIXTEENTH);
+            measureRhythms.push(NoteRhythms.SIXTEENTH);
+            measureRhythms.push(NoteRhythms.SIXTEENTH);
+            totalDur += NoteRhythms.SIXTEENTH*3;  
             break;
           
           default:
             break;
         }
         
-        if (curBeat + totalDur >= 4) {
+        if (curBeat + totalDur >= 16) {
           curMeasure++;
           curBeat = 0;
           rhythms.push(measureRhythms);
@@ -337,7 +351,7 @@ PiaNote.prototype.generateSong = function() {
     return tones;
   }
 
-  function generatePhraseChords(key, lowLimit, rhythms, numMeasures) {
+  function generatePhraseChords(key, lowLimit, rhythms, numMeasures, totalMeasureDuration) {
     var tones = [];
     var chords = [];
     var phrase = {};
@@ -362,8 +376,8 @@ PiaNote.prototype.generateSong = function() {
       tones.push([baseOfChord, baseOfChord + chordIntervals[1], baseOfChord + chordIntervals[2]]);
 
       //update the measureDuration
-      measureDuration += rhythmMap[rhythms[i]]; 
-      if (measureDuration >= 4) {
+      measureDuration += rhythms[i]; 
+      if (measureDuration >= totalMeasureDuration) {
         measureDuration = 0;
         measureCount++;
 
@@ -383,7 +397,7 @@ PiaNote.prototype.generateSong = function() {
     return phrase;
   }
   
-  function getnerateBaseClefNotes(key, lowLimit, highLimit, amount, rhythms) {
+  /*function getnerateBaseClefNotes(key, lowLimit, highLimit, amount, rhythms) {
     var tones = [];
     var baseOfKey = keys[key];
     
@@ -463,7 +477,7 @@ PiaNote.prototype.generateSong = function() {
     console.log("finished base clef notes");
 
     return tones;
-  }
+  }*/
 
   function generateTempo() {
     var bpm = BPMS[Math.random() * BPMS.length << 0];
@@ -472,16 +486,21 @@ PiaNote.prototype.generateSong = function() {
   }
   
   this.resetTime();
+
+  var timeSig = {beats: 4, rhythm: 4};
+  var beatValue = WHOLE_NOTE_VALUE / timeSig.rhythm;
+  var measureDuration = timeSig.beats * beatValue;
+
   
-  var rhythms2 = ['w', 'w', 'w', 'w'];//generateRhythms(false);
+  var rhythms2 = [NoteRhythms.WHOLE, NoteRhythms.WHOLE, NoteRhythms.WHOLE, NoteRhythms.WHOLE];//generateRhythms(false);
   var key = generateKey();
-  var phrase = generatePhraseChords(key, LOW_C, rhythms2, 4);//getnerateBaseClefNotes(key, LOW_C, MIDDLE_C, rhythms2.length, rhythms2);
+  var phrase = generatePhraseChords(key, LOW_C, rhythms2, 4, measureDuration);//getnerateBaseClefNotes(key, LOW_C, MIDDLE_C, rhythms2.length, rhythms2);
   var voice2 = [];
   for (i = 0; i < rhythms2.length; i++) {
     voice2.push(new Note({tone: phrase.tones[i], rhythm: rhythms2[i]}));
   }
 
-  var rhythms1 = generatePhraseRhythm(4);  //generateRhythms(true);
+  var rhythms1 = generatePhraseRhythm(4, measureDuration);  //generateRhythms(true);
   //var intervals = generateIntervals();
   var tones1 = generatePhrase(key, MIDDLE_C, HIGH_E, rhythms1, phrase.chords); //generateNotes(key, MIDDLE_C, HIGH_E, rhythms1.length, rhythms1);
   console.log(tones1);
@@ -503,7 +522,7 @@ PiaNote.prototype.generateSong = function() {
   var keyLetter = key;
   
   var config = {
-    time: {beats: 4, rhythm: 4},//"4/4",
+    time: timeSig,//"4/4",
     clef: "treble",
     key: keyLetter,
     voice1: voice1,
@@ -514,7 +533,7 @@ PiaNote.prototype.generateSong = function() {
   this.expectedPiece = new Musical_Piece(config);
   
   var playerConfig = {
-    time: {beats: 4, rhythm: 4},//"4/4",
+    time: timeSig,//"4/4",
     clef: "treble",
     key: keyLetter,
     voice1: [],
@@ -525,7 +544,7 @@ PiaNote.prototype.generateSong = function() {
   this.playerPiece = new Musical_Piece(playerConfig);
   
   this.pieceConfig = {
-    time: {beats: 4, rhythm: 4},//"4/4",
+    time: timeSig,//"4/4",
     clef: "treble",
     key: keyLetter,
     voice1: [],
@@ -543,11 +562,11 @@ PiaNote.prototype.scorePerformance = function() {
   
   console.log(matchResults);
 
-  this.playerStats.updateKeyAccuracy(this.pieceConfig.key, matchResults[0].totals.overallAccuracy);
-  this.playerStats.updateNoteAccuracy(matchResults[0].scores, true);
+  //this.playerStats.updateKeyAccuracy(this.pieceConfig.key, matchResults[0].totals.overallAccuracy);
+  //this.playerStats.updateNoteAccuracy(matchResults[0].scores, true);
 
-  this.playerStats.updateKeyAccuracy(this.pieceConfig.key, matchResults[1].totals.overallAccuracy);
-  this.playerStats.updateNoteAccuracy(matchResults[1].scores, false);
+  //this.playerStats.updateKeyAccuracy(this.pieceConfig.key, matchResults[1].totals.overallAccuracy);
+  //this.playerStats.updateNoteAccuracy(matchResults[1].scores, false);
 
   return matchResults;
 };

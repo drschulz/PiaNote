@@ -13,6 +13,10 @@ function Note(config) {
   this.text = " ";
   this.tone = config.tone;
   this.rhythm = config.rhythm;
+  this.noteDescription;
+  this.svgElements = [];
+  this.performedTone;
+  this.performedRhythm;
   /*if (this.tone == REST) {
     this.letter = REST;
     this.octave = REST;
@@ -36,16 +40,31 @@ Note.prototype.setText = function(text) {
   this.text = text;
 };
 
+Note.prototype.getDescription = function(isSharpKey) {
+  if (Array.isArray(this.tone)) {
+    return "chord";
+  }
+  
+  var note = midiToNote(this.tone);
+
+  if (note.note['='] !== undefined) {
+    return note.note['='];
+  }
+  else {
+    return isSharpKey ? note.note['^'] + "#" : note.note['_'] + "b";
+  }
+}
+
 Note.prototype.abcDump = function(isSharpKey, currentAccidentals, measureBeat, measureDuration, measureAccent) {
   function findClosest(query, obj) {
-    var best = '';
+    var best = 0;
     var min = Number.MAX_VALUE;
     
     for (var value in obj) {
       var num = Math.abs(obj[value] - query);
       if (num < min) {
         min = num;
-        best = value;
+        best = obj[value];
       }
     }
     
@@ -83,7 +102,7 @@ Note.prototype.abcDump = function(isSharpKey, currentAccidentals, measureBeat, m
     sheetNote += abcOctave[sheetTone.octave];
 
     //get the correct rhythm
-    sheetNote += rhythmABC[rhythm];
+    sheetNote += rhythm;//rhythmABC[rhythm];
 
     return sheetNote;
   }
@@ -107,38 +126,42 @@ Note.prototype.abcDump = function(isSharpKey, currentAccidentals, measureBeat, m
   }
 
   if (this.tone == REST) {
-    bundle.sheetNote = 'z' + rhythmABC[this.rhythm];
+    bundle.sheetNote = 'z' + this.rhythm;//rhythmABC[this.rhythm];
   }
   else {
     var sheetNote = "";
 
     //If note goes through the third beat, split it up
-    if(measureBeat > 0 && measureBeat < measureAccent && measureBeat + rhythmMap[this.rhythm] > measureAccent) {
+    if(measureBeat > 0 && measureBeat < measureAccent && measureBeat + this.rhythm > measureAccent) {
       var diff = measureAccent - measureBeat;
-      var overflow = rhythmMap[this.rhythm] - diff;
-      
-      var r1 = findClosest(diff, rhythmMap);
-      var r2 = findClosest(overflow, rhythmMap);
+      var overflow = this.rhythm - diff;
+
+      var r1 = findClosest(diff, NoteRhythms);
+      var r2 = findClosest(overflow, NoteRhythms);
       
       sheetNote = "(" + getSheetNote(this.tone, r1) + getSheetNote(this.tone, r2) + ")";
-      
+
+      if (measureBeat + this.rhythm == measureDuration) {
+        sheetNote += "|";
+      }
+
       //measureRhythm += rhythmMap[e.rhythm];
       //successiveEighths = 0; //reset successive 8ths
       //successiveSixteenths = 0; //reset successive 16ths
     }
-    else if (measureBeat + rhythmMap[this.rhythm] > measureDuration) {
+    else if (measureBeat + this.rhythm > measureDuration) {
       var diff = measureDuration - measureBeat;
-      var overflow = rhythmMap[this.rhythm] - diff;
+      var overflow = this.rhythm - diff;
 
-      var r1 = findClosest(diff, rhythmMap);
-      var r2 = findClosest(overflow, rhythmMap);
+      var r1 = findClosest(diff, NoteRhythms);
+      var r2 = findClosest(overflow, NoteRhythms);
 
-      sheetNote = "(" + getSheetNote(this.tone, r1) + "| " + getSheetNote(this.tone, r2) + ")";
+      sheetNote = "(" + getSheetNote(this.tone, r1) + "|" + getSheetNote(this.tone, r2) + ")";
     }
     else {
       sheetNote = getSheetNote(this.tone, this.rhythm);
-      if (measureBeat + rhythmMap[this.rhythm] == measureDuration) {
-        sheetNote += "| ";
+      if (measureBeat + this.rhythm == measureDuration) {
+        sheetNote += "|";
       }
     }
 
@@ -174,7 +197,7 @@ Note.prototype.match = function(note) {
   intervalScore = this.interval == note.interval ? MATCH_SCORES.INTERVAL_MATCH 
     : MATCH_SCORES.INTERVAL_MISMATCH;
   
-  if (this.rhythm == note.rhythm) {
+  if (this.rhythm <= note.rhythm + 1.2 && this.rhythm >= note.rhythm - 1.2) {
     rhythmScore = MATCH_SCORES.RHYTHM_MATCH;
   }
   else {
