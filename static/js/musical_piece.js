@@ -2,6 +2,104 @@ function Musical_Piece(config) {
   this.piece = config;
 }
 
+
+//Sorts all notes in a musical piece by their time and their tone
+Musical_Piece.prototype.flatTuneList = function() {
+  var tune = this.piece.tune;
+
+  var times = Object.keys(tune);
+
+  times.sort(function(a, b) {
+    return parseInt(a) - parseInt(b);
+  });
+
+  var tuneList = [];
+  console.log(tune);
+  //Flatten the times
+  for(var j = 0; j < times.length; j++) {
+    var time = times[j];
+    var notes = tune[time];
+    var noteArr = [];
+
+    //Flatten all notes
+    for (var i = 0; i < notes.length; i++) {
+      //Flatten all PolyNotes
+      if (Array.isArray(notes[i].tone)) {
+        console.log("hello!!!");
+        for (var k = 0; k < notes[i].tone.length; k++) {
+          noteArr.push(notes[i].tone[k]);
+        }
+      }
+      else {
+        noteArr.push(notes[i]);
+      }
+    }
+
+    noteArr.sort(function(a, b) {
+      return a.tone - b.tone;
+    });
+
+    for (var i = 0; i < noteArr.length; i++) {
+      tuneList.push(noteArr[i]);
+    }
+  }
+
+  return tuneList;
+}
+
+Musical_Piece.prototype.getVoiceTuneList = function() {
+  var tune = this.piece.tune;
+
+  var times = Object.keys(tune);
+
+  times.sort(function(a, b) {
+    return parseInt(a) - parseInt(b);
+  });
+
+  var tuneList = {voice1: [], voice2: []};
+
+  console.log(times);
+  for (var i = 0; i < times.length; i++) {
+    var time = times[i];
+    console.log(i);
+    //console.log(time);
+    //console.log(tune[time]);
+    var notes = tune[time];
+    //console.log(notes);
+
+    notes.sort(function(a, b) {
+      var comp1, comp2;
+      if (Array.isArray(a.tone)) {
+        comp1 = a.tone[0];
+      }
+      else {
+        comp1 = a.tone;
+      }
+
+      if (Array.isArray(b.tone)) {
+        comp2 = b.tone[0];
+      }
+      else {
+        comp2 = b.tone;
+      }
+
+      return comp1 - comp2;
+    });
+
+    for (var j = 0; j < notes.length; j++) {
+      if (notes[j].hand == 'l') {
+        tuneList.voice2.push(notes[j]);
+      }
+      else {
+        tuneList.voice1.push(notes[j]);  
+      }
+      
+    }
+  }
+
+  return tuneList;    
+}
+
 Musical_Piece.prototype.abcDump = function() {
   var that = this;
 
@@ -113,8 +211,9 @@ Musical_Piece.prototype.abcDump = function() {
     return voiceString;
   }
 
-  abc += getAbcVoice(this.piece.voice1, "V1");
-  abc += getAbcVoice(this.piece.voice2, "V2");
+  var voices = this.getVoiceTuneList();
+  abc += getAbcVoice(voices.voice1, "V1");
+  abc += getAbcVoice(voices.voice2, "V2");
 
   console.log(abc);
   
@@ -178,9 +277,11 @@ Musical_Piece.prototype.match = function(notes) {
     
     return mat;
   }
-  
-  var matrix1 = generateMatrix(this.piece.voice1, notes.piece.voice1);
-  var matrix2 = generateMatrix(this.piece.voice2, notes.piece.voice2);
+
+  var tuneList = this.flatTuneList();
+  console.log(tuneList);
+  var matrix1 = generateMatrix(tuneList, notes);
+  //var matrix2 = generateMatrix(this.piece.voice2, notes.piece.voice2);
   
   /*var matrix1 = (function() {
     var mat = [];
@@ -205,7 +306,7 @@ Musical_Piece.prototype.match = function(notes) {
   
   function matchVoice(expectedNotes, givenNotes, matrix) {
       var diag, left, top, final;
-      
+      console.log(expectedNotes);
       for (i = 1; i < matrix.length; i++) {
         for (j = 1; j < matrix[i].length; j++) {
           diag = expectedNotes[i-1].match(givenNotes[j-1]);
@@ -311,10 +412,12 @@ Musical_Piece.prototype.match = function(notes) {
       return results;
   }
   
-  var voice1Results = matchVoice(this.piece.voice1, notes.piece.voice1, matrix1);
-  var voice2Results = matchVoice(this.piece.voice2, notes.piece.voice2, matrix2);
+  var results = matchVoice(tuneList, notes, matrix1);
+
+  //var voice1Results = matchVoice(this.piece.voice1, notes.piece.voice1, matrix1);
+  //var voice2Results = matchVoice(this.piece.voice2, notes.piece.voice2, matrix2);
   //var voice2Results = {};
   //return voice1Results;
-  return [voice1Results, voice2Results];
+  return results;//[voice1Results, voice2Results];
   
 };

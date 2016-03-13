@@ -94,23 +94,31 @@
     <div id="playerstave"> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
     </div>
     <paper-dialog id="note-dialog">
-      <h2>Header</h2>
+      <h2>Note Information</h2>
       <paper-dialog-scrollable>
-        <table>
-          <tr>
-            <td>Note</td>
-            <td id="pianote-note-num"></td>
-          </tr>
-          <tr>
-            <td>Rhythm</td>
-            <td id="pianote-note-rhythm"></td> 
-          </tr>
-        </table>
+        <div class="layout wrap inline center-center">
+          <table>
+            <tr>
+              <td class="result-header">Note</td>
+              <td id="pianote-note-num" class="note-info"></td>
+            </tr>
+            <tr>
+              <td class="result-header">Rhythm</td>
+              <td id="pianote-note-rhythm" class="note-info"></td> 
+            </tr>
+          </table>
+          <table>
+            <tr>
+              <td class="result-header">Performed Note</td>
+              <td id="pianote-performed-note" class="note-info"></td>
+            </tr>
+            <tr>
+              <td class="result-header">Performed Rhythm</td>
+              <td id="pianote-performed-rhythm" class="note-info"></td> 
+            </tr>
+          </table>
+        </div>
       </paper-dialog-scrollable>
-      <div class="buttons">
-        <paper-button dialog-dismiss>Cancel</paper-button>
-        <paper-button dialog-confirm>Accept</paper-button>
-      </div>
     </paper-dialog>
     <div class="horizontal center-justified layout">
       <paper-card heading="Performance Results" id="results-card">

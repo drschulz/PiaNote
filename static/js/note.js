@@ -9,42 +9,97 @@ const rhythmToString = {
   0.375: "16d",
 };
 
-function Note(config) {
-  this.text = " ";
-  this.tone = config.tone;
-  this.rhythm = config.rhythm;
-  this.noteDescription;
-  this.svgElements = [];
-  this.performedTone;
-  this.performedRhythm;
-  /*if (this.tone == REST) {
-    this.letter = REST;
-    this.octave = REST;
+function findClosest(query, obj) {
+  var best = 0;
+  var min = Number.MAX_VALUE;
+  
+  for (var value in obj) {
+    var num = Math.abs(obj[value] - query);
+    if (num < min) {
+      min = num;
+      best = obj[value];
+    }
   }
-  else {
-    var letterAndOctave = midiMap.noteAndOctave(config.tone);
-    this.letter = letterAndOctave.letter;
-    this.octave = letterAndOctave.octave;
-  }*/
-  if (config.last_tone === undefined) {
+  
+  return best;
+}
+
+function Note(config) {
+  this.rhythm = config.rhythm;
+  this.hand = config.hand;
+  this.svgElements = [];
+  
+  /*if (config.last_tone === undefined) {
     this.interval = 0;
   }
   else {
     this.interval = this.tone - this.last_tone;
   }
   
-  this.dynamic = config.dynamic;
+  this.dynamic = config.dynamic;*/
 }
 
-Note.prototype.setText = function(text) {
-  this.text = text;
+Note.prototype.getSheetNote = function(currentAccidentals, isSharpKey) {
+  throw new Error("CANNOT CALL ABSTRACT FUNCTION");
+}
+
+Note.prototype.abcDump = function(isSharpKey, currentAccidentals, measureBeat, measureDuration, measureAccent) {
+  var that = this;
+  var bundle = {};
+
+  var sheetNote = "";
+  var collection = this.getSheetNote(currentAccidentals, isSharpKey);
+
+  //If note goes through the third beat, split it up
+  if(measureBeat > 0 && measureBeat < measureAccent && measureBeat + this.rhythm > measureAccent) {
+    var diff = measureAccent - measureBeat;
+    var overflow = this.rhythm - diff;
+
+    var r1 = findClosest(diff, NoteRhythms);
+    var r2 = findClosest(overflow, NoteRhythms);
+
+    sheetNote = "(" + collection.note + r1 + collection.note + r2 + ")";
+
+    if (measureBeat + this.rhythm == measureDuration) {
+      sheetNote += "|";
+    }
+  }
+  else if (measureBeat + this.rhythm > measureDuration) {
+    var diff = measureDuration - measureBeat;
+    var overflow = this.rhythm - diff;
+
+    var r1 = findClosest(diff, NoteRhythms);
+    var r2 = findClosest(overflow, NoteRhythms);
+
+    sheetNote = "(" + collection.note + r1 + "|" + collection.note + r2 + ")";
+  }
+  else {
+    sheetNote = collection.note + this.rhythm;
+    if (measureBeat + this.rhythm == measureDuration) {
+      sheetNote += "|";
+    }
+  }
+
+  bundle.sheetNote = sheetNote;
+  bundle.accidentals = collection.accidentals;
+  return bundle;
 };
 
-Note.prototype.getDescription = function(isSharpKey) {
+function SingleNote(config) {
+  this.tone = config.tone;
+  Note.call(this, config);
+  this.performedTone;
+  this.performedRhythm = 0;
+}
+
+SingleNote.prototype = Object.create(Note.prototype);
+SingleNote.prototype.constructor = SingleNote;
+
+SingleNote.prototype.getDescription = function(isSharpKey) {
   if (Array.isArray(this.tone)) {
     return "chord";
   }
-  
+
   var note = midiToNote(this.tone);
 
   if (note.note['='] !== undefined) {
@@ -55,26 +110,28 @@ Note.prototype.getDescription = function(isSharpKey) {
   }
 }
 
-Note.prototype.abcDump = function(isSharpKey, currentAccidentals, measureBeat, measureDuration, measureAccent) {
-  function findClosest(query, obj) {
-    var best = 0;
-    var min = Number.MAX_VALUE;
-    
-    for (var value in obj) {
-      var num = Math.abs(obj[value] - query);
-      if (num < min) {
-        min = num;
-        best = obj[value];
-      }
-    }
-    
-    return best;
+SingleNote.prototype.getDescriptionOfPerformed = function(isSharpKey) {
+  if (Array.isArray(this.tone)) {
+    return "chord";
+  }
+  
+  if (this.performedTone == undefined) {
+    return "None";
   }
 
-  var that = this;
+  var note = midiToNote(this.performedTone);
+
+  if (note.note['='] !== undefined) {
+    return note.note['='];
+  }
+  else {
+    return isSharpKey ? note.note['^'] + "#" : note.note['_'] + "b";
+  }
+}
+
+SingleNote.prototype.getSheetNote = function(currentAccidentals, isSharpKey) {
   var bundle = {};
 
-  //get the correct note accidental
   function getAccidentalledNote(sheetTone, accidental) {
     var baseNote = sheetTone[accidental];
     
@@ -86,94 +143,30 @@ Note.prototype.abcDump = function(isSharpKey, currentAccidentals, measureBeat, m
     return baseNote;
   }
 
-  function getIndividualNote(tone, rhythm) {
-
-    var sheetTone = midiToNote(tone);
-
-    //always check if the natural version of the note is available
-    if (sheetTone.note['='] !== undefined) {
-      sheetNote = getAccidentalledNote(sheetTone.note, '=');
-    }
-    else {
-      sheetNote = isSharpKey ? getAccidentalledNote(sheetTone.note, '^') : getAccidentalledNote(sheetTone.note, '_');
-    }
-
-    //get the correct note octave
-    sheetNote += abcOctave[sheetTone.octave];
-
-    //get the correct rhythm
-    sheetNote += rhythm;//rhythmABC[rhythm];
-
-    return sheetNote;
-  }
-
-  function getSheetNote(tone, rhythm) {
-    var sheetNote = "";
-
-    //check if this note is a chord
-    if(Array.isArray(tone)) {
-      sheetNote += "[";
-      for (var i = 0; i < tone.length; i++) {
-        sheetNote += getIndividualNote(tone[i], rhythm);
-      }
-      sheetNote += "]";
-    }
-    else {
-      sheetNote = getIndividualNote(tone, rhythm);
-    }
-
-    return sheetNote;
-  }
-
   if (this.tone == REST) {
-    bundle.sheetNote = 'z' + this.rhythm;//rhythmABC[this.rhythm];
+    return "z";
+  }
+
+  var sheetTone = midiToNote(this.tone);
+
+  //always check if the natural version of the note is available
+  if (sheetTone.note['='] !== undefined) {
+    sheetNote = getAccidentalledNote(sheetTone.note, '=');
   }
   else {
-    var sheetNote = "";
-
-    //If note goes through the third beat, split it up
-    if(measureBeat > 0 && measureBeat < measureAccent && measureBeat + this.rhythm > measureAccent) {
-      var diff = measureAccent - measureBeat;
-      var overflow = this.rhythm - diff;
-
-      var r1 = findClosest(diff, NoteRhythms);
-      var r2 = findClosest(overflow, NoteRhythms);
-      
-      sheetNote = "(" + getSheetNote(this.tone, r1) + getSheetNote(this.tone, r2) + ")";
-
-      if (measureBeat + this.rhythm == measureDuration) {
-        sheetNote += "|";
-      }
-
-      //measureRhythm += rhythmMap[e.rhythm];
-      //successiveEighths = 0; //reset successive 8ths
-      //successiveSixteenths = 0; //reset successive 16ths
-    }
-    else if (measureBeat + this.rhythm > measureDuration) {
-      var diff = measureDuration - measureBeat;
-      var overflow = this.rhythm - diff;
-
-      var r1 = findClosest(diff, NoteRhythms);
-      var r2 = findClosest(overflow, NoteRhythms);
-
-      sheetNote = "(" + getSheetNote(this.tone, r1) + "|" + getSheetNote(this.tone, r2) + ")";
-    }
-    else {
-      sheetNote = getSheetNote(this.tone, this.rhythm);
-      if (measureBeat + this.rhythm == measureDuration) {
-        sheetNote += "|";
-      }
-    }
-
-    bundle.sheetNote = sheetNote;
+    sheetNote = isSharpKey ? getAccidentalledNote(sheetTone.note, '^') : getAccidentalledNote(sheetTone.note, '_');
   }
 
-  bundle.accidentals = currentAccidentals;
-  return bundle;
-};
-  
+  //get the correct note octave
+  sheetNote += abcOctave[sheetTone.octave];
 
-Note.prototype.match = function(note) {
+  bundle.note = sheetNote;
+  bundle.accidentals = currentAccidentals;
+
+  return bundle;
+}  
+
+SingleNote.prototype.match = function(note) {
   var score = 0;
   var noteScore;
   var intervalScore;
@@ -214,3 +207,31 @@ Note.prototype.match = function(note) {
     expectedRhythm: this.rhythm
   };
 };
+
+function PolyNote(config) {
+  //tone here is an array of SingleNotes
+  this.tone = config.tone;
+  this.svgElements = [];
+
+  Note.call(this, config);
+}
+
+PolyNote.prototype = Object.create(Note.prototype);
+PolyNote.prototype.constructor = SingleNote;
+
+PolyNote.prototype.getSheetNote = function(currentAccidentals, isSharpKey) {
+  var sheetNote = "[";
+  var bundle = {};
+
+  for(var i = 0; i < this.tone.length; i++) {
+    var collection = this.tone[i].getSheetNote(currentAccidentals, isSharpKey);
+    currentAccidentals = collection.accidentals;
+    sheetNote+= collection.note;
+  }
+
+  sheetNote+= "]";
+  bundle.note = sheetNote;
+  bundle.accidentals = currentAccidentals;
+
+  return bundle;
+}

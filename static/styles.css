@@ -65,7 +65,7 @@ a, a:hover {
 
 #note-dialog {
   position: fixed;
-  width: 300px;
+  width: 500px;
   //height: 300px;
 }
 
@@ -163,6 +163,17 @@ td.result {
   font-weight: bold;
   text-align: right;
   font-size: 150%;
+}
+
+td.result-header {
+  text-align: left;
+}
+
+td.note-info {
+  font-weight: bold;
+  text-align: left;
+  font-size: 150%;
+  color: #455ede;  
 }
 
 /*.container {

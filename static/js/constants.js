@@ -29,6 +29,7 @@ const SHORTEST_RHYTHM = 0.125;
 const MIDDLE_C = 60;
 const HIGH_E = 88;
 const LOW_C = 48;//36;
+const LOWEST_C = 36;
 
 const Intervals = {
   MJR_1ST: 0,
@@ -101,8 +102,15 @@ const keyChords = [
   {interval: 2, type: 'm'},
   {interval: 4, type: 'm'},
   {interval: 5, type: 'M'},
-  {interval: 7, type: 'M'},
-  {interval: 9, type: 'm'},
+  {interval: -5, type: 'M'},
+  {interval: -3, type: 'm'},
+
+  /*{interval: -3, type: 'm'},
+  {interval: -5, type: 'M'},
+  {interval: -7, type: 'M'},
+  {interval: -8, type: 'm'},
+  {interval: -10, type: 'm'},
+  {interval: -12, type: 'M'}*/
 ];
 
 //Form MidiIntervalFromKeyBase: Major or Minor

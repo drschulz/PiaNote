@@ -24,7 +24,9 @@ function renderSong(piece, location, color) {
                                           document.getElementById("note-dialog").close();
                                           $("#pianote-note-num").html(note.getDescription(pianote.expectedPiece.piece.isSharpKey) +"");
                                           $("#pianote-note-rhythm").html(note.rhythm + "");
-                                          $("#note-dialog").css("left", (mouseX - 150) + "px");
+                                          $("#pianote-performed-note").html(note.getDescriptionOfPerformed(pianote.expectedPiece.piece.isSharpKey) + "");
+                                          $("#pianote-performed-rhythm").html(note.performedRhythm + "");
+                                          $("#note-dialog").css("left", (mouseX - 250) + "px");
                                           $("#note-dialog").css("top", mouseY + "px");
                                           document.getElementById("note-dialog").open();
                                         } 
@@ -43,7 +45,7 @@ function bindNotesToSheetMusic() {
   var measureBeat = 0;
   var noteIdx = 0;
   var abcIdx = 0;
-  var voice1 = pianote.expectedPiece.piece.voice1;
+  var voice1 = pianote.expectedPiece.getVoiceTuneList().voice1;
   var beatValue = WHOLE_NOTE_VALUE / pianote.expectedPiece.piece.time.rhythm;
   var measureAccent = Math.ceil(pianote.expectedPiece.piece.time.beats / 2) * beatValue;
   var measureDuration = pianote.expectedPiece.piece.time.beats * beatValue;
@@ -114,27 +116,27 @@ function populateTables(results) {
   //$("#r-hm1").empty();
   $("#accurate").empty();
   
-  $("#n-h1").html(results[0].totals.notesHit);
-  $("#n-m1").html(results[0].totals.notesMissed);
-  $("#r-h1").html(results[0].totals.rhythmsHit);
-  $("#r-m1").html(results[0].totals.rhythmsMissed);
-  $("#n-h2").html(results[1].totals.notesHit);
-  $("#n-m2").html(results[1].totals.notesMissed);
-  $("#r-h2").html(results[1].totals.rhythmsHit);
-  $("#r-m2").html(results[1].totals.rhythmsMissed);
-  $("#accurate").html(results[0].totals.overallAccuracy + "%");  
+  $("#n-h1").html(results.totals.notesHit);
+  $("#n-m1").html(results.totals.notesMissed);
+  $("#r-h1").html(results.totals.rhythmsHit);
+  $("#r-m1").html(results.totals.rhythmsMissed);
+  $("#n-h2").html(results.totals.notesHit);
+  $("#n-m2").html(results.totals.notesMissed);
+  $("#r-h2").html(results.totals.rhythmsHit);
+  $("#r-m2").html(results.totals.rhythmsMissed);
+  $("#accurate").html(results.totals.overallAccuracy + "%");  
 }
 
 function updateChart(results) {
   var chart = document.getElementById("session-chart"); 
   
-  var rhythmAccuracy = results[0].totals.rhythmsHit / results[0].notes.length * 100;
-  var noteAccuracy = results[0].totals.notesHit / results[0].notes.length * 100;
+  var rhythmAccuracy = results.totals.rhythmsHit / results.notes.length * 100;
+  var noteAccuracy = results.totals.notesHit / results.notes.length * 100;
   
   var newRowData = rows.concat([["song " + song, 
     noteAccuracy, 
     rhythmAccuracy, 
-    results[0].totals.overallAccuracy << 0]]);
+    results.totals.overallAccuracy << 0]]);
     
   chart.rows = newRowData;
   rows = newRowData;
@@ -182,7 +184,7 @@ function saveUserStats() {
 }
 
 function updateStave() {
-  var voice = pianote.expectedPiece.piece.voice1;
+  var voice = pianote.expectedPiece.flatTuneList();
   for(var i = 0; i < voice.length; i++) {
     var note = voice[i];
     if(note.tone != note.performedTone && note.rhythm != note.performedRhythm) {
@@ -216,41 +218,35 @@ function scorePerformance() {
 
 function playSong() {
   var curBeat = 0;
-  for(var i = 0; i < pianote.expectedPiece.piece.voice1.length; i++) {
-    var note = pianote.expectedPiece.piece.voice1[i];
-    if (Array.isArray(note.tone)) {
-      for(var j = 0; j < note.length; j++) {
-        var n = note[j];
-        main_piano.instrument.noteOn(n, 127, curBeat);
-        main_piano.instrument.noteOff(n, curBeat + SECONDS_IN_MINUTE/metronome.tempo*(note.rhythm/4));    
+
+  var tune = pianote.expectedPiece.piece.tune;
+  console.log(tune);
+
+  var times = Object.keys(tune);
+
+  times.sort(function(a, b) {
+    return parseInt(a) - parseInt(b);
+  });
+
+  for (var i = 0; i < times.length; i++) {
+    var time = times[i];
+    var notes = tune[time];
+
+    for(var j = 0; j < notes.length; j++) {
+      var note = notes[j];
+
+      if (Array.isArray(note.tone)) {
+        for (var k = 0; k < note.tone.length; k++) {
+          var n = note.tone[k];
+          main_piano.instrument.noteOn(n.tone, 127, SECONDS_IN_MINUTE/metronome.tempo*(parseInt(time)/4));
+          main_piano.instrument.noteOff(n.tone, SECONDS_IN_MINUTE/metronome.tempo*((parseInt(time) + note.rhythm)/4));
+        }
+      }
+      else {
+        main_piano.instrument.noteOn(note.tone, 127, SECONDS_IN_MINUTE/metronome.tempo*(parseInt(time)/4));
+        main_piano.instrument.noteOff(note.tone, SECONDS_IN_MINUTE/metronome.tempo*((parseInt(time) + note.rhythm)/4));
       }
     }
-    else {
-      main_piano.instrument.noteOn(note.tone, 127, curBeat);
-      main_piano.instrument.noteOff(note.tone, curBeat + SECONDS_IN_MINUTE/metronome.tempo*(note.rhythm/4));  
-    }
-    
-    curBeat += SECONDS_IN_MINUTE/metronome.tempo*(note.rhythm/4);
-  }
-
-  curBeat = 0;
-  for (var i = 0; i < pianote.expectedPiece.piece.voice2.length; i++) {
-    var note = pianote.expectedPiece.piece.voice2[i];
-    if (Array.isArray(note.tone)) {
-      for(var j = 0; j < note.tone.length; j++) {
-        var n = note.tone[j];
-        main_piano.instrument.noteOn(n, 127, curBeat);
-        main_piano.instrument.noteOff(n, curBeat + SECONDS_IN_MINUTE/metronome.tempo*(note.rhythm/4));    
-      }
-    }
-    else {
-      main_piano.instrument.noteOn(note.tone, 127, curBeat);
-      main_piano.instrument.noteOff(note.tone, curBeat + SECONDS_IN_MINUTE/metronome.tempo*(note.rhythm/4));  
-    }
-
-    //main_piano.instrument.noteOn(note.tone, 127, curBeat);
-    //main_piano.instrument.noteOff(note.tone, curBeat + SECONDS_IN_MINUTE/metronome.tempo*rhythmMap[note.rhythm]);
-    curBeat += SECONDS_IN_MINUTE/metronome.tempo*(note.rhythm/4);  
   }
 }
 
