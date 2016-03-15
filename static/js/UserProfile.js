@@ -13,7 +13,7 @@ function UserProfile() {
 	this.currentLevel = [1,1,1,1]; //current level they are working on
 	this.baseLevel = [1,1,1,1]; // current base level that current level is derived from
 	this.nextBaseLevel = [2,2,2,2]; //next level that current level is gradually working towards
-	this.drillingLevel; //the drilling level that is targeting the current level
+	this.drillingLevel = [1,1,1,1]; //the drilling level that is targeting the current level
 	this.isDrilling = false; //whether the user is currently drilling or practicing the current level
 	this.currentTier = 0; //the tier the user is on towards the next base
 	this.currentLevelInTier = 0;
@@ -53,7 +53,7 @@ UserProfile.prototype.chooseAnotherLevelInTier = function() {
 		return idx;
 	});
 
-	var filteredTierLevels = tieredLevelIndices.filter(function(val, idx) {
+	var filteredTierLevels = tierLevelIndices.filter(function(val, idx) {
 		return !that.tierProgress[idx] && idx != that.currentLevelInTier;
 	});
 
@@ -66,7 +66,8 @@ UserProfile.prototype.chooseAnotherLevelInTier = function() {
 	this.currentLevelInTier = filteredTierLevels[Math.random() * filteredTierLevels.length << 0];
 
 	//set the new current level
-	this.currentLevel = this.baseLevel;
+	this.currentLevel = this.baseLevel.slice();
+
 
 	var tierLevel = tiers[this.currentTier][this.currentLevelInTier];
 
@@ -109,21 +110,25 @@ UserProfile.prototype.getOverallAccuracyForLevel = function(level) {
 
 UserProfile.prototype.getComponentAccuracyForLevel = function(level) {
 	var levelString = JSON.stringify(level);
-
+	var that = this;
 	if (this.performanceData[levelString] == undefined) {
 		return [0,0,0,0];
 	}
+
+	console.log(this.performanceData[levelString]);
 
 	var accuracySum = [0,0,0,0];
 	for(var i = 0; i < this.performanceData[levelString].length; i++) {
 		var data = this.performanceData[levelString][i];
 		for(var j = 0; j < data.length; j++) {
-			accuracySum[i] += data[i];
+			accuracySum[j] += data[j];
 		}
 	}
 
+	console.log(accuracySum);
+
 	return accuracySum.map(function(e) {
-		return e / this.performanceData[levelString].length;
+		return e / that.performanceData[levelString].length;
 	});
 
 }
