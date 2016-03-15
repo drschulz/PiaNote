@@ -88,11 +88,11 @@ const MinorChordIntervals = [
   0, //1st
   3, //MNR 3rd
   7, //5th
-  10, //MNR 7th
+  //10, //MNR 7th
   12, //Octave
   15, //Octave MNR 3rd
   19, //Octave 5th
-  22, //Octave MNR 7th
+  //22, //Octave MNR 7th
   24, //Second Octave
   -5, //5th under 1st
 ];

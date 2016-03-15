@@ -49,7 +49,7 @@ function bindNotesToSheetMusic() {
   var beatValue = WHOLE_NOTE_VALUE / pianote.expectedPiece.piece.time.rhythm;
   var measureAccent = Math.ceil(pianote.expectedPiece.piece.time.beats / 2) * beatValue;
   var measureDuration = pianote.expectedPiece.piece.time.beats * beatValue;
-  console.log(measureDuration);
+
   var measureNotes = $(".note.m0.v0");
   for(var i = 0; i < voice1.length; i++) {
     $(measureNotes[abcIdx]).data("note", voice1[i]);
@@ -64,8 +64,6 @@ function bindNotesToSheetMusic() {
         abcIdx = 0;
         curMeasure++;
         measureBeat = 0;
-        console.log("hello?");
-        console.log(i);
         measureNotes = $(".note.m" + curMeasure + ".v0");
       }
       else {
@@ -157,10 +155,8 @@ function saveUserStats() {
 
   function registerPostSuccess() {
     var toast = document.getElementById('success-toast');
-    console.log(toast);
     //toast.text = "saved current scores";
     toast.open();
-    console.log("finished request");
   }
 
   function registerPostError() {
@@ -168,8 +164,6 @@ function saveUserStats() {
     //toast.text = "error saving scores";
     toast.open();  
   }
-
-  console.log(stats);
 
   $.ajax({
     method: 'POST',
@@ -207,10 +201,7 @@ function updateStave() {
 
 function scorePerformance() {
   var results = pianote.scorePerformance();
-
-  //renderSong(pianote.scoredPiece, "playerstave", "#455ede");
   updateStave();
-  //renderSong(pianote.expectedPiece, "mystave", "black");
   displayResults(results);
 
   saveUserStats();
@@ -220,14 +211,14 @@ function playSong() {
   var curBeat = 0;
 
   var tune = pianote.expectedPiece.piece.tune;
-  console.log(tune);
-
   var times = Object.keys(tune);
 
+  //sort the notes by time
   times.sort(function(a, b) {
     return parseInt(a) - parseInt(b);
   });
 
+  //play the notes at their corresponding times
   for (var i = 0; i < times.length; i++) {
     var time = times[i];
     var notes = tune[time];
@@ -251,16 +242,10 @@ function playSong() {
 }
 
 function initializeButtons() {
-  var render = function() {
-    //renderSong(pianote.playerPiece, "playerstave", "blue");
-    //console.log("here!");
-  }
-  //$("#play-button").click(startAccompanimentLoop);
   $("#play-button").click(function() {
     var bpm = $("#bpm").val();
     metronome.play(SECONDS_IN_MINUTE / bpm);
     pianote.monitorTempo(SECONDS_IN_MINUTE / bpm);
-    //renderInterval = setInterval(render, SECONDS_IN_MINUTE / bpm * 1000 << 0);
     $("#play-button").hide();
     $("#stop-button").show();
   });
@@ -268,7 +253,6 @@ function initializeButtons() {
   $("#stop-button").click(function() {
     metronome.play();
     pianote.unMonitorTempo();
-    //clearInterval(renderInterval);
     $("#stop-button").hide();
     $("#play-button").show();
   });
@@ -291,8 +275,7 @@ function initializeButtons() {
     renderInterval = setInterval(render, 2*SECONDS_IN_MINUTE / bpm * 1000 << 0);
   });
   
-
-$("#play-song-button").click(playSong);
+  $("#play-song-button").click(playSong);
 
 }
 
@@ -311,7 +294,6 @@ function initializeApplication(statsData) {
   function noteOn(note, velocity) {
     main_piano.instrument.noteOn(note, velocity, 0);
     pianote.noteOn(note, velocity);
-    //renderSong(pianote.playerPiece, "playerstave", "blue");
   }
   
   function noteOff(note) {
@@ -329,7 +311,6 @@ function initializeApplication(statsData) {
   
   enableButtons();
   generateNextMelody();
-  
 }
 
 
@@ -361,8 +342,6 @@ window.addEventListener('load', function() {
   
   progressBar.start();
   
-  
-
   function init(res) {
     console.log(res);
     statsData = JSON.parse(res);
@@ -373,8 +352,6 @@ window.addEventListener('load', function() {
     console.log("error getting user data");
     initializeMidi(loadProgress, loadEnd);
   }
-
-  console.log("hi I'm at the beginning ...");
 
   $.ajax({
     method: 'GET',

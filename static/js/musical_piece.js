@@ -14,7 +14,6 @@ Musical_Piece.prototype.flatTuneList = function() {
   });
 
   var tuneList = [];
-  console.log(tune);
   //Flatten the times
   for(var j = 0; j < times.length; j++) {
     var time = times[j];
@@ -25,7 +24,6 @@ Musical_Piece.prototype.flatTuneList = function() {
     for (var i = 0; i < notes.length; i++) {
       //Flatten all PolyNotes
       if (Array.isArray(notes[i].tone)) {
-        console.log("hello!!!");
         for (var k = 0; k < notes[i].tone.length; k++) {
           noteArr.push(notes[i].tone[k]);
         }
@@ -58,14 +56,9 @@ Musical_Piece.prototype.getVoiceTuneList = function() {
 
   var tuneList = {voice1: [], voice2: []};
 
-  console.log(times);
   for (var i = 0; i < times.length; i++) {
     var time = times[i];
-    console.log(i);
-    //console.log(time);
-    //console.log(tune[time]);
     var notes = tune[time];
-    //console.log(notes);
 
     notes.sort(function(a, b) {
       var comp1, comp2;
@@ -87,6 +80,7 @@ Musical_Piece.prototype.getVoiceTuneList = function() {
     });
 
     for (var j = 0; j < notes.length; j++) {
+      console.log(notes[j]);
       if (notes[j].hand == 'l') {
         tuneList.voice2.push(notes[j]);
       }
@@ -114,6 +108,8 @@ Musical_Piece.prototype.abcDump = function() {
   var measureDuration = this.piece.time.beats * beatValue;
   var measureAccent = Math.ceil(this.piece.time.beats / 2) * beatValue;
 
+  //Current accidentals marks the current status of accidentals
+  //that carry through the music
   var currentAccidentals = (function() { 
     var staveNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
     var accidentals = {
@@ -169,28 +165,13 @@ Musical_Piece.prototype.abcDump = function() {
     var measureRhythm = 0;
     for (var i = 0; i < voice.length; i++) {
       var note = voice[i];
-      
-      //check if the rhythm goes over a measure
-      /*if (measureRhythm + rhythmMap[note.rhythm] > 4) {
-        var difference = 4 - measureRhythm;
-        if (difference == 3) {
-          voiceString += "z" + rhythmABC["h"];
-          voiceString += "z" + rhythmABC["q"];
-        }
-        else if (difference > 0) {
-          voiceString += " z" + rhythmABC[rhythmToString[difference]];
-        }
 
-        voiceString += "| ";
-
-        measureRhythm = 0;
-        successiveEighths = 0;
-        successiveSixteenths = 0;
-      }*/
-
+      //Make sure beams are correct
+      //Unbeam if over measure
       if (measureRhythm + note.rhythm >= measureDuration) {
         successiveRhythms = 0;
       }
+      //Beam if not on a beat
       else if (successiveRhythms + note.rhythm <= measureBeat && measureRhythm != measureAccent) {
         successiveRhythms += note.rhythm;
       }
@@ -199,6 +180,8 @@ Musical_Piece.prototype.abcDump = function() {
         voiceString += " ";
       }
 
+      //Dump the note
+      console.log(voice[i]);
       var bundle = voice[i].abcDump(that.piece.isSharpKey, currentAccidentals, measureRhythm, measureDuration, measureAccent);
 
       voiceString += bundle.sheetNote;
@@ -214,13 +197,13 @@ Musical_Piece.prototype.abcDump = function() {
   var voices = this.getVoiceTuneList();
   abc += getAbcVoice(voices.voice1, "V1");
   abc += getAbcVoice(voices.voice2, "V2");
-
-  console.log(abc);
   
   return abc;
 }
 
 Musical_Piece.prototype.match = function(notes) {
+  
+  //find the closest value in the object to the query
   function findClosest(query, obj) {
     var best = 0;
     var min = Number.MAX_VALUE;
@@ -239,6 +222,7 @@ Musical_Piece.prototype.match = function(notes) {
 
   var that = this;
   
+  //get the max score from the possible raw scores
   function max(diag, left, top) {
     if (diag.raw >= left.raw && diag.raw >= top.raw) {
       return diag;
@@ -253,6 +237,7 @@ Musical_Piece.prototype.match = function(notes) {
     }
   }
   
+  //Generate the edit distance matrix
   function generateMatrix(expectedNotes, givenNotes) {
     var mat = [];
     for (i = 0; i < expectedNotes.length + 1; i++) {
@@ -281,32 +266,12 @@ Musical_Piece.prototype.match = function(notes) {
   var tuneList = this.flatTuneList();
   console.log(tuneList);
   var matrix1 = generateMatrix(tuneList, notes);
-  //var matrix2 = generateMatrix(this.piece.voice2, notes.piece.voice2);
   
-  /*var matrix1 = (function() {
-    var mat = [];
-    console.log(that);
-    for (i = 0; i < that.piece.notes.length + 1; i++) {
-      mat.push(new Array(notes.piece.notes.length + 1));
-      mat[i][0] = {
-        raw: MATCH_SCORES.INSERTION_DELETION * i,
-        dir: MatchDirection.TOP
-      };
-    }
-    
-    for (j = 0; j < notes.piece.notes.length + 1; j++) {
-      mat[0][j] = {
-        raw: MATCH_SCORES.INSERTION_DELETION * j,
-        dir: MatchDirection.LEFT
-      };
-    }
-    
-    return mat;
-  })();*/
-  
+
+  //The edit distance algorithm to match the pieces
   function matchVoice(expectedNotes, givenNotes, matrix) {
       var diag, left, top, final;
-      console.log(expectedNotes);
+
       for (i = 1; i < matrix.length; i++) {
         for (j = 1; j < matrix[i].length; j++) {
           diag = expectedNotes[i-1].match(givenNotes[j-1]);
@@ -356,6 +321,7 @@ Musical_Piece.prototype.match = function(notes) {
         
         if (current.dir == MatchDirection.DIAG) {
           expectedNote.performedTone = actualNote.tone;
+
           results.notes.unshift(actualNote);
           results.scores.unshift(current);
           if(current.tone == MATCH_SCORES.TONE_MATCH) {
@@ -363,7 +329,6 @@ Musical_Piece.prototype.match = function(notes) {
           }
           else {
             results.totals.notesMissed++;
-            //this.piece.notes[i-1].setText("Missed Note");
           }
           
           if (current.rhythm == MATCH_SCORES.RHYTHM_MATCH) {
@@ -373,7 +338,6 @@ Musical_Piece.prototype.match = function(notes) {
           else {
             expectedNote.performedRhythm = findClosest(actualNote.rhythm, NoteRhythms);
             results.totals.rhythmsMissed++;
-            //this.piece.notes[i-1].setText("Missed Rhythm");
           }
           i--;
           j--;
@@ -390,7 +354,6 @@ Musical_Piece.prototype.match = function(notes) {
           results.scores.unshift(current);
           results.totals.notesMissed ++;
           results.totals.rhythmsMissed ++;
-          //this.piece.notes[i-1].setText("Missed");
           i--;
         }
         
@@ -401,7 +364,6 @@ Musical_Piece.prototype.match = function(notes) {
         results.scores.unshift(matrix[i][j]);
         results.totals.notesMissed++;
         results.totals.rhythmsMissed++;
-        //this.piece.notes[i-1].setText("Missed");
         i--;
       }
       
@@ -414,10 +376,6 @@ Musical_Piece.prototype.match = function(notes) {
   
   var results = matchVoice(tuneList, notes, matrix1);
 
-  //var voice1Results = matchVoice(this.piece.voice1, notes.piece.voice1, matrix1);
-  //var voice2Results = matchVoice(this.piece.voice2, notes.piece.voice2, matrix2);
-  //var voice2Results = {};
-  //return voice1Results;
-  return results;//[voice1Results, voice2Results];
+  return results;
   
 };

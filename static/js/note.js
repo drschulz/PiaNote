@@ -217,7 +217,7 @@ function PolyNote(config) {
 }
 
 PolyNote.prototype = Object.create(Note.prototype);
-PolyNote.prototype.constructor = SingleNote;
+PolyNote.prototype.constructor = PolyNote;
 
 PolyNote.prototype.getSheetNote = function(currentAccidentals, isSharpKey) {
   var sheetNote = "[";
@@ -235,3 +235,91 @@ PolyNote.prototype.getSheetNote = function(currentAccidentals, isSharpKey) {
 
   return bundle;
 }
+
+PolyNote.prototype.getType = function() {
+  return "poly note";
+}
+
+function Triad(config) {
+  var chord = config.chord;
+  var tone = config.tone;
+
+  var intervals = chord.type == 'M' ? MajorChordIntervals : MinorChordIntervals;
+  var tones = [];
+
+  tones.push(new SingleNote({tone: tone, rhythm: config.rhythm, hand: config.hand}));
+  tones.push(new SingleNote({tone: tone + intervals[1], rhythm: config.rhythm, hand: config.hand}));
+  tones.push(new SingleNote({tone: tone + intervals[2], rhythm: config.rhythm, hand: config.hand}));
+  config.tone = tones;
+
+  PolyNote.call(this, config);
+}
+
+Triad.prototype = Object.create(PolyNote.prototype);
+Triad.prototype.constructor = Triad;
+
+Triad.prototype.getType = function() {
+  return "triad";
+}
+
+function SuspendedChord(config) {
+  var chord = config.chord;
+  var tone = config.tone;
+
+  var intervals = chord.type == 'M' ? MajorChordIntervals : MinorChordIntervals;
+  var tones = [];
+
+  tones.push(new SingleNote({tone: tone, rhythm: config.rhythm, hand: config.hand}));
+  tones.push(new SingleNote({tone: tone + 5, rhythm: config.rhythm, hand: config.hand}));
+  tones.push(new SingleNote({tone: tone + intervals[2], rhythm: config.rhythm, hand: config.hand}));
+  config.tone = tones;
+  PolyNote.call(this, config);
+}
+
+SuspendedChord.prototype.getType = function() {
+  return "suspended";
+}
+
+SuspendedChord.prototype = Object.create(PolyNote.prototype);
+SuspendedChord.prototype.constructor = SuspendedChord;
+
+function InvertedChord(config) {
+  var chord = config.chord;
+  var tone = config.tone;
+
+  var intervals = chord.type == 'M' ? MajorChordIntervals : MinorChordIntervals;
+  var tones = [];
+
+  tones.push(new SingleNote({tone: tone + intervals[7], rhythm: config.rhythm, hand: config.hand}));
+  tones.push(new SingleNote({tone: tone, rhythm: config.rhythm, hand: config.hand}));
+  tones.push(new SingleNote({tone: tone + intervals[1], rhythm: config.rhythm, hand: config.hand}));
+  config.tone = tones;
+  PolyNote.call(this, config);  
+}
+
+InvertedChord.prototype.getType = function() {
+  return "Inverted";
+}
+
+InvertedChord.prototype = Object.create(PolyNote.prototype);
+InvertedChord.prototype.constructor = InvertedChord;
+
+function SixthChord(config) {
+  var chord = config.chord;
+  var tone = config.tone;
+
+  var intervals = chord.type == 'M' ? MajorChordIntervals : MinorChordIntervals;
+  var tones = [];
+
+  tones.push(new SingleNote({tone: tone + intervals[7], rhythm: config.rhythm, hand: config.hand}));
+  tones.push(new SingleNote({tone: tone + intervals[1], rhythm: config.rhythm, hand: config.hand}));
+  config.tone = tones;
+  PolyNote.call(this, config);  
+}
+
+SixthChord.prototype.getType = function() {
+  return "6th";
+}
+
+SixthChord.prototype = Object.create(PolyNote.prototype);
+SixthChord.prototype.constructor = SixthChord;

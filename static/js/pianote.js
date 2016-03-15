@@ -239,12 +239,13 @@ PiaNote.prototype.generateSong = function() {
 
   var pianotePiece = {};
 
-  function addToPiece(time, tone, rhythm, hand) {
+  function addToPiece(time, note) {
     if (pianotePiece[time] == undefined) {
       pianotePiece[time] = [];
     }
+    pianotePiece[time].push(note);
 
-    if (Array.isArray(tone)) {
+    /*if (Array.isArray(tone)) {
       var toneArr = [];
       for(var i = 0; i < tone.length; i++) {
         toneArr.push(new SingleNote({tone: tone[i], rhythm: rhythm, hand: hand}));
@@ -254,7 +255,7 @@ PiaNote.prototype.generateSong = function() {
     }
     else {
       pianotePiece[time].push(new SingleNote({tone: tone, rhythm: rhythm, hand: hand}));  
-    }  
+    } */ 
   }
 
   function generatePhrase(key, lowLimit, highLimit, rhythms, chords) {
@@ -264,9 +265,9 @@ PiaNote.prototype.generateSong = function() {
     var baseTone = lowLimit + baseOfKey;
 
     function getPossibleIntervalsForChord(chord, intervals) {
-      var chordIntervals = chord.info.type == 'M' ? MajorChordIntervals : MinorChordIntervals;
+      var chordIntervals = chord.type == 'M' ? MajorChordIntervals : MinorChordIntervals;
       var chordIntervalsMappedToKey = chordIntervals.map(function(i) {
-          return chord.info.interval + i;
+          return chord.interval + i;
       });
 
       var possibleIntervals = [];
@@ -299,14 +300,15 @@ PiaNote.prototype.generateSong = function() {
         return true;
       }
       //ensure left and right hand don't play same note at same time
-      chordIntervals = chordIntervals.filter(filterOutChordIntervals);
-      var pIntervals = possibleIntervals.filter(filterOutChordIntervals);
+      chordIntervals = chordIntervals;//.filter(filterOutChordIntervals);
+      var pIntervals = possibleIntervals;//.filter(filterOutChordIntervals);
 
       var time = curMeasure*WHOLE_NOTE_VALUE;
       //generate first note by taking an interval that is in the chord      
       var interval = chordIntervals[Math.random()*chordIntervals.length << 0];
       var tone = baseTone + interval; 
-      addToPiece(time, tone, rhythms[0], 'r');
+      var note = new SingleNote({tone: tone, rhythm: rhythms[0], hand: 'r'});
+      addToPiece(time, note);
       
       //update the current time
       time += rhythms[0];
@@ -323,7 +325,8 @@ PiaNote.prototype.generateSong = function() {
           interval = pIntervals[Math.random()*pIntervals.length << 0];  
         }
         tone = baseTone + interval;
-        addToPiece(time, tone, rhythms[i], 'r');
+        var note = new SingleNote({tone: tone, rhythm: rhythms[i], hand: 'r'});
+        addToPiece(time, note);
         
         time+= rhythms[i];
         //tones.push(tone);
@@ -371,20 +374,27 @@ PiaNote.prototype.generateSong = function() {
     //first chord
     var chordInfo = keyChords[0];
     var chordInterval = chordInfo.interval;
-    var chordType = chordInfo.type;
-    var chordIntervals = chordType == 'M' ? MajorChordIntervals : MinorChordIntervals;
+    //var chordType = chordInfo.type;
+    //var chordIntervals = chordType == 'M' ? MajorChordIntervals : MinorChordIntervals;
     var baseOfChord = lowLimit + baseOfKey + chordInterval;
-    var chord = {info: chordInfo,
-                 notes: [baseOfChord, baseOfChord + chordIntervals[1], baseOfChord + chordIntervals[2]]};
+    //var chord = {info: chordInfo,
+      //           notes: [baseOfChord, baseOfChord + chordIntervals[1], baseOfChord + chordIntervals[2]]};
 
-    chords.push(chord);
+    chords.push(chordInfo);
     
     for(i = 0; i < rhythms.length; i++) {
       var tone;
       var interval;
-      var chordIntervals = chordType == 'M' ? MajorChordIntervals : MinorChordIntervals;
-      addToPiece(time, [baseOfChord, baseOfChord + chordIntervals[1], baseOfChord + chordIntervals[2]], rhythms[i], 'l');
-
+      //var chordIntervals = chordType == 'M' ? MajorChordIntervals : MinorChordIntervals;
+      var chordNote;
+      if (measureCount != 1 && measureCount != 4) {
+        chordNote = new InvertedChord({tone: baseOfChord, rhythm: rhythms[i], hand: 'l', chord: chordInfo});
+      }
+      else {
+        chordNote = new Triad({tone: baseOfChord, rhythm: rhythms[i], hand: 'l', chord: chordInfo});
+      }
+      addToPiece(time, chordNote);
+      
       //tones.push([baseOfChord, baseOfChord + chordIntervals[1], baseOfChord + chordIntervals[2]]);
       time+= rhythms[i];
       //update the measureDuration
@@ -397,12 +407,12 @@ PiaNote.prototype.generateSong = function() {
         //Last Chord is ALWAYS the key chord (Ex. Key of C, last chord C)
         chordInfo = measureCount == numMeasures ? keyChords[0] : keyChords[Math.random()*keyChords.length << 0];
         chordInterval = chordInfo.interval;
-        chordType = chordInfo.type;
+        //chordType = chordInfo.type;
         baseOfChord = lowLimit + baseOfKey + chordInterval;
-        chordIntervals = chordType == 'M' ? MajorChordIntervals : MinorChordIntervals;
-        chord = {info: chordInfo,
-                 notes: [baseOfChord, baseOfChord + chordIntervals[1], baseOfChord + chordIntervals[2]]};
-        chords.push(chord);
+        //chordIntervals = chordType == 'M' ? MajorChordIntervals : MinorChordIntervals;
+        //chord = {info: chordInfo,
+                 //notes: [baseOfChord, baseOfChord + chordIntervals[1], baseOfChord + chordIntervals[2]]};
+        chords.push(chordInfo);
         
       }
     }

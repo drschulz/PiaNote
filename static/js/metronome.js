@@ -70,7 +70,6 @@ function Metronome() {
 
     that.timerWorker.onmessage = function(e) {
         if (e.data == "tick") {
-            // console.log("tick!");
             scheduler();
         }
         else
@@ -106,7 +105,6 @@ Metronome.prototype.play = function(tempo) {
         this.timerWorker.postMessage("stop");
         return "play";
     }
-  //this.metronomeInterval = setInterval(this.playBeat, tempo * 1000 << 0);
 };
 
 Metronome.prototype.stop = function() {
@@ -116,7 +114,6 @@ Metronome.prototype.stop = function() {
 
 Metronome.prototype.isPlaying = function() {
     return isPlaying;
-    //return this.metronomeInterval != null;
 }
 
 Metronome.prototype.setTempo = function(tempo) {
