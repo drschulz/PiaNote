@@ -125,22 +125,16 @@ const ChordsForKey = {
 
 
 const keys = {
-  "Ab": -4,
-  "A": -3,
-  "Bb": -2,
-  "B": -1,
-  "Cb": -1,
   "C": 0,
-  "C#": 1,
-  "Db": 1,
-  "D": 2,
-  "Eb": 3,
-  "E": 4,
+  "G": 7,
   "F": 5,
-  "F#": 6,
-  "Gb": 6,
-  "G": 7
+  "D": 2,
+  "Bb": -2,
+  "A": 9,
+  "Eb": 3,
 };
+
+const musicalKeys = ['C', 'G', 'F', 'D', 'Bb', 'A', 'Eb'];
 
 const sharpKeys = ['C', 'G', 'D', 'A', 'E', 'B', 'F#', 'C#'];
 const flatKeys = ['C', 'F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb', 'Cb'];

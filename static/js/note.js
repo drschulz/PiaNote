@@ -131,10 +131,9 @@ SingleNote.prototype.getDescriptionOfPerformed = function(isSharpKey) {
 
 SingleNote.prototype.getSheetNote = function(currentAccidentals, isSharpKey) {
   var bundle = {};
-
+  
   function getAccidentalledNote(sheetTone, accidental) {
     var baseNote = sheetTone[accidental];
-    
     if (currentAccidentals[baseNote] != accidental) {
       currentAccidentals[baseNote] = accidental;
       return accidental + baseNote;
@@ -144,11 +143,11 @@ SingleNote.prototype.getSheetNote = function(currentAccidentals, isSharpKey) {
   }
 
   if (this.tone == REST) {
-    return "z";
+    bundle.note = "z";
+    bundle.accidentals = currentAccidentals;
+    return bundle;
   }
-
   var sheetTone = midiToNote(this.tone);
-
   //always check if the natural version of the note is available
   if (sheetTone.note['='] !== undefined) {
     sheetNote = getAccidentalledNote(sheetTone.note, '=');

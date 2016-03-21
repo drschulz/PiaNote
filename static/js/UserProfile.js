@@ -18,6 +18,7 @@ function UserProfile() {
 	this.currentTier = 0; //the tier the user is on towards the next base
 	this.currentLevelInTier = 0;
 	this.numAttemptsAtLevel = 0; //attempts made to pass current level or drilling level
+	this.numSuccessesInLevel = 0;
 	this.tierProgress = [false]; //indicates which part of the tier they have passed.
 	this.songNum = 0; // the current song
 
@@ -76,6 +77,8 @@ UserProfile.prototype.chooseAnotherLevelInTier = function() {
 		this.currentLevel[tierLevel[i]] = this.nextBaseLevel[tierLevel[i]];
 	}
 
+	this.drillingLevel = this.currentLevel.slice();
+
 }
 
 UserProfile.prototype.passedAllLevelsInTier = function() {
@@ -131,6 +134,36 @@ UserProfile.prototype.getComponentAccuracyForLevel = function(level) {
 		return e / that.performanceData[levelString].length;
 	});
 
+}
+
+UserProfile.prototype.getLowestAccuracyForCurrentLevelFocus = function() {
+	var that = this;
+	var levelString = JSON.stringify(this.currentLevel);
+
+	if (this.performanceData[levelString] == undefined) {
+		return 
+	}
+
+	var levelFocus = tiers[this.currentTier][this.currentLevelInTier];
+
+	var componentAccuracies = new Array(levelFocus.length);
+
+	for (var i = 0; i < this.performanceData[levelString].length; i++) {
+		var data = this.performanceData[levelString][i];
+		for (var j = 0; j < componentAccuracies.length; j++) {
+			componentAccuracies[j] += data[levelFocus[j]];
+		}
+	}
+
+	componentAccuracies = componentAccuracies.map(function(e) {
+		return e / that.performanceData[levelString].length;
+	});
+
+	return Math.min.apply(Math, componentAccuracies);
+}
+
+UserProfile.prototype.getLevelFocusComponents = function() {
+	return tiers[this.currentTier][this.currentLevelInTier];
 }
 
 

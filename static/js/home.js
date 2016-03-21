@@ -46,9 +46,9 @@ function bindNotesToSheetMusic() {
   var noteIdx = 0;
   var abcIdx = 0;
   var voice1 = pianote.expectedPiece.getVoiceTuneList().voice1;
-  var beatValue = WHOLE_NOTE_VALUE / pianote.expectedPiece.piece.time.rhythm;
-  var measureAccent = Math.ceil(pianote.expectedPiece.piece.time.beats / 2) * beatValue;
-  var measureDuration = pianote.expectedPiece.piece.time.beats * beatValue;
+  var beatValue = WHOLE_NOTE_VALUE / pianote.expectedPiece.time.rhythm;
+  var measureAccent = Math.ceil(pianote.expectedPiece.time.beats / 2) * beatValue;
+  var measureDuration = pianote.expectedPiece.time.beats * beatValue;
 
   var measureNotes = $(".note.m0.v0");
   for(var i = 0; i < voice1.length; i++) {
@@ -178,7 +178,7 @@ function saveUserStats() {
 }
 
 function updateStave() {
-  var voice = pianote.expectedPiece.flatTuneList();
+  var voice = flatTuneList(pianote.expectedPiece.piece);
   for(var i = 0; i < voice.length; i++) {
     var note = voice[i];
     if(note.tone != note.performedTone && note.rhythm != note.performedRhythm) {
