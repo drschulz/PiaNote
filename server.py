@@ -134,7 +134,7 @@ class Users(db.Model):
 def wsgi(environ, start_response):
 	port = int(os.environ.get("PORT", 5000))
 	app.secret_key = os.urandom(24)
-	app.run(host='0.0.0.0', port=port);
+	app.run(debug=True, host='0.0.0.0', port=port, use_reloader=True)
 
 def main():
 	port = int(os.environ.get("PORT", 5000))
