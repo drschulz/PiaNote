@@ -131,6 +131,10 @@ class Users(db.Model):
     def __repr__(self):
         return '<User %r>' % self.username
 
+def wsgi(environ, start_response):
+	port = int(os.environ.get("PORT", 5000))
+	app.secret_key = os.urandom(24)
+	app.run(host='0.0.0.0', port=port);
 
 def main():
 	port = int(os.environ.get("PORT", 5000))
