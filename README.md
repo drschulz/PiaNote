@@ -13,6 +13,7 @@ Thanks to:
 - [MIDI.js] (https://github.com/mudcube/MIDI.js/)
 - [midi-js-soundfonts] (https://github.com/gleitz/midi-js-soundfonts)
 - [abcjs] (https://github.com/paulrosen/abcjs)
+- [combinatorics] (https://github.com/dankogai/js-combinatorics)
 
 
 Needed to run this program:
