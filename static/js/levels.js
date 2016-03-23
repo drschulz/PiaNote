@@ -59,7 +59,7 @@ const rhythmLevels = new MusicLevel({
 const keyLevels = new MusicLevel({
 	musicComponents: ['C', 'G', 'F', 'D', 'Bb', 'A', 'Eb'],
 	numLevels: 3,
-	baseIdx: 2, //start with one sharp or flat
+	baseIdx: 3, //start with one sharp or flat
 	increment: 2
 });
 

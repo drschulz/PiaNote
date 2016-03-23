@@ -27,7 +27,7 @@ window.addEventListener('load', function() {
 		$("#drilling").html(JSON.stringify(user.drillingLevel));
 	});
 
-	/*console.log(rhythmLevels.getCurrentChoices());
+	console.log(rhythmLevels.getCurrentChoices());
 	console.log(rhythmLevels.getCurrentChoicesStrict());
 	rhythmLevels.increaseLevel();
 	console.log(rhythmLevels.getCurrentChoices());
@@ -49,7 +49,7 @@ window.addEventListener('load', function() {
 	console.log(intervalLevels.getCurrentChoicesStrict());
 	intervalLevels.increaseLevel();
 	console.log(intervalLevels.getCurrentChoices());
-	console.log(intervalLevels.getCurrentChoicesStrict());*/
+	console.log(intervalLevels.getCurrentChoicesStrict());
 
 	console.log(PianoteLevels.getCurrentLevels());
 	PianoteLevels.increaseAllLevels();
@@ -65,12 +65,6 @@ window.addEventListener('load', function() {
 		}
 		console.log(']');
 	}
-
-	//rhythmLevels.lock(true);
-	//keyLevels.lock(true);
-	//timeLevels.lock(true);
-	//intervalLevels.lock(true);
-
 	var tiers = PianoteLevels.getTiers();
 	for (var i = 0; i < tiers.length; i++) {
 		console.log('[');
