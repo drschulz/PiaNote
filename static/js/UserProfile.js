@@ -10,38 +10,39 @@ const KEYLEVEL = 2;
 const CHORDLEVEL = 3;
 
 function UserProfile() {
-	this.currentLevel = [1,1,1,1]; //current level they are working on
-	this.baseLevel = [1,1,1,1]; // current base level that current level is derived from
-	this.nextBaseLevel = [2,2,2,2]; //next level that current level is gradually working towards
-	this.drillingLevel = [1,1,1,1]; //the drilling level that is targeting the current level
+	this.songNum = 0; // the current song
+	this.updateStatuses();
+	this.performanceData = {}; //level: {list of accuracy lists}
+}
+
+UserProfile.prototype.updateStatuses = function() {
+	this.currentLevel = PianoteLevels.getCurrentLevels(); //current level they are working on
+	
+	this.baseLevel = PianoteLevels.getCurrentLevels(); //current base level that current level is derived from
+	this.nextBaseLevel = PianoteLevels.getNextLevels(); //next level that current level is gradually working towards
+	this.drillingLevel = PianoteLevels.getCurrentLevels(); //the drilling level that is targeting the current level
 	this.isDrilling = false; //whether the user is currently drilling or practicing the current level
+	this.tiers = PianoteLevels.getTiers();
 	this.currentTier = 0; //the tier the user is on towards the next base
-	this.currentLevelInTier = 0;
+	this.chooseAnotherLevelInTier();
 	this.numAttemptsAtLevel = 0; //attempts made to pass current level or drilling level
 	this.numSuccessesInLevel = 0;
-	this.tierProgress = [false]; //indicates which part of the tier they have passed.
-	this.songNum = 0; // the current song
 
-	this.performanceData = {}; //level: {list of accuracy lists}
 }
 
 UserProfile.prototype.updateTier = function() {
 	//update base level if all tiers are complete
-	if (this.currentTier == 3) {
-		for (var i = 0; i < this.baseLevel.length; i++) {
-			this.baseLevel[i]++;
-			this.nextBaseLevel[i]++;
-		}
+	if (this.currentTier == this.tiers.length - 1) {
+		PianoteLevels.unlockAllLevels();
+		PianoteLevels.setLevels(this.baseLevel);
+		PianoteLevels.increaseAllLevels();
+		this.updateStatuses();
+		console.log(this.currentLevel);
 	}
 	
-	this.currentTier = (this.currentTier + 1) % tiers.length;
+	this.currentTier = (this.currentTier + 1) % this.tiers.length;
 
-	var tier = tiers[this.currentTier];
-
-	this.tierProgress = [];
-	for(var i = 0; i < tier.length; i++) {
-		this.tierProgress.push(false);
-	}
+	var tier = this.tiers[this.currentTier];
 
 	this.chooseAnotherLevelInTier();
 }
@@ -50,12 +51,9 @@ UserProfile.prototype.chooseAnotherLevelInTier = function() {
 	var that = this;
 
 	//only choose levels that have not been passed and that are not the current tier
-	var tierLevelIndices = tiers[this.currentTier].map(function(val, idx) {
-		return idx;
-	});
-
-	var filteredTierLevels = tierLevelIndices.filter(function(val, idx) {
-		return !that.tierProgress[idx] && idx != that.currentLevelInTier;
+	console.log(this.tiers[this.currentTier]);
+	var filteredTierLevels = this.tiers[this.currentTier].filter(function(val, idx) {
+		return val != that.currentLevelInTier && !val.passed;
 	});
 
 	//If there are not other available levels, stick at the current level
@@ -65,27 +63,26 @@ UserProfile.prototype.chooseAnotherLevelInTier = function() {
 
 	//pick a random available level
 	this.currentLevelInTier = filteredTierLevels[Math.random() * filteredTierLevels.length << 0];
+	console.log(this.currentLevelInTier);
 
 	//set the new current level
-	this.currentLevel = this.baseLevel.slice();
+	PianoteLevels.unlockAllLevels();
+	PianoteLevels.setLevels(this.baseLevel);
+	PianoteLevels.increaseLevels(this.currentLevelInTier.level);
+	PianoteLevels.lockLevels(this.currentLevelInTier.level);
 
+	this.currentLevel = PianoteLevels.getCurrentLevels();
+	this.drillingLevel = PianoteLevels.getCurrentLevels();
 
-	var tierLevel = tiers[this.currentTier][this.currentLevelInTier];
-
-	for (var i = 0; i < tierLevel.length; i++) {
-		//update the level number according to the tier
-		this.currentLevel[tierLevel[i]] = this.nextBaseLevel[tierLevel[i]];
-	}
-
-	this.drillingLevel = this.currentLevel.slice();
-
+	console.log(this.currentLevel);
 }
 
 UserProfile.prototype.passedAllLevelsInTier = function() {
 	var passed = true;
+	var tier = this.tiers[this.currentTier];
 
-	for (var i = 0; i < this.tierProgress.length; i++) {
-		passed = passed && this.tierProgress[i];
+	for (var i = 0; i < tier.length; i++) {
+		passed = passed && tier[i].passed;
 	}
 	return passed;
 }
@@ -101,10 +98,10 @@ UserProfile.prototype.getOverallAccuracyForLevel = function(level) {
 	for(var i = 0; i < this.performanceData[curLevelString].length; i++) {
 		var data = this.performanceData[curLevelString][i];
 		var componentAccuracySum = 0;
-		for(var j = 0; j < data.length; j++) {
-			componentAccuracySum += data[i];
+		for(var j in data) {
+			componentAccuracySum += data[j];
 		}
-		var componentAccuracy = componentAccuracySum / data.length;
+		var componentAccuracy = componentAccuracySum / Object.keys(data).length;
 		accuracySum+=componentAccuracy;
 		
 	}
@@ -114,26 +111,32 @@ UserProfile.prototype.getOverallAccuracyForLevel = function(level) {
 UserProfile.prototype.getComponentAccuracyForLevel = function(level) {
 	var levelString = JSON.stringify(level);
 	var that = this;
+	var accuracies = {};
+	for (var i in level) {
+		accuracies[i] = 0;
+	}
+
 	if (this.performanceData[levelString] == undefined) {
-		return [0,0,0,0];
+		return accuracies;
 	}
 
 	console.log(this.performanceData[levelString]);
 
-	var accuracySum = [0,0,0,0];
+	//var accuracySum = [0,0,0,0];
 	for(var i = 0; i < this.performanceData[levelString].length; i++) {
 		var data = this.performanceData[levelString][i];
-		for(var j = 0; j < data.length; j++) {
-			accuracySum[j] += data[j];
+		for(var j in data) {
+			accuracies[j] += data[j];
 		}
 	}
 
-	console.log(accuracySum);
+	console.log(accuracies);
 
-	return accuracySum.map(function(e) {
-		return e / that.performanceData[levelString].length;
-	});
+	for (var i in accuracies) {
+		accuracies[i]  = accuracies[i] / that.performanceData[levelString].length;
+	}
 
+	return accuracies;
 }
 
 UserProfile.prototype.getLowestAccuracyForCurrentLevelFocus = function() {
@@ -141,29 +144,41 @@ UserProfile.prototype.getLowestAccuracyForCurrentLevelFocus = function() {
 	var levelString = JSON.stringify(this.currentLevel);
 
 	if (this.performanceData[levelString] == undefined) {
-		return 
+		return; //TODO HUH?????
 	}
 
-	var levelFocus = tiers[this.currentTier][this.currentLevelInTier];
-
-	var componentAccuracies = new Array(levelFocus.length);
+	var componentAccuracies = {};
+	for (var i in this.currentLevelInTier.level) {
+		componentAccuracies[this.currentLevelInTier.level[i]] = 0;
+	}
 
 	for (var i = 0; i < this.performanceData[levelString].length; i++) {
 		var data = this.performanceData[levelString][i];
-		for (var j = 0; j < componentAccuracies.length; j++) {
-			componentAccuracies[j] += data[levelFocus[j]];
+		for (var j in componentAccuracies) {
+			componentAccuracies[j] += data[j];
 		}
 	}
 
-	componentAccuracies = componentAccuracies.map(function(e) {
-		return e / that.performanceData[levelString].length;
-	});
+	for (var i in componentAccuracies) {
+		componentAccuracies[i]  = componentAccuracies[i] / that.performanceData[levelString].length;
+	}
 
-	return Math.min.apply(Math, componentAccuracies);
+	var minAccuracy = 1;
+	for (var i in componentAccuracies) {
+		if (componentAccuracies[i] < minAccuracy) {
+			minAccuracy = componentAccuracies[i];
+		}
+	}
+
+	return minAccuracy;
 }
 
 UserProfile.prototype.getLevelFocusComponents = function() {
-	return tiers[this.currentTier][this.currentLevelInTier];
+	return this.currentLevelInTier.level;
+}
+
+UserProfile.prototype.updateDrillingLevel = function() {
+	this.drillingLevel = PianoteLevels.getCurrentLevels();
 }
 
 

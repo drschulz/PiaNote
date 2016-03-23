@@ -95,7 +95,7 @@ PiaNote.prototype.generateSong = function() {
   
   this.resetTime();
   var key = generateKey(); //choose by level
-  var timeSig = {beats: 2, rhythm: 4}; //choose by level
+  var timeSig = {beats: 3, rhythm: 4}; //choose by level
   var keyLetter = key;
   
   var config = {
@@ -105,7 +105,7 @@ PiaNote.prototype.generateSong = function() {
     isSharpKey: sharpKeys.indexOf(keyLetter) > 0 ? true : false
   };
 
-  this.expectedPiece = new InvertedChordPiece(config); //choose by level
+  this.expectedPiece = new HandsTogetherPiece(config); //choose by level
 };
 
 PiaNote.prototype.scorePerformance = function() {

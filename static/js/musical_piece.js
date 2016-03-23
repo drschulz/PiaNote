@@ -759,16 +759,39 @@ InvertedChordPiece.prototype.generateLeftHandChords = function() {
   this.addToPiece(time, note);  
 }
 
-function MixedChordPiece() {
-
+function MixedChordPiece(config) {
+  
 }
+
+
 
 //end chordPieces
 
 
-function HandsTogetherPiece() {
-
+function HandsTogetherPiece(config) {
+  Musical_Piece.call(this, config);
 }
+
+
+HandsTogetherPiece.prototype = Object.create(Musical_Piece.prototype);
+HandsTogetherPiece.prototype.constructor = HandsTogetherPiece;
+
+HandsTogetherPiece.prototype.generatePiece = function() {
+  var rightThumbPosition = Math.random() * 4 << 0;
+  var rlowestIntervalIdx = rightThumbPosition;
+  var rhighestIntervalIdx = rightThumbPosition + 5;
+  var possibleIntervalsR = NoteIntervals.slice(rlowestIntervalIdx, rhighestIntervalIdx);
+  this.generatePhrase(0, 3, 'r', possibleIntervalsR);
+  
+
+  var leftPinkyPosition = Math.random() * 4 << 0;
+  var llowestIntervalIdx = leftPinkyPosition;
+  var lhighestIntervalIdx = leftPinkyPosition + 5;
+  var possibleIntervalsL = NoteIntervals.slice(llowestIntervalIdx, lhighestIntervalIdx);
+  this.generatePhrase(0, 3, 'l', possibleIntervalsL);
+
+};
+
 
 function HandsTogetherComplexPiece() {
 

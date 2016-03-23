@@ -29,30 +29,26 @@ RecommendationEngine.prototype.getNextSongParameters = function(lastSongAccuraci
 		})();
 
 		if (lowestAccuracies < 0.6) {
-			for (var i = 0; i < accuracies.length; i++) {
-				//if component is not a focus component
-				if (focusComponents.indexOf(i) == -1) {
-					//lower the component
-					that.userProfile.drillingLevel[i] = that.userProfile.drillingLevel[i] - 1 >= 1 ? that.userProfile.drillingLevel[i] - 1 : 1;
-				}
-			}
+			PianoteLevels.decreaseLevels();
 		}
 		else {
-			for (var i = 0; i < accuracies.length; i++) {
+			for (var i in accuracies) {
 				//if component is not a focus component
 				if (focusComponents.indexOf(i) == -1) {
 
 					//lower the component level if the accuracy is bad (shows they are having trouble at the level)
 					if (accuracies[i] < 0.6) {
-						that.userProfile.drillingLevel[i] = that.userProfile.drillingLevel[i] - 1 >= 1 ? that.userProfile.drillingLevel[i] - 1 : 1;
+						PianoteLevels.decreaseLevel(i);
 					}
 					//raise the component level if the accuracy is good, cap at current level to drill to
 					else if (accuracies[i] > 0.8) {
-						that.userProfile.drillingLevel[i] = that.userProfile.drillingLevel[i] + 1 > that.userProfile.currentLevel[i] ? that.userProfile.currentLevel[i] : that.userProfile.drillingLevel[i] + 1;
+						PianoteLevels.increaseLevel(i);
 					}
 				}
 			}	
 		}
+
+		that.userProfile.updateDrillingLevel();
 	}
 
 	
@@ -72,7 +68,14 @@ RecommendationEngine.prototype.getNextSongParameters = function(lastSongAccuraci
 			this.userProfile.performanceData[curLevelString].shift();
 		}
 
-		var lowestAccuracy = Math.min.apply(Math, lastSongAccuracies);
+		//get lowest accuracy
+		var lowestAccuracy = 1;
+		for (var i in lastSongAccuracies) {
+			if (lastSongAccuracies[i] < lowestAccuracy) {
+				lowestAccuracy = lastSongAccuracies[i];
+			}
+		}
+
 		//if component accuracies are high
 		if (lowestAccuracy >= 0.8) {	
 			console.log("success!");
@@ -87,7 +90,7 @@ RecommendationEngine.prototype.getNextSongParameters = function(lastSongAccuraci
 			if (this.userProfile.numSuccessesInLevel >= 3) {
 				console.log("passed level!");
 				//pass level
-				this.userProfile.tierProgress[this.userProfile.currentLevelInTier] = true;
+				this.userProfile.currentLevelInTier.passed = true;
 
 				//choose next level
 				if (this.userProfile.passedAllLevelsInTier()) {
@@ -100,10 +103,12 @@ RecommendationEngine.prototype.getNextSongParameters = function(lastSongAccuraci
 
 				//reset successes
 				this.userProfile.numSuccessesInLevel = 0;
-
-				//return new level
-				return this.userProfile.drillingLevel;	
+	
 			}
+
+			//return new level
+			return this.userProfile.drillingLevel;
+
 
 		}
 
@@ -121,10 +126,12 @@ RecommendationEngine.prototype.getNextSongParameters = function(lastSongAccuraci
 				this.userProfile.numAttemptsAtLevel = 0;
 				this.userProfile.numSuccessesInLevel = 0;
 
-				//return level
+				//return new level
 				return this.userProfile.drillingLevel;
 			}	
 		}
+
+		
 	}
 
 	updateDrillingLevel(lastSongAccuracies);

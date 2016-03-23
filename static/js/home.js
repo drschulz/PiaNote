@@ -210,7 +210,7 @@ function scorePerformance() {
 function playSong() {
   var curBeat = 0;
 
-  var tune = pianote.expectedPiece.piece.tune;
+  var tune = pianote.expectedPiece.piece;
   var times = Object.keys(tune);
 
   //sort the notes by time
