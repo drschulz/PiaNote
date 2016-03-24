@@ -29,6 +29,7 @@ RecommendationEngine.prototype.getNextSongParameters = function(lastSongAccuraci
 		})();
 
 		if (lowestAccuracies < 0.6) {
+			console.log("decreasing!");
 			PianoteLevels.decreaseLevels();
 		}
 		else {
@@ -42,7 +43,9 @@ RecommendationEngine.prototype.getNextSongParameters = function(lastSongAccuraci
 					}
 					//raise the component level if the accuracy is good, cap at current level to drill to
 					else if (accuracies[i] > 0.8) {
-						PianoteLevels.increaseLevel(i);
+						if (that.userProfile.drillingLevel[i] < that.userProfile.currentLevel[i]) {
+							PianoteLevels.increaseLevel(i);
+						}
 					}
 				}
 			}	

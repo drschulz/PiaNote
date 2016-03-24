@@ -99,19 +99,19 @@ Musical_Piece.prototype.generatePhraseRhythm = function() {
   var curMeasure = 0;
   var curBeat = 0;
 
-  var possibleRhythms = (function() {
+  var possibleRhythms = rhythmLevels.getCurrentChoices();/*(function() {
     var arr = [];
     Object.keys(NoteRhythms).forEach(function(key) {
       arr.push(NoteRhythms[key]);
     });
     return arr;
-  })();
+  })();*/
 
   var measureRhythms = [];
 
   //get weights based on idx.
   var cdf = 0;
-  for(var i = 0; i < /*possibleRhythms.length*/4; i++) {
+  for(var i = 0; i < possibleRhythms.length; i++) {
     cdf += i+1;
   }
 
@@ -127,7 +127,7 @@ Musical_Piece.prototype.generatePhraseRhythm = function() {
     randWeight = Math.random() * cdf << 0;
     console.log(randWeight);
     var upTo = 0;
-    for (var i = 0; i < /*possibleRhythms.length*/4; i++) {
+    for (var i = 0; i < possibleRhythms.length; i++) {
       if (upTo + i + 1 >= randWeight) {
         rhythmIdx = i;
         break;
@@ -573,6 +573,10 @@ Musical_Piece.prototype.generatePhrase = function(startMeasure, endMeasure, hand
     return true;
   }
 
+  var lastIntervalIdx = 0;
+  var possibleNextIntervals;
+  var possibleNextChordIntervals;
+
   function generateMeasureNotes(possibleIntervals, curMeasure) {
     var tones = [];
     var rhythms = that.rhythms[curMeasure];
@@ -586,30 +590,76 @@ Musical_Piece.prototype.generatePhrase = function(startMeasure, endMeasure, hand
 
     var time = curMeasure*that.measureDuration;
     //generate first note by taking an interval that is in the chord      
-    var interval = chordIntervals[Math.random()*chordIntervals.length << 0];
+    var interval;
+    if (curMeasure == startMeasure) {
+      interval = chordIntervals[Math.random()*chordIntervals.length << 0];  
+    }
+    else {
+      possibleNextChordIntervals = getPossibleIntervalsForChord(chord, possibleNextIntervals);
+      interval = possibleNextChordIntervals[Math.random()*possibleNextChordIntervals.length << 0];
+      if (interval == undefined) {
+        interval = chordIntervals[Math.random()*chordIntervals.length << 0];
+      }
+    }
+    
     var tone = baseTone + interval; 
+    console.log(tone);
     var note = new SingleNote({tone: tone, rhythm: rhythms[0], hand: hand});
+    lastIntervalIdx = possibleIntervals.indexOf(interval);
+    if (curMeasure == startMeasure) {
+      note.setFingering(hand == "l" ? 5 - lastIntervalIdx : lastIntervalIdx + 1);
+    }
     that.addToPiece(time, note);
     
     //update the current time
     time += rhythms[0];
 
-    //tones.push(tone);
+    var possibleIndices = intervalLevels.getCurrentChoices();
+
+    possibleNextIntervals = [];
+    for (var i = 0; i < possibleIntervals.length; i++) {
+      var diff = Math.abs(i - lastIntervalIdx);
+      if (possibleIndices.indexOf(diff) != -1) {
+        possibleNextIntervals.push(possibleIntervals[i]);
+      }
+    }
+
+    possibleNextChordIntervals = getPossibleIntervalsForChord(chord, possibleNextIntervals);
 
     //generate next notes
     for(var i = 1; i < rhythms.length; i++) {
       //Make sure last note of the song ends on a chord note
       if(i == rhythms.length - 1 && curMeasure == that.numMeasures - 1) {
-        interval = chordIntervals[Math.random()*chordIntervals.length << 0];
+        interval = possibleNextChordIntervals[Math.random()*possibleNextChordIntervals.length << 0];
+        if (interval == undefined) {
+          interval = chordIntervals[Math.random()*chordIntervals.length << 0];
+        }
       }
       else {
-        interval = pIntervals[Math.random()*pIntervals.length << 0];  
+        interval = possibleNextIntervals[Math.random()*possibleNextIntervals.length << 0];
+        if (interval == undefined) {
+          alert("UNDEFINED");
+        }
       }
       tone = baseTone + interval;
+      console.log(tone);
       var note = new SingleNote({tone: tone, rhythm: rhythms[i], hand: hand});
+      lastIntervalIdx = possibleIntervals.indexOf(interval);
+      //note.setFingering(hand == "l" ? 5 - lastIntervalIdx : lastIntervalIdx + 1);
       that.addToPiece(time, note);
       
       time+= rhythms[i];
+      
+      possibleNextIntervals = [];
+      for (var j = 0; j < possibleIntervals.length; j++) {
+        var diff = Math.abs(j - lastIntervalIdx);
+        if (possibleIndices.indexOf(diff) != -1) {
+          possibleNextIntervals.push(possibleIntervals[j]);
+        }
+      }
+      possibleNextChordIntervals = getPossibleIntervalsForChord(chord, possibleNextIntervals);
+      //console.log(possibleNextIntervals);
+
       //tones.push(tone);
     }
 

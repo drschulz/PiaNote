@@ -22,9 +22,9 @@ function renderSong(piece, location, color) {
                                           //  alert("hello!");
                                           var note = $(abcElem.abselem.elemset[0][0]).data("note");
                                           document.getElementById("note-dialog").close();
-                                          $("#pianote-note-num").html(note.getDescription(pianote.expectedPiece.piece.isSharpKey) +"");
+                                          $("#pianote-note-num").html(note.getDescription(piece.isSharpKey) +"");
                                           $("#pianote-note-rhythm").html(note.rhythm + "");
-                                          $("#pianote-performed-note").html(note.getDescriptionOfPerformed(pianote.expectedPiece.piece.isSharpKey) + "");
+                                          $("#pianote-performed-note").html(note.getDescriptionOfPerformed(piece.isSharpKey) + "");
                                           $("#pianote-performed-rhythm").html(note.performedRhythm + "");
                                           $("#note-dialog").css("left", (mouseX - 250) + "px");
                                           $("#note-dialog").css("top", mouseY + "px");
@@ -35,7 +35,7 @@ function renderSong(piece, location, color) {
                                     },
                                     {});
 
-  $("svg").attr("width", 1110);
+  //$("svg").attr("width", 1110);
 }
 
 function bindNotesToSheetMusic() {
@@ -290,6 +290,9 @@ function initializeApplication(statsData) {
   metronome = new Metronome();
   main_piano = new UserPiano("#piano-container");
   initializeButtons();
+  timeLevels.setLevel(3);
+  songLevels.setLevel(4);
+  rhythmLevels.setLevel(2);
   
   function noteOn(note, velocity) {
     main_piano.instrument.noteOn(note, velocity, 0);

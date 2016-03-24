@@ -75,7 +75,7 @@ svg > rect {
 
 #mystave svg {
   display: block;
-  margin: 0 auto;
+  /*margin: 0 auto;*/
 }
 
 #staff-card {
@@ -85,7 +85,7 @@ svg > rect {
 }
 
 #mystave { 
-  width: 100% !important;
+  /*width: 100% !important;*/
   /*text-align: center;*/
 }
 

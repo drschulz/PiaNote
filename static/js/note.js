@@ -28,7 +28,7 @@ function Note(config) {
   this.rhythm = config.rhythm;
   this.hand = config.hand;
   this.svgElements = [];
-  
+  this.fingering = undefined;
   /*if (config.last_tone === undefined) {
     this.interval = 0;
   }
@@ -37,6 +37,10 @@ function Note(config) {
   }
   
   this.dynamic = config.dynamic;*/
+}
+
+Note.prototype.setFingering = function(finger) {
+  this.fingering = finger;
 }
 
 Note.prototype.getSheetNote = function(currentAccidentals, isSharpKey) {
@@ -159,7 +163,12 @@ SingleNote.prototype.getSheetNote = function(currentAccidentals, isSharpKey) {
   //get the correct note octave
   sheetNote += abcOctave[sheetTone.octave];
 
-  bundle.note = sheetNote;
+  if (this.fingering != undefined) {
+    bundle.note = "!" + this.fingering + "!" + sheetNote;
+  }
+  else {
+    bundle.note = sheetNote;
+  }
   bundle.accidentals = currentAccidentals;
 
   return bundle;

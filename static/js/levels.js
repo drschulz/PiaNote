@@ -28,7 +28,7 @@ MusicLevel.prototype.increaseLevel = function() {
 
 //decrease level if not locked and not at level 0
 MusicLevel.prototype.decreaseLevel = function() {
-	if (this.currentLevel - 1 > 0 && !this.lockLevel) {
+	if (this.currentLevel - 1 >= 0 && !this.lockLevel) {
 		this.currentLevel--;
 	}	
 };
@@ -71,9 +71,9 @@ const timeLevels = new MusicLevel({
 });
 
 const intervalLevels = new MusicLevel({
-	musicComponents: [2, 3, 5, 4, 6],
-	numLevels: 5,
-	baseIdx: 1,
+	musicComponents: [0, 1, 2, 4, 3],
+	numLevels: 3,
+	baseIdx: 3,
 	increment: 1
 });
 

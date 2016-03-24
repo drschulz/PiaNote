@@ -94,18 +94,35 @@ PiaNote.prototype.generateSong = function() {
   this.pianotePiece = {};
   
   this.resetTime();
-  var key = generateKey(); //choose by level
-  var timeSig = {beats: 3, rhythm: 4}; //choose by level
-  var keyLetter = key;
+  //var key = generateKey(); //choose by level
+  //var timeSig = {beats: 3, rhythm: 4}; //choose by level
+  //var keyLetter = key;
   
-  var config = {
+  /*var config = {
     time: timeSig,
     key: keyLetter,
     numMeasures: 4,
     isSharpKey: sharpKeys.indexOf(keyLetter) > 0 ? true : false
+  };*/
+
+  var availableKeys = keyLevels.lockLevel ? keyLevels.getCurrentChoicesStrict() : keyLevels.getCurrentChoices();
+  var key = availableKeys[Math.random() * availableKeys.length << 0];
+
+  var availableTime = timeLevels.lockLevel ? timeLevels.getCurrentChoicesStrict() : timeLevels.getCurrentChoices();
+  var timeSig = availableTime[Math.random() * availableTime.length << 0];
+
+  var config = {
+    time: timeSig,
+    key: key,
+    numMeasures: 4,
+    isSharpKey: sharpKeys.indexOf(key) > 0 ? true : false
   };
 
-  this.expectedPiece = new HandsTogetherPiece(config); //choose by level
+  var availableSongTypes = songLevels.lockLevel ? songLevels.getCurrentChoicesStrict() : songLevels.getCurrentChoices();
+  var piece = availableSongTypes[Math.random() * availableSongTypes.length << 0];
+  this.expectedPiece = new piece(config);
+
+  //this.expectedPiece = new HandsTogetherPiece(config); //choose by level
 };
 
 PiaNote.prototype.scorePerformance = function() {
