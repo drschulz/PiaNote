@@ -48,7 +48,7 @@ function renderSong(piece, location, color) {
 
                                           console.log(note);
 
-                                          document.getElementById("note-dialog").close();
+                                          //document.getElementById("note-dialog").close();
                                           $("#pianote-note-num").html(note.getDescription(piece.isSharpKey) +"");
                                           $("#pianote-note-rhythm").html(RhythmToText[note.rhythm] + "");
                                           $("#pianote-performed-note").html(note.getDescriptionOfPerformed(piece.isSharpKey) + "");
