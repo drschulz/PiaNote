@@ -6,6 +6,8 @@ var tunObjectArray;
 var renderInterval = null;
 var mouseX;
 var mouseY;
+var engine;
+var user;
 //Sheet music rendering
 
 function openDialog() {
@@ -273,10 +275,19 @@ function calculateAccuracies() {
     't': results.rhythms.hit / results.rhythms.num,
     'k': results.notes.hit / results.notes.num,
     'i': results.intervals.hit / results.intervals.num, //weight more by type of interval
-    's': results.notes.hit / results.notes.num //do both notes and rhythms
+    's': (results.notes.hit + results.rhythms.hit) / (results.notes.num + results.rhythms.num) //do both notes and rhythms
   }
-  console.log(results);
-  console.log(accuracies);
+
+  engine.getNextSongParameters(accuracies);
+  
+  //enter stats into the userStats
+  pianote.userStats.addToNoteStats(results.notes.accuracies);
+  pianote.userStats.addToRhythmStats(results.rhythms.accuracies);
+  pianote.userStats.addToIntervalStats(results.intervals.accuracies);
+  pianote.userStats.addToTimeStats(results.rhythms, JSON.stringify(pianote.expectedPiece.time));
+  pianote.userStats.addToKeyStats(results.notes, pianote.expectedPiece.key);
+  //TODO Song stats
+
 }
 
 function playSong(tune) {
@@ -400,9 +411,11 @@ function initializeApplication(statsData) {
   MIDI.setVolume(MidiChannels.MAIN_PIANO, MidiConstants.MAX_VOLUME);
   MIDI.programChange(MidiChannels.MAIN_PIANO, GeneralMIDI.PIANO);
   initializeButtons();
-  timeLevels.setLevel(2);
+  user = new UserProfile();
+  engine = new RecommendationEngine(user);
+  /*timeLevels.setLevel(2);
   songLevels.setLevel(1);
-  rhythmLevels.setLevel(2);
+  rhythmLevels.setLevel(2);*/
   
   function noteOn(note, velocity) {
     pianote.noteOn(note, velocity);

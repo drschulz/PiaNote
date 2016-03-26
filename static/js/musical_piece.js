@@ -641,12 +641,12 @@ Musical_Piece.prototype.getAccuracies = function() {
     }
 
     if (accuracies[result.musicType] == undefined) {
-      accuracies[result.musicType] = {numHit: 0, num: 0};
+      accuracies[result.musicType] = {hit: 0, num: 0};
     }
 
     
 
-    accuracies[result.musicType].numHit += result.hit;
+    accuracies[result.musicType].hit += result.hit;
     accuracies[result.musicType].num ++;
 
     return accuracies;

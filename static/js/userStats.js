@@ -1,5 +1,5 @@
 function UserStats(stats) {
-  this.userKeys = ['C', 'G', 'F', 'D', 'Bb', 'A', 'Eb', 'E', 'Ab', 'B', 'Db', 'F#', 'Gb', 'C#', 'Cb'];
+  this.userKeys = ['C', 'G', 'F', 'D', 'Bb', 'A', 'Eb'];
   var that = this;
 
 
@@ -95,7 +95,85 @@ function UserStats(stats) {
     }
   };
 
+  this.getStatFitness = function(stats, item) {
+    //ensure that new information is presented always
+    if (stats[item] == undefined) {
+      return 1;
+    }
+    var itemAccuracy = stats[item].hit / stats[item].numAppeared;
+    var focusedAccuracy = 0.7;
+    var diff = itemAccuracy - focusedAccuracy;
+    return 0.9 *Math.exp(-((diff * diff) / (2*0.03*0.03))) + 0.1;
+  }
+
+  this.noteStats = {};
+  this.rhythmStats = {};
+  this.intervalStats = {};
+  this.keyStats = {};
+  this.songStats = {};
+  this.timeStats = {};
+
+  this.addToStats = function(stats, type, newStats) {
+    if (stats[type] == undefined) {
+      stats[type] = {hit: 0, num: 0};
+    }
+
+    stats[type].hit += newStats.hit;
+    stats[type].num += newStats.num;
+
+    return stats;
+  };
+
 }
+
+UserStats.prototype.addToNoteStats = function(stats) {
+  for (var i in stats) {
+    this.addToStats(this.noteStats, i, stats[i]);
+  }
+};
+
+UserStats.prototype.addToRhythmStats = function(stats) {
+  for (var i in stats) {
+    this.addToStats(this.rhythmStats, i, stats[i]);
+  }  
+};
+
+UserStats.prototype.addToIntervalStats = function(stats) {
+  for (var i in stats) {
+    this.addToStats(this.intervalStats, i, stats[i]);
+  }
+};
+
+UserStats.prototype.addToKeyStats = function(stats, key) {
+  this.addToStats(this.keyStats, key, stats);
+};
+
+UserStats.prototype.addToSongStats = function(stats, songType) {
+  this.addToStats(this.songStats, songType, stats);
+};
+
+UserStats.prototype.addToTimeStats = function(stats, time) {
+  this.addToStats(this.timeStats, time, stats);
+};
+
+UserStats.prototype.getBestItem = function(items, stats) {
+  var best = [];
+  var bestFitness = 0;
+
+  for (var i = 0; i < items.length; i++) {
+    var fitness = this.getStatFitness(stats, items[i]);
+    if (fitness > bestFitness) {
+      bestFitness = fitness;
+      best = [items[i]];
+    }
+    else if (fitness == bestFitness) {
+      best.push(items[i]);
+    }
+  }
+
+  //If there are multiple tied, pick a random one
+  return best[Math.random()*best.length << 0];
+};
 
 UserStats.prototype.getMostMissedVoice1Note = function() {
   return this.getMin(this.stats.noteHitRateVoice1);
