@@ -56,7 +56,7 @@ function renderSong(piece, location, color) {
                                           $("#pianote-performed-rhythm").html(note.performedRhythm + "");
                                           $("#note-dialog").css("left", (mouseX - 250) + "px");
                                           $("#note-dialog").css("top", mouseY + "px");
-                                          console.log(document.getElementById("note-dialog"));
+                                          console.log(document.getElementById("note-dialog").open);
                                           document.getElementById("note-dialog").open();
                                         } 
                                         
