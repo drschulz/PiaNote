@@ -39,8 +39,22 @@ function Note(config) {
   this.dynamic = config.dynamic;*/
 }
 
+Note.prototype.resetPerformance = function() {
+  throw new Error("CANNOT CALL ABSTRACT FUNCTION");
+}
+
 Note.prototype.setFingering = function(finger) {
   this.fingering = finger;
+}
+
+Note.prototype.hasAnySelected = function() {
+  for (var i = 0; i < this.svgElements.length; i++) {
+    if ($(this.svgElements[i]).hasClass("note_selected")) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 Note.prototype.getSheetNote = function(currentAccidentals, isSharpKey) {
@@ -89,6 +103,16 @@ Note.prototype.abcDump = function(isSharpKey, currentAccidentals, measureBeat, m
   return bundle;
 };
 
+Note.prototype.updateCss = function() {
+  throw new Error("CANNOT CALL ABSTRACT FUNCTION");
+}
+
+Note.prototype.setToHit = function() {
+  for (var i = 0; i < this.svgElements.length; i++) {
+    $(this.svgElements[i]).addClass("hit-all");
+  }
+}
+
 function SingleNote(config) {
   this.tone = config.tone;
   Note.call(this, config);
@@ -98,6 +122,27 @@ function SingleNote(config) {
 
 SingleNote.prototype = Object.create(Note.prototype);
 SingleNote.prototype.constructor = SingleNote;
+
+SingleNote.prototype.updateCss = function() {
+  if(this.tone != this.performedTone && this.rhythm != this.performedRhythm) {
+    for (var j = 0; j < this.svgElements.length; j++) {
+      $(this.svgElements[j]).addClass("missed-all");//.css("fill", "#E83034");
+    }
+  }
+  else if (this.tone != this.performedTone) {
+    for (var j = 0; j < this.svgElements.length; j++) {
+      $(this.svgElements[j]).addClass("missed-note");//.css("fill", "#A257DE");
+    }  
+  }
+  else if (this.rhythm != this.performedRhythm) {
+    for (var j = 0; j < this.svgElements.length; j++) {
+      $(this.svgElements[j]).addClass("missed-rhythm");//.css("fill", "#455ede");
+    }  
+  }
+  else {
+    $(this.svgElements[j]).addClass("hit-all");
+  }
+}
 
 SingleNote.prototype.getDescription = function(isSharpKey) {
   if (Array.isArray(this.tone)) {
@@ -114,14 +159,12 @@ SingleNote.prototype.getDescription = function(isSharpKey) {
   }
 }
 
-SingleNote.prototype.getDescriptionOfPerformed = function(isSharpKey) {
-  if (Array.isArray(this.tone)) {
-    return "chord";
-  }
-  
-  if (this.performedTone == undefined) {
+SingleNote.prototype.getDescriptionOfPerformed = function(isSharpKey) {  
+  if (this.performedTone == undefined || this.performedTone <= 0) {
     return "None";
   }
+
+  console.log(this.performedTone);
 
   var note = midiToNote(this.performedTone);
 
@@ -216,6 +259,11 @@ SingleNote.prototype.match = function(note) {
   };
 };
 
+SingleNote.prototype.resetPerformance = function() {
+  this.performedTone = 0;
+  this.performedRhythm = 0;
+}
+
 function PolyNote(config) {
   //tone here is an array of SingleNotes
   this.tone = config.tone;
@@ -226,6 +274,40 @@ function PolyNote(config) {
 
 PolyNote.prototype = Object.create(Note.prototype);
 PolyNote.prototype.constructor = PolyNote;
+
+PolyNote.prototype.resetPerformance = function() {
+  for (var i = 0; i < this.tone.length; i++) {
+    this.tone[i].resetPerformance();
+  }
+}
+
+PolyNote.prototype.getDescription = function(isSharpKey) {
+  var notes = "[";
+
+  for (var i = 0; i < this.tone.length; i++) {
+    if (i != 0) {
+      notes += ", ";
+    }
+    notes += this.tone[i].getDescription(isSharpKey);
+  } 
+  notes+= "]";
+
+  return notes;
+};
+
+PolyNote.prototype.getDescriptionOfPerformed = function(isSharpKey) {
+  var notes = "[";
+
+  for (var i = 0; i < this.tone.length; i++) {
+    if (i != 0) {
+      notes += ", ";
+    }
+    notes += this.tone[i].getDescriptionOfPerformed(isSharpKey);
+  } 
+  notes+= "]";
+
+  return notes;
+}
 
 PolyNote.prototype.getSheetNote = function(currentAccidentals, isSharpKey) {
   var sheetNote = "[";
@@ -248,6 +330,32 @@ PolyNote.prototype.getType = function() {
   return "poly note";
 }
 
+PolyNote.prototype.updateCss = function() {
+  for (var i = 0; i < this.tone.length; i++) {
+    var note = this.tone[i];
+    if(note.tone != note.performedTone && note.rhythm != note.performedRhythm) {
+      for (var j = 0; j < this.svgElements.length; j++) {
+        $(this.svgElements[j]).addClass("missed-all");//.css("fill", "#E83034");
+      }
+      return;
+    }
+    else if (note.tone != note.performedTone) {
+      for (var j = 0; j < this.svgElements.length; j++) {
+        $(this.svgElements[j]).addClass("missed-note");//.css("fill", "#A257DE");
+      }  
+      return;
+    }
+    else if (note.rhythm != note.performedRhythm) {
+      for (var j = 0; j < this.svgElements.length; j++) {
+        $(this.svgElements[j]).addClass("missed-rhythm");//.css("fill", "#455ede");
+      }  
+      return;
+    }
+  }
+
+  $(this.svgElements[j]).addClass("hit-all");
+}
+
 function Triad(config) {
   var chord = config.chord;
   var tone = config.tone;
@@ -265,6 +373,10 @@ function Triad(config) {
 
 Triad.prototype = Object.create(PolyNote.prototype);
 Triad.prototype.constructor = Triad;
+
+Triad.prototype.getDescription = function(isSharpKey) {
+  return "triad: " + PolyNote.prototype.getDescription.call(this, isSharpKey);
+}
 
 Triad.prototype.getType = function() {
   return "triad";

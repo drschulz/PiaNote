@@ -1,0 +1,63 @@
+<!doctype html>
+
+<html>
+<head>
+	<title>Pianote Recommendation Test</title>
+	<script src="bower_components/jquery/dist/jquery.js"></script>
+	<script src="bower_components/midi/inc/shim/Base64.js"></script>
+	<script src="bower_components/midi/inc/shim/Base64binary.js"></script>
+	<script src="bower_components/midi/inc/jasmid/stream.js"></script>
+	<script src="bower_components/midi/inc/jasmid/midifile.js"></script>
+	<script src="bower_components/midi/inc/jasmid/replayer.js"></script>
+	<script src="bower_components/midi/build/MIDI.js"></script>
+	<script src="js/libs/abcjs_basic_2.3-min.js"></script>
+	<script src="js/UserProfile.js"></script>
+	<script src="js/RecommendationEngine.js"></script>
+	<script src="js/mappings.js"></script>
+	<script src="js/constants.js"></script>
+	<script src="js/note.js"></script>
+	<script src="js/musical_piece.js"></script>
+	<script src="js/libs/combinatorics.js"></script>
+	<script src="js/levels.js"></script>
+	<script src="recommendationEngineTest.js"></script>
+	<script src="js/main_piano.js"></script>
+</head>
+<body>
+	<table>
+		<tr>
+			<td>Current level: </td>
+			<td><div id="level"></div></td>
+		</tr>
+		<tr>
+			<td>Base level: </td>
+			<td id="base"></td>
+		</tr>
+		<tr>
+			<td>Next level: </td>
+			<td id="next"></td>
+		</tr>
+		<tr>
+			<td>is Drilling: </td>
+			<td id="isDrilling"></td>
+		</tr>
+		<tr>
+			<td>Drilling Level: </td>
+			<td id="drilling"></td>
+		</tr>
+	</table>
+	<button id="playButton">Play Song</button>
+	<div id="mystave" class="mystaveClass"></div>
+	<label>Rhythm</label>
+	<input type="number" id="val1"></input>
+	<label>Key Signature</label>
+	<input type="number" id="val2"></input>
+	<label>Time Signature</label>
+	<input type="number" id="val3"></input>
+	<label>Interval</label>
+	<input type="number" id="val4"></input>
+	<label>Song Type</label>
+	<input type="number" id="val5"></input>
+	<button id="next-button">Next</button>	
+	<div id="piano-container"></div>
+</body>
+</html>

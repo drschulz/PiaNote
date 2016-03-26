@@ -83,27 +83,11 @@ PiaNote.prototype.isMonitoring = function() {
 
 PiaNote.prototype.generateSong = function() {
   var that = this;
-  
-  function generateKey() {
-    return musicalKeys[Math.random() * musicalKeys.length << 0]; //change to choose one in the key level
-
-    //possibly filter this random choice based on user statistics of key accuracy (like previous model)
-  }
 
   //monitored piece
   this.pianotePiece = {};
   
   this.resetTime();
-  //var key = generateKey(); //choose by level
-  //var timeSig = {beats: 3, rhythm: 4}; //choose by level
-  //var keyLetter = key;
-  
-  /*var config = {
-    time: timeSig,
-    key: keyLetter,
-    numMeasures: 4,
-    isSharpKey: sharpKeys.indexOf(keyLetter) > 0 ? true : false
-  };*/
 
   var availableKeys = keyLevels.lockLevel ? keyLevels.getCurrentChoicesStrict() : keyLevels.getCurrentChoices();
   var key = availableKeys[Math.random() * availableKeys.length << 0];
@@ -129,17 +113,7 @@ PiaNote.prototype.scorePerformance = function() {
   var playerTuneList = flatTuneList(this.pianotePiece);
   var matchResults = this.expectedPiece.match(playerTuneList);
   
-  //this.pieceConfig.voice1 = matchResults[0].notes;
-  //this.pieceConfig.voice2 = matchResults[1].notes;
-  //this.scoredPiece = new Musical_Piece(this.pieceConfig);
-  
   console.log(matchResults);
-
-  //this.playerStats.updateKeyAccuracy(this.pieceConfig.key, matchResults[0].totals.overallAccuracy);
-  //this.playerStats.updateNoteAccuracy(matchResults[0].scores, true);
-
-  //this.playerStats.updateKeyAccuracy(this.pieceConfig.key, matchResults[1].totals.overallAccuracy);
-  //this.playerStats.updateNoteAccuracy(matchResults[1].scores, false);
 
   return matchResults;
 };

@@ -78,8 +78,8 @@ const intervalLevels = new MusicLevel({
 });
 
 const songLevels = new MusicLevel({
-	musicComponents: [SeparateHandPiece, TriadPiece, SuspendedChordPiece, InvertedChordPiece, HandsTogetherPiece],
-	numLevels: 5,
+	musicComponents: [SeparateHandPiece, TriadPiece, SuspendedChordPiece, InvertedChordPiece, LegatoChordPiece, HandsTogetherPiece],
+	numLevels: 6,
 	baseIdx: 1,
 	increment: 1
 });

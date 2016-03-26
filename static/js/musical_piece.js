@@ -93,19 +93,29 @@ Musical_Piece.prototype.generateChords = function() {
   return chords;
 };
 
+Musical_Piece.prototype.clearPerformance = function() {
+  var voices = this.getVoiceTuneList();
+  var v = voices.voice1;
+
+  for (var i = 0; i < v.length; i++) {
+    v[i].resetPerformance();
+  }
+
+  v = voices.voice2;
+
+  for (var i = 0; i < v.length; i++) {
+    v[i].resetPerformance();
+  }  
+
+};
+
 
 Musical_Piece.prototype.generatePhraseRhythm = function() {
   var rhythms = [];
   var curMeasure = 0;
   var curBeat = 0;
 
-  var possibleRhythms = rhythmLevels.getCurrentChoices();/*(function() {
-    var arr = [];
-    Object.keys(NoteRhythms).forEach(function(key) {
-      arr.push(NoteRhythms[key]);
-    });
-    return arr;
-  })();*/
+  var possibleRhythms = rhythmLevels.getCurrentChoices();
 
   var measureRhythms = [];
 
@@ -351,6 +361,95 @@ Musical_Piece.prototype.abcDump = function() {
   abc += getAbcVoice(voices.voice2, "V2");
   
   return abc;
+};
+
+Musical_Piece.prototype.bindNotesToSheetMusic = function(id) {
+  var that = this;
+
+  function assignNoteData(voice, voiceNum) {
+    var measureBeat = 0;
+    var curMeasure = 0;
+    var abcIdx = 0;
+    var measureNotes = $(id).find(".note.m" + curMeasure + ".v" + voiceNum);
+
+    for(var i = 0; i < voice.length; i++) {
+      //clear the svg elements if note already had any
+      voice[i].svgElements = [];
+      
+      //attach note to svg element
+      $(measureNotes[abcIdx]).data("note", voice[i]);
+
+      //save the svg element to the note itself
+      voice[i].svgElements.push(measureNotes[abcIdx]);
+      
+      //check if the note spans across measure
+      if (measureBeat + voice[i].rhythm > that.measureDuration) {
+        var diff = that.measureDuration - measureBeat;
+        var overflow = voice[i].rhythm - diff;
+        abcIdx = 0;
+        curMeasure++;
+        //change the beat to the overflow
+        measureBeat = overflow;
+
+        //set the measure notes
+        measureNotes = $(id).find(".note.m" + curMeasure + ".v" + voiceNum);
+
+        //add the note to the sheetNotes data
+        $(measureNotes[abcIdx]).data("note", voice[i]);
+        
+        //add the sheet note to the note
+        voice[i].svgElements.push(measureNotes[abcIdx]);
+        abcIdx++;
+      }
+      //otherwise add like normal
+      else {
+        abcIdx++;
+
+        //check if the note was split in two for the sheet music
+        if(measureBeat > 0 && measureBeat < that.measureAccent && measureBeat + voice[i].rhythm > that.measureAccent) {
+          //also assign next sheet note the same note
+          $(measureNotes[abcIdx]).data("note", voice[i]);
+          
+          //add the sheet note to the note
+          voice[i].svgElements.push(measureNotes[abcIdx]);
+          abcIdx++;
+        }
+
+        //check if the measure has finished
+        if (measureBeat + voice[i].rhythm == that.measureDuration) {
+          //reset the index
+          abcIdx = 0;
+          curMeasure++;
+          measureBeat = 0;
+          //get the next measure of notes
+          measureNotes = $(id).find(".note.m" + curMeasure + ".v" + voiceNum);
+        }
+        else {
+          measureBeat += voice[i].rhythm;
+        }
+      }
+    }
+  } 
+
+  var voices = this.getVoiceTuneList();
+
+  assignNoteData(voices.voice1, 0);
+  assignNoteData(voices.voice2, 1);
+};
+
+Musical_Piece.prototype.updateCss = function() {
+  var voices = this.getVoiceTuneList();
+
+  var v = voices.voice1;
+  for (var i = 0; i < v.length; i++) {
+    v[i].updateCss();
+  }
+
+  v = voices.voice2;
+  for (var i = 0; i < v.length; i++) {
+    v[i].updateCss();
+  }
+
 }
 
 Musical_Piece.prototype.match = function(notes) {
@@ -679,7 +778,7 @@ Musical_Piece.prototype.addRests = function(startMeasure, endMeasure, hand) {
     this.addToPiece(time, note);
   }
 
-}
+};
 
 
 //all subclasses of musical piece
@@ -813,7 +912,31 @@ function MixedChordPiece(config) {
   
 }
 
+function LegatoChordPiece(config) {
+  ChordPiece.call(this, config);
+}
 
+LegatoChordPiece.prototype = Object.create(ChordPiece.prototype);
+LegatoChordPiece.prototype.constructor = LegatoChordPiece;
+
+LegatoChordPiece.prototype.generateLeftHandChords = function() {
+  var baseOfKey = keys[this.key];
+  var baseTone = LOW_C;
+  baseTone += baseOfKey;
+  var time = 0;
+  for (var i = 0; i < this.numMeasures; i++) {
+    var note = new Triad({tone: baseTone + this.chords[i].interval, chord: this.chords[i], rhythm: this.measureDuration, hand: 'l'});
+    var measureBeat = 0;
+    var idx = 0;
+    while (measureBeat + NoteRhythms.QUARTER <= this.measureDuration) {
+        note.tone[idx].rhythm = NoteRhythms.QUARTER;
+        this.addToPiece(time, note.tone[idx]);
+        time+=NoteRhythms.QUARTER;
+        measureBeat+= NoteRhythms.QUARTER;
+        idx = (idx + 1) % note.tone.length;
+    }
+  }
+}
 
 //end chordPieces
 

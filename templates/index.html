@@ -63,26 +63,32 @@
     </paper-toolbar>
     <div class="horizontal center-justified layout">
       <paper-button raised id="play-button">
-        <iron-icon icon="av:play-circle-outline"></iron-icon>
-        Start Metronome
+        <iron-icon icon="av:fiber-manual-record"></iron-icon>
+        Start Recording
       </paper-button>
     </div>
     
     <div class="horizontal center-justified layout">
       <paper-button raised id="stop-button">
         <iron-icon icon="av:stop"></iron-icon>
-        Stop Metronome
+        Score Performance
       </paper-button>
     </div>
     <div class="horizontal center-justified layout">
-      <paper-input id="bpm" label="bpm" type="number" value="120">
+      <paper-input id="bpm" label="bpm" type="number" value="120" min="80" max="120">
       </paper-input>
     </div>
-    <div class="horizontal center-justified layout">
-      <paper-button raised id="play-song-button">
-        <iron-icon icon="av:play-circle-outline"></iron-icon>
-        Play Piece
-      </paper-button>
+    <div class="horizontal center-justified layout" >
+      <div id="playButtons">
+        <paper-button raised id="play-song-button">
+          <iron-icon icon="av:play-circle-outline"></iron-icon>
+          Play Expected Piece
+        </paper-button>
+        <paper-button raised id="play-performed-button">
+          <iron-icon icon="av:play-circle-outline"></iron-icon>
+          Play Your Performance
+        </paper-button>
+      </div>
     </div>
     <div class="horizontal center-justified layout">
       <paper-card id="staff-card">
@@ -94,117 +100,141 @@
     </div>
     <div id="playerstave"> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
     </div>
-    <paper-dialog id="note-dialog">
-      <h2>Note Information</h2>
+    <paper-dialog id="results-dialog" modal="true">
+      <h1>Performance Results</h1>
       <paper-dialog-scrollable>
-        <div class="layout wrap inline center-center">
-          <table>
-            <tr>
-              <td class="result-header">Note</td>
-              <td id="pianote-note-num" class="note-info"></td>
-            </tr>
-            <tr>
-              <td class="result-header">Rhythm</td>
-              <td id="pianote-note-rhythm" class="note-info"></td> 
-            </tr>
-          </table>
-          <table>
-            <tr>
-              <td class="result-header">Performed Note</td>
-              <td id="pianote-performed-note" class="note-info"></td>
-            </tr>
-            <tr>
-              <td class="result-header">Performed Rhythm</td>
-              <td id="pianote-performed-rhythm" class="note-info"></td> 
-            </tr>
-          </table>
+        <paper-button raised id="results-play-song-button">
+          <iron-icon icon="av:play-circle-outline"></iron-icon>
+          Play Piece
+        </paper-button>
+        <paper-button raised id="results-play-performed-button">
+          <iron-icon icon="av:play-circle-outline"></iron-icon>
+          Play What you Performed
+        </paper-button>
+        <div class="horizontal center-justified layout">
+          <paper-card id="staff-card">
+            <div class="card-content">
+              <div id="performedstave"> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
+              </div>
+            </div>
+          </paper-card>
+        </div>  
+        <div class="horizontal center-justified layout">
+          <paper-card id="results-card">
+            <div class="card-content">
+            <div class="layout wrap inline center-center">
+              <paper-header-panel class="results-panel" id="lh-results">
+                <paper-toolbar class="paper-header">
+                  <div>Left Hand</div>
+                </paper-toolbar>
+                <div class="content">
+                  <table class="results">
+                      <td>Notes Hit</td>
+                      <td class="result good" id="n-h2">13</td>
+                    </tr>
+                    <tr>
+                      <td>Notes Missed</td>
+                      <td class="result bad" id="n-m2">42</td>
+                    </tr>
+                    <tr>
+                      <td>Rhythms Hit</td>
+                      <td class="result good" id="r-h2">13</td>
+                    </tr>
+                    <tr>
+                      <td>Rhythms Missed</td>
+                      <td class="result bad" id="r-m2">42</td>
+                    </tr>
+                  </table>
+                </div>
+              </paper-header-panel>
+              <paper-header-panel class="results-panel" id="rh-results">
+                <paper-toolbar class="paper-header">
+                  <div>Right Hand</div>
+                </paper-toolbar>
+                <div class="content horizontal-section">
+                  <table class="results">
+                      <td>Notes Hit</td>
+                      <td class="result good" id="n-h1">13</td>
+                    </tr>
+                    <tr>
+                      <td>Notes Missed</td>
+                      <td class="result bad" id="n-m1">42</td>
+                    </tr>
+                    <tr>
+                      <td>Rhythms Hit</td>
+                      <td class="result good" id="r-h1">13</td>
+                    </tr>
+                    <tr>
+                      <td>Rhythms Missed</td>
+                      <td class="result bad" id="r-m1">42</td>
+                    </tr>
+                  </table>
+                </div>
+                
+              </paper-header-panel>
+              </div>
+              <div class="horizontal center-justified layout">
+                  <table class="accuracy">
+                    <td>Overall Accuracy</td>
+                    <td class="result" id="accurate"></td>
+                  </table>
+              </div>
+              <br>
+              <div class="horizontal center-justified layout">
+                <h2>Current Session</h2>
+              </div>
+              <div class="horizontal center-justified layout">
+                <google-chart id="session-chart"
+                  type='combo'
+                  options='{"seriesType": "bars", "series": {"2": {"type": "line"}}}'
+                  cols='[{"label": "Song", "type": "string"}, 
+                          {"label": "Note Accuracy", "type": "number"},
+                          {"label": "Rhythm Accuracy", "type": "number"},
+                          {"label": "Overall", "type": "number"}]'
+                  rows='[]'>
+                </google-chart>
+              </div>
+            </div>
+          </paper-card>
         </div>
       </paper-dialog-scrollable>
+      <div class="buttons">
+        <paper-button dialog-dismiss>Cancel</paper-button>
+        <paper-button dialog-confirm>Accept</paper-button>
+      </div>  
     </paper-dialog>
+    <paper-dialog id="note-dialog">
+        <h2>Note Information</h2>
+        <paper-dialog-scrollable>
+          <div class="layout wrap inline center-center">
+            <table id="sheetnote-info" cellpadding="10">
+              <tr>
+                <td class="result-header">Note</td>
+                <td id="pianote-note-num" class="note-info"></td>
+              </tr>
+              <tr>
+                <td class="result-header">Performed Note</td>
+                <td id="pianote-performed-note" class="note-info"></td>
+              </tr>
+              <tr>
+                <td class="result-header">Rhythm</td>
+                <td id="pianote-note-rhythm" class="note-info"></td> 
+              </tr>
+              <tr>
+                <td class="result-header">Performed Rhythm</td>
+                <td id="pianote-performed-rhythm" class="note-info"></td> 
+              </tr>
+            </table>
+          </div>
+        </paper-dialog-scrollable>
+      </paper-dialog>
     <div class="horizontal center-justified layout">
-      <paper-card heading="Performance Results" id="results-card">
-        <div class="card-content">
-        <div class="layout wrap inline center-center">
-          <paper-header-panel class="results-panel" id="lh-results">
-            <paper-toolbar class="paper-header">
-              <div>Left Hand</div>
-            </paper-toolbar>
-            <div class="content">
-              <table class="results">
-                  <td>Notes Hit</td>
-                  <td class="result good" id="n-h2">13</td>
-                </tr>
-                <tr>
-                  <td>Notes Missed</td>
-                  <td class="result bad" id="n-m2">42</td>
-                </tr>
-                <tr>
-                  <td>Rhythms Hit</td>
-                  <td class="result good" id="r-h2">13</td>
-                </tr>
-                <tr>
-                  <td>Rhythms Missed</td>
-                  <td class="result bad" id="r-m2">42</td>
-                </tr>
-              </table>
-            </div>
-          </paper-header-panel>
-          <paper-header-panel class="results-panel" id="rh-results">
-            <paper-toolbar class="paper-header">
-              <div>Right Hand</div>
-            </paper-toolbar>
-            <div class="content horizontal-section">
-              <table class="results">
-                  <td>Notes Hit</td>
-                  <td class="result good" id="n-h1">13</td>
-                </tr>
-                <tr>
-                  <td>Notes Missed</td>
-                  <td class="result bad" id="n-m1">42</td>
-                </tr>
-                <tr>
-                  <td>Rhythms Hit</td>
-                  <td class="result good" id="r-h1">13</td>
-                </tr>
-                <tr>
-                  <td>Rhythms Missed</td>
-                  <td class="result bad" id="r-m1">42</td>
-                </tr>
-              </table>
-            </div>
-            
-          </paper-header-panel>
-          </div>
-          <div class="horizontal center-justified layout">
-              <table class="accuracy">
-                <td>Overall Accuracy</td>
-                <td class="result" id="accurate"></td>
-              </table>
-          </div>
-          <br>
-          <div class="horizontal center-justified layout">
-            <h2>Current Session</h2>
-          </div>
-          <div class="horizontal center-justified layout">
-            <google-chart id="session-chart"
-              type='combo'
-              options='{"seriesType": "bars", "series": {"2": {"type": "line"}}}'
-              cols='[{"label": "Song", "type": "string"}, 
-                      {"label": "Note Accuracy", "type": "number"},
-                      {"label": "Rhythm Accuracy", "type": "number"},
-                      {"label": "Overall", "type": "number"}]'
-              rows='[]'>
-            </google-chart>
-          </div>
-        </div>
-      </paper-card>
-    </div>
-    <div class="horizontal center-justified layout">
-      <paper-button raised id="score-button" disabled>
-        Score Performance
+      <paper-button raised id="retry-button" disabled>
+       <iron-icon icon="icons:refresh"></iron-icon>
+        Retry Song
       </paper-button>
       <paper-button raised id="generate-button" disabled>
-       <iron-icon icon="icons:refresh"></iron-icon>
+       <iron-icon icon="icons:arrow-forward"></iron-icon>
         Next Song
       </paper-button>
     </div>

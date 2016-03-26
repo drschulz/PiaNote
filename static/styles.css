@@ -78,6 +78,12 @@ svg > rect {
   /*margin: 0 auto;*/
 }
 
+#performedstave svg {
+  display: block;
+  /*margin: 0 auto;*/
+}
+
+
 #staff-card {
   background-color: #eeeeee;
   margin-top: 20px;
@@ -87,6 +93,22 @@ svg > rect {
 #mystave { 
   /*width: 100% !important;*/
   /*text-align: center;*/
+}
+
+.hit-all {
+  fill: green;
+}
+
+.missed-all {
+  fill: #E83034;
+}
+
+.missed-note {
+  fill: #A257DE;
+}
+
+.missed-rhythm {
+  fill: #455ede;
 }
 
 #playerstave {
@@ -120,7 +142,7 @@ html /deep/ .dialog-right-position {
 }
 
 #results-card {
-  display: none;
+  //display: none;
   margin-bottom: 20px;
   width: 900px;
 }
@@ -215,10 +237,16 @@ td.note-info {
   display: none;
 }
 
-#score-button {
+#playButtons {
+  display: none;
+}
+
+#generate-button {
   background: #455ede;
   color: #fff;
 }
+
+
 
 #blackkeys {
   position: absolute; 

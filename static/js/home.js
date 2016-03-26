@@ -7,23 +7,49 @@ var renderInterval = null;
 var mouseX;
 var mouseY;
 //Sheet music rendering
+
 function renderSong(piece, location, color) {
   tuneObjectArray = ABCJS.renderAbc(location, 
                                     piece.abcDump(), 
                                     {},
                                     {
                                       scale: 1.5,
-                                      staffwidth: 1110,
+                                      //staffwidth: 1110,
                                       paddingright: 0,
                                       paddingleft: 0,
                                       add_classes: true, 
                                       listener: {
                                         highlight: function(abcElem) {
-                                          //  alert("hello!");
-                                          var note = $(abcElem.abselem.elemset[0][0]).data("note");
+                                          var note = null;
+                                          var voices = piece.getVoiceTuneList();
+                                          var v1 = voices.voice1;
+                                          for (var i = 0; i < v1.length; i++) {
+                                            var voiceNote = v1[i];
+                                            if (voiceNote.hasAnySelected()) {
+                                              note = voiceNote;
+                                              break;
+                                            }
+                                          }
+                                          if (note == null) {
+                                            var v2 = voices.voice2;
+                                            for (var i = 0; i < v2.length; i++) {
+                                              var voiceNote = v2[i];
+                                              if (voiceNote.hasAnySelected()) {
+                                                note = voiceNote;
+                                                break;
+                                              }
+                                            }
+                                          } 
+
+                                          if (note == null) {
+                                            console.log("no note found");
+                                            return;
+                                          }
+
+
                                           document.getElementById("note-dialog").close();
                                           $("#pianote-note-num").html(note.getDescription(piece.isSharpKey) +"");
-                                          $("#pianote-note-rhythm").html(note.rhythm + "");
+                                          $("#pianote-note-rhythm").html(RhythmToText[note.rhythm] + "");
                                           $("#pianote-performed-note").html(note.getDescriptionOfPerformed(piece.isSharpKey) + "");
                                           $("#pianote-performed-rhythm").html(note.performedRhythm + "");
                                           $("#note-dialog").css("left", (mouseX - 250) + "px");
@@ -100,7 +126,19 @@ function bindNotesToSheetMusic() {
 function generateNextMelody() {
   pianote.generateSong();
   renderSong(pianote.expectedPiece, "mystave", "black");
-  bindNotesToSheetMusic();
+  //pianote.expectedPiece.bindNotesToSheetMusic();
+
+  var voices = pianote.expectedPiece.getVoiceTuneList();
+  var v1 = voices.voice1;
+  var v2 = voices.voice2;
+
+  for (var i = 0; i < v1.length; i++) {
+    v1[i].setToHit();
+  }
+
+  for (var i = 0; i < v2.length; i++) {
+    v2[i].setToHit();
+  }
   //renderSong(pianote.playerPiece, "playerstave", "#455ede");
 }
 
@@ -140,13 +178,16 @@ function updateChart(results) {
   rows = newRowData;
   
   song++;
-  
-  $("#results-card").show();
+  //$("#results-card").show();
 }
 
 function displayResults(results) {
   populateTables(results);
   updateChart(results);
+  //renderSong(pianote.expectedPiece, "performedstave", "black");
+  pianote.expectedPiece.bindNotesToSheetMusic("#mystave");
+  pianote.expectedPiece.updateCss();
+  //document.getElementById("results-dialog").open();
   //TODO
 }
 
@@ -201,16 +242,18 @@ function updateStave() {
 
 function scorePerformance() {
   var results = pianote.scorePerformance();
-  updateStave();
+  //updateStave();
   displayResults(results);
 
   saveUserStats();
 }
 
-function playSong() {
+function playSong(tune) {
   var curBeat = 0;
+  var tempo = 120;
+  var SECONDS_IN_MINUTE = 60;
 
-  var tune = pianote.expectedPiece.piece;
+  //var tune = musicPiece.piece;
   var times = Object.keys(tune);
 
   //sort the notes by time
@@ -229,13 +272,13 @@ function playSong() {
       if (Array.isArray(note.tone)) {
         for (var k = 0; k < note.tone.length; k++) {
           var n = note.tone[k];
-          main_piano.instrument.noteOn(n.tone, 127, SECONDS_IN_MINUTE/metronome.tempo*(parseInt(time)/4));
-          main_piano.instrument.noteOff(n.tone, SECONDS_IN_MINUTE/metronome.tempo*((parseInt(time) + note.rhythm)/4));
+          MIDI.noteOn(MidiChannels.MAIN_PIANO, n.tone, 127, SECONDS_IN_MINUTE/tempo*(parseInt(time)/4));
+          MIDI.noteOff(MidiChannels.MAIN_PIANO, n.tone, SECONDS_IN_MINUTE/tempo*((parseInt(time) + note.rhythm)/4));
         }
       }
       else {
-        main_piano.instrument.noteOn(note.tone, 127, SECONDS_IN_MINUTE/metronome.tempo*(parseInt(time)/4));
-        main_piano.instrument.noteOff(note.tone, SECONDS_IN_MINUTE/metronome.tempo*((parseInt(time) + note.rhythm)/4));
+        MIDI.noteOn(MidiChannels.MAIN_PIANO, note.tone, 127, SECONDS_IN_MINUTE/tempo*(parseInt(time)/4));
+        MIDI.noteOff(MidiChannels.MAIN_PIANO, note.tone, SECONDS_IN_MINUTE/tempo*((parseInt(time) + note.rhythm)/4));
       }
     }
   }
@@ -248,6 +291,8 @@ function initializeButtons() {
     pianote.monitorTempo(SECONDS_IN_MINUTE / bpm);
     $("#play-button").hide();
     $("#stop-button").show();
+    $("#generate-button").prop("disabled", true);
+    $("#retry-button").prop("disabled", true);
   });
   
   $("#stop-button").click(function() {
@@ -255,59 +300,88 @@ function initializeButtons() {
     pianote.unMonitorTempo();
     $("#stop-button").hide();
     $("#play-button").show();
+    $("#playButtons").show();
+    scorePerformance();
+    $("#generate-button").prop("disabled", false);
+    $("#retry-button").prop("disabled", false);
   });
   
   $("#generate-button").click(function() {
     $("#results-card").hide();
+    $("#playButtons").hide();
     generateNextMelody();
+    $("#generate-button").prop("disabled", true);
+    $("#retry-button").prop("disabled", true);
+  });
+
+  $("#retry-button").click(function() {
+    pianote.expectedPiece.clearPerformance();
+    renderSong(pianote.expectedPiece, "mystave", "black");
+    $("#retry-button").prop("disabled", true);
   });
   
-  $("#score-button").click(scorePerformance);
+  //$("#score-button").click(scorePerformance);
 
   $("#bpm").change(function() {
     var bpm = $("#bpm").val();
+    if (bpm > 120) {
+      $("#bpm").val(120); 
+      bpm = 120;     
+    }
+
+    if (bpm < 80) {
+      $("#bpm").val(80); 
+      bpm = 80;  
+    }
+
     metronome.setTempo(bpm);
     if (pianote.isMonitoring()) {
       pianote.unMonitorTempo();
       pianote.monitorTempo(SECONDS_IN_MINUTE / bpm);
     }
-    clearInterval(renderInterval);
-    renderInterval = setInterval(render, 2*SECONDS_IN_MINUTE / bpm * 1000 << 0);
+    
   });
   
-  $("#play-song-button").click(playSong);
+  $("#play-song-button").click(function() {
+    playSong(pianote.expectedPiece.piece);
+  });
 
+
+  $("#results-play-song-button").click(function() {
+    playSong(pianote.expectedPiece.piece);
+  });
+
+  $("#play-performed-button").click(function() {
+    playSong(pianote.expectedPiece.piece);
+  });
 }
 
 function enableButtons() {
   $("#play-button").prop("disabled", false);
-  $("#generate-button").prop("disabled", false);
   $("#score-button").prop("disabled", false);
 }
 
 function initializeApplication(statsData) {
   pianote = new PiaNote(statsData);
   metronome = new Metronome();
-  main_piano = new UserPiano("#piano-container");
+  MIDI.setVolume(MidiChannels.MAIN_PIANO, MidiConstants.MAX_VOLUME);
+  MIDI.programChange(MidiChannels.MAIN_PIANO, GeneralMIDI.PIANO);
   initializeButtons();
-  timeLevels.setLevel(3);
-  songLevels.setLevel(4);
+  timeLevels.setLevel(2);
+  songLevels.setLevel(5);
   rhythmLevels.setLevel(2);
   
   function noteOn(note, velocity) {
-    main_piano.instrument.noteOn(note, velocity, 0);
     pianote.noteOn(note, velocity);
   }
   
   function noteOff(note) {
-    main_piano.instrument.noteOff(note, 0);
     pianote.noteOff(note);
   }
   
   function userInputSuccessful() {
     enableButtons();
     generateNextMelody();
-    main_piano = new UserPiano("#piano-container");
   }
   
   usrInput = new UserInput({loadSuccess: userInputSuccessful, noteOn: noteOn, noteOff: noteOff});
@@ -331,6 +405,9 @@ window.addEventListener('load', function() {
     mouseX = e.pageX;
     mouseY = e.pageY;
   });
+
+  $("#playButtons").hide();
+
   var progressBar = progressJs("#main-panel").setOption("theme", "red");
   var statsData = undefined;
 

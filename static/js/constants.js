@@ -158,6 +158,17 @@ const NoteRhythms = {
   SIXTEENTH: WHOLE_NOTE_VALUE / 16
 };
 
+const RhythmToText = {
+  16: "Whole Note",
+  8: "Half Note",
+  12: "Dotted Half Note",
+  6: "Dotted Quarter Note",
+  4: "Quarter Note",
+  3: "Dotted Eigth Note",
+  2: "Eigth Note",
+  1: "16th Note"
+};
+
 const REST = -1;
 
 const MATCH_SCORES = {
