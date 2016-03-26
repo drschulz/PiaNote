@@ -39,6 +39,10 @@ function Note(config) {
   this.dynamic = config.dynamic;*/
 }
 
+Note.prototype.getAccuracies = function(lastNote) {
+  throw new Error("CANNOT CALL ABSTRACT FUNCTION");
+}
+
 Note.prototype.resetPerformance = function() {
   throw new Error("CANNOT CALL ABSTRACT FUNCTION");
 }
@@ -118,12 +122,35 @@ function SingleNote(config) {
   Note.call(this, config);
   this.performedTone;
   this.performedRhythm = 0;
+  this.interval = config.interval;
 }
 
 SingleNote.prototype = Object.create(Note.prototype);
 SingleNote.prototype.constructor = SingleNote;
 
+SingleNote.prototype.getAccuracies = function(lastNote) {
+  if (this.tone == REST) {
+    return undefined;
+  }
+
+  var bundle = {};
+
+  function addToBundle(type, didHit) {
+    return {musicType: type, hit: didHit ? 1 : 0};
+  }
+
+  bundle.rhythm = addToBundle(this.rhythm, this.rhythm == this.performedRhythm);
+  bundle.note = addToBundle(this.tone, this.tone == this.performedTone);
+  bundle.interval = addToBundle(this.interval, this.tone == this.performedTone);
+
+  return bundle;
+}
+
 SingleNote.prototype.updateCss = function() {
+  if (this.tone == REST) {
+    return;
+  }
+
   if(this.tone != this.performedTone && this.rhythm != this.performedRhythm) {
     for (var j = 0; j < this.svgElements.length; j++) {
       $(this.svgElements[j]).addClass("missed-all");//.css("fill", "#E83034");
@@ -278,6 +305,26 @@ function PolyNote(config) {
 
 PolyNote.prototype = Object.create(Note.prototype);
 PolyNote.prototype.constructor = PolyNote;
+
+PolyNote.prototype.getAccuracies = function(lastNote) {
+  var bundle = {};
+
+  function addToBundle(type, didHit) {
+    return {musicType: type, hit: didHit ? 1 : 0};
+  }
+
+  var allRhythmsHit = true;
+  var allNotesHit = true;
+  for (var i = 0; i < this.tone.length; i++) {
+    allRhythmsHit = allRhythmsHit && (this.tone.rhythm == this.tone.performedRhythm);
+    allNotesHit = allNotesHit && (this.tone.tone == this.tone.performedTone);
+  }
+
+  bundle.rhythm = addToBundle(this.rhythm, allRhythmsHit);
+  bundle.note = addToBundle(this.getType, allNotesHit);
+  
+  return bundle;
+}
 
 PolyNote.prototype.resetPerformance = function() {
   for (var i = 0; i < this.tone.length; i++) {

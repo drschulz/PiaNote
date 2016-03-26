@@ -252,10 +252,22 @@ function updateStave() {
 
 function scorePerformance() {
   var results = pianote.scorePerformance();
+  
   //updateStave();
   displayResults(results);
 
   saveUserStats();
+}
+
+function calculateAccuracies() {
+  //TODO calculate note accuracy
+  //TODO calculate rhythm accuracy
+  //TODO calculate interval accuracy
+  //TODO calculate time signature accuracy (rhythms??)
+  //TODO calculate key signature accuracy (notes??)
+  //TODO calculate song type accuracy (notes and rhythms??)
+  var results = pianote.expectedPiece.getAccuracies();
+  console.log(results);
 }
 
 function playSong(tune) {
@@ -314,9 +326,11 @@ function initializeButtons() {
     scorePerformance();
     $("#generate-button").prop("disabled", false);
     $("#retry-button").prop("disabled", false);
+    calculateAccuracies();
   });
   
   $("#generate-button").click(function() {
+    
     $("#results-card").hide();
     $("#playButtons").hide();
     generateNextMelody();
@@ -353,7 +367,6 @@ function initializeButtons() {
   });
   
   $("#play-song-button").click(function() {
-    openDialog();
     playSong(pianote.expectedPiece.piece);
   });
 
@@ -363,7 +376,7 @@ function initializeButtons() {
   });
 
   $("#play-performed-button").click(function() {
-    playSong(pianote.expectedPiece.piece);
+    playSong(pianote.pianotePiece);
   });
 }
 
@@ -379,7 +392,7 @@ function initializeApplication(statsData) {
   MIDI.programChange(MidiChannels.MAIN_PIANO, GeneralMIDI.PIANO);
   initializeButtons();
   timeLevels.setLevel(2);
-  songLevels.setLevel(5);
+  songLevels.setLevel(0);
   rhythmLevels.setLevel(2);
   
   function noteOn(note, velocity) {

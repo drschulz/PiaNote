@@ -631,6 +631,100 @@ Musical_Piece.prototype.match = function(notes) {
   
 };
 
+Musical_Piece.prototype.getAccuracies = function() {
+  var voices = this.getVoiceTuneList();
+  var v = voices.voice1;
+
+  function updateAccuracies(accuracies, result) {
+    if (accuracies[result.musicType] == undefined) {
+      accuracies[result.musicType] = {numHit: 0, num: 0};
+    }
+
+    if (result == undefined) {
+      return accuracies;
+    }
+
+    accuracies[result.musicType].numHit += result.hit;
+    accuracies[result.musicType].num ++;
+
+    return accuracies;
+  }
+
+
+  var rhythmAccuracies = {};
+  var noteAccuracies = {};
+  var intervalAccuracies = {};
+
+  var rhythmsHit = 0;
+  var notesHit = 0;
+  var intervalsHit = 0;
+  var numIntervals = 0;
+  var numNotes = 0;
+
+  var lastTone = undefined;
+  for (var i = 0; i < v.length; i++) {
+    var results = v[i].getAccuracies(lastTone);
+
+    if (results != undefined) {
+      //get accuracies by category
+      rhythmAccuracies = updateAccuracies(rhythmAccuracies, results.rhythm);
+      noteAccuracies = updateAccuracies(noteAccuracies, results.note);
+      intervalAccuracies = updateAccuracies(intervalAccuracies, results.interval);
+
+      //get total accuracies
+      rhythmsHit += results.rhythm.hit;
+      notesHit += results.note.hit;
+      intervalsHit += results.interval != undefined ? results.interval.hit : 0;
+      numIntervals += results.interval != undefined ? 1 : 0;
+      
+      lastTone = v[i];
+      numNotes++;
+    }
+  }
+
+  v = voices.voice2;
+  var lastTone = undefined;
+  for (var i = 0; i < v.length; i++) {
+    var results = v[i].getAccuracies(lastTone);
+
+    if (results != undefined) {
+      //get accuracies by category
+      rhythmAccuracies = updateAccuracies(rhythmAccuracies, results.rhythm);
+      noteAccuracies = updateAccuracies(noteAccuracies, results.note);
+      intervalAccuracies = updateAccuracies(intervalAccuracies, results.interval);
+
+      //get total accuracies
+      rhythmsHit += results.rhythm.hit;
+      notesHit += results.note.hit;
+      intervalsHit += results.interval != undefined ? results.interval.hit : 0;
+      numIntervals += results.interval != undefined ? 1 : 0;
+      
+      lastTone = v[i];
+      numNotes++;
+    }
+  }
+
+  var bundle = {
+    rhythms: {
+      accuracies: rhythmAccuracies,
+      num: numNotes,
+      hit: rhythmsHit
+    }, 
+    notes: {
+      accuracies: noteAccuracies,
+      num: numNotes,
+      hit: notesHit
+    },
+    intervals: {
+      accuracies: intervalAccuracies,
+      num: numIntervals,
+      hit: intervalsHit
+    }
+  };
+
+  return bundle;
+}
+
 Musical_Piece.prototype.generatePhrase = function(startMeasure, endMeasure, hand, possibleIntervals) {
   var tones = [];
   //offset from c
@@ -692,6 +786,7 @@ Musical_Piece.prototype.generatePhrase = function(startMeasure, endMeasure, hand
     var interval;
     if (curMeasure == startMeasure) {
       interval = chordIntervals[Math.random()*chordIntervals.length << 0];  
+      lastIntervalIdx = interval;
     }
     else {
       possibleNextChordIntervals = getPossibleIntervalsForChord(chord, possibleNextIntervals);
@@ -703,7 +798,7 @@ Musical_Piece.prototype.generatePhrase = function(startMeasure, endMeasure, hand
     
     var tone = baseTone + interval; 
     console.log(tone);
-    var note = new SingleNote({tone: tone, rhythm: rhythms[0], hand: hand});
+    var note = new SingleNote({tone: tone, rhythm: rhythms[0], hand: hand, interval: Math.abs(lastIntervalIdx - possibleIntervals.indexOf(interval))});
     lastIntervalIdx = possibleIntervals.indexOf(interval);
     if (curMeasure == startMeasure) {
       note.setFingering(hand == "l" ? 5 - lastIntervalIdx : lastIntervalIdx + 1);
@@ -742,7 +837,7 @@ Musical_Piece.prototype.generatePhrase = function(startMeasure, endMeasure, hand
       }
       tone = baseTone + interval;
       console.log(tone);
-      var note = new SingleNote({tone: tone, rhythm: rhythms[i], hand: hand});
+      var note = new SingleNote({tone: tone, rhythm: rhythms[i], hand: hand, interval: Math.abs(lastIntervalIdx - possibleIntervals.indexOf(interval))});
       lastIntervalIdx = possibleIntervals.indexOf(interval);
       //note.setFingering(hand == "l" ? 5 - lastIntervalIdx : lastIntervalIdx + 1);
       that.addToPiece(time, note);
