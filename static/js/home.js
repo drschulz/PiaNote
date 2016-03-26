@@ -20,6 +20,7 @@ function renderSong(piece, location, color) {
                                       add_classes: true, 
                                       listener: {
                                         highlight: function(abcElem) {
+                                          console.log("highlighting!");
                                           var note = null;
                                           var voices = piece.getVoiceTuneList();
                                           var v1 = voices.voice1;
@@ -46,6 +47,7 @@ function renderSong(piece, location, color) {
                                             return;
                                           }
 
+                                          console.log(note);
 
                                           document.getElementById("note-dialog").close();
                                           $("#pianote-note-num").html(note.getDescription(piece.isSharpKey) +"");
