@@ -316,12 +316,12 @@ PolyNote.prototype.getAccuracies = function(lastNote) {
   var allRhythmsHit = true;
   var allNotesHit = true;
   for (var i = 0; i < this.tone.length; i++) {
-    allRhythmsHit = allRhythmsHit && (this.tone.rhythm == this.tone.performedRhythm);
-    allNotesHit = allNotesHit && (this.tone.tone == this.tone.performedTone);
+    allRhythmsHit = allRhythmsHit && (this.tone[i].rhythm == this.tone.performedRhythm);
+    allNotesHit = allNotesHit && (this.tone[i].tone == this.tone.performedTone);
   }
 
   bundle.rhythm = addToBundle(this.rhythm, allRhythmsHit);
-  bundle.note = addToBundle(this.getType, allNotesHit);
+  bundle.note = addToBundle(this.getType(), allNotesHit);
   
   return bundle;
 }

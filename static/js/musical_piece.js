@@ -636,13 +636,15 @@ Musical_Piece.prototype.getAccuracies = function() {
   var v = voices.voice1;
 
   function updateAccuracies(accuracies, result) {
+    if (result == undefined) {
+      return accuracies;
+    }
+
     if (accuracies[result.musicType] == undefined) {
       accuracies[result.musicType] = {numHit: 0, num: 0};
     }
 
-    if (result == undefined) {
-      return accuracies;
-    }
+    
 
     accuracies[result.musicType].numHit += result.hit;
     accuracies[result.musicType].num ++;

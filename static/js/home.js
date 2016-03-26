@@ -267,7 +267,16 @@ function calculateAccuracies() {
   //TODO calculate key signature accuracy (notes??)
   //TODO calculate song type accuracy (notes and rhythms??)
   var results = pianote.expectedPiece.getAccuracies();
+
+  var accuracies = {
+    'r': results.rhythms.hit / results.rhythms.num, // weight more by type of rhythm
+    't': results.rhythms.hit / results.rhythms.num,
+    'k': results.notes.hit / results.notes.num,
+    'i': results.intervals.hit / results.intervals.num, //weight more by type of interval
+    's': results.notes.hit / results.notes.num //do both notes and rhythms
+  }
   console.log(results);
+  console.log(accuracies);
 }
 
 function playSong(tune) {
@@ -392,7 +401,7 @@ function initializeApplication(statsData) {
   MIDI.programChange(MidiChannels.MAIN_PIANO, GeneralMIDI.PIANO);
   initializeButtons();
   timeLevels.setLevel(2);
-  songLevels.setLevel(0);
+  songLevels.setLevel(1);
   rhythmLevels.setLevel(2);
   
   function noteOn(note, velocity) {
