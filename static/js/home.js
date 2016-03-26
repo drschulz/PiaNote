@@ -346,6 +346,7 @@ function initializeButtons() {
   });
   
   $("#play-song-button").click(function() {
+    document.getElementById("note-dialog").open();
     playSong(pianote.expectedPiece.piece);
   });
 
