@@ -49,13 +49,13 @@ function renderSong(piece, location, color) {
                                           console.log(note);
 
                                           //document.getElementById("note-dialog").close();
-                                          $("#pianote-note-num").html(note.getDescription(piece.isSharpKey) +"");
+                                          /*$("#pianote-note-num").html(note.getDescription(piece.isSharpKey) +"");
                                           $("#pianote-note-rhythm").html(RhythmToText[note.rhythm] + "");
                                           $("#pianote-performed-note").html(note.getDescriptionOfPerformed(piece.isSharpKey) + "");
                                           $("#pianote-performed-rhythm").html(note.performedRhythm + "");
                                           $("#note-dialog").css("left", (mouseX - 250) + "px");
                                           $("#note-dialog").css("top", mouseY + "px");
-                                          console.log(document.getElementById("note-dialog").open);
+                                          console.log(document.getElementById("note-dialog").open);*/
                                           document.getElementById("note-dialog").open();
                                         }, 
                                       },
