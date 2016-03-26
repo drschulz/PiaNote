@@ -18,13 +18,14 @@
 	<script src='{{url_for("static", filename="bower_components/midi/inc/jasmid/replayer.js")}}' type="text/javascript"></script>
 	<script src='{{url_for("static", filename="bower_components/Progress.js/minified/progress.min.js")}}'></script>
   <script src='{{url_for("static", filename="bower_components/midi/build/MIDI.js")}}'></script>
+  <link rel="import" href='{{url_for("static", filename="bower_components/iron-flex-layout/iron-flex-layout-classes.html")}}'/>
   <link rel="import" href='{{url_for("static", filename="bower_components/font-roboto/roboto.html")}}'>
-  <link rel="import" href='{{url_for("static", filename="bower_components/paper-styles/paper-styles.html")}}'>
+  <link rel="import" href='{{url_for("static", filename="bower_components/paper-styles/paper-styles-classes.html")}}'>
   <link rel="import" href='{{url_for("static", filename="bower_components/paper-elements/paper-elements.html")}}'>
   <link rel="import" href='{{url_for("static", filename="bower_components/iron-icons/av-icons.html")}}'>
   <link rel="import" href='{{url_for("static", filename="bower_components/iron-icons/image-icons.html")}}'>
-  <link rel="import" href='{{url_for("static", filename="bower_components/iron-flex-layout/iron-flex-layout.html")}}'/>
-  <link rel="import" href='{{url_for("static", filename="bower_components/google-chart/google-chart.html")}}'/>
+  
+  <!--<link rel="import" href='{{url_for("static", filename="bower_components/google-chart/google-chart.html")}}'/>-->
   <link rel="stylesheet" href='{{url_for("static", filename="bower_components/Progress.js/minified/progressjs.min.css")}}'/> 
   <link rel="stylesheet" href='{{url_for("static", filename="bower_components/animate.css/animate.min.css")}}'/>
   <script src='{{url_for("static", filename="js/libs/abcjs_basic_2.3-min.js")}}'></script>
@@ -99,7 +100,7 @@
     </div>
     <div id="playerstave"> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
     </div>
-    <paper-dialog id="results-dialog" modal="true">
+    <!--<paper-dialog id="results-dialog" modal="true">
       <h1>Performance Results</h1>
       <paper-dialog-scrollable>
         <paper-button raised id="results-play-song-button">
@@ -113,7 +114,7 @@
         <div class="horizontal center-justified layout">
           <paper-card id="staff-card">
             <div class="card-content">
-              <div id="performedstave"> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
+              <div id="performedstave">
               </div>
             </div>
           </paper-card>
@@ -201,6 +202,8 @@
         <paper-button dialog-dismiss>Cancel</paper-button>
         <paper-button dialog-confirm>Accept</paper-button>
       </div>  
+    </paper-dialog>-->
+    <paper-dialog id="my-dialog">
     </paper-dialog>
     <paper-dialog id="note-dialog">
         <h2>Note Information</h2>
@@ -227,6 +230,7 @@
           </div>
         </paper-dialog-scrollable>
       </paper-dialog>
+
     <div class="horizontal center-justified layout">
       <paper-button raised id="retry-button" disabled>
        <iron-icon icon="icons:refresh"></iron-icon>
