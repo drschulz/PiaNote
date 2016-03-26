@@ -176,6 +176,10 @@ SingleNote.prototype.getDescriptionOfPerformed = function(isSharpKey) {
   }
 }
 
+SingleNote.prototype.getDescriptionOfRhythm = function() {
+  
+}
+
 SingleNote.prototype.getSheetNote = function(currentAccidentals, isSharpKey) {
   var bundle = {};
   
