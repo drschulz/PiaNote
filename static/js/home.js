@@ -13,11 +13,6 @@ function openDialog() {
   
   document.getElementById("note-dialog").open();
   document.getElementById("my-dialog").open();
-  if (document.getElementById("note-dialog").opened) {
-    console.log("opened!");
-  }
-  $("#note-dialog").removeAttr("aria-hidden");
-  $("#note-dialog").css("display", "");
   console.log(document.getElementById("note-dialog"));
 }
 
@@ -33,7 +28,7 @@ function renderSong(piece, location, color) {
                                       listener: {
                                         highlight: function(abcElem) {
                                           console.log("highlighting!");
-                                          /*var note = null;
+                                          var note = null;
                                           var voices = piece.getVoiceTuneList();
                                           var v1 = voices.voice1;
                                           for (var i = 0; i < v1.length; i++) {
@@ -59,15 +54,16 @@ function renderSong(piece, location, color) {
                                             return;
                                           }
 
-                                          console.log(note);*/
-                                          openDialog();
+                                          console.log(note);
+                                          
                                           //document.getElementById("note-dialog").close();
-                                          /*$("#pianote-note-num").html(note.getDescription(piece.isSharpKey) +"");
+                                          $("#pianote-note-num").html(note.getDescription(piece.isSharpKey) +"");
                                           $("#pianote-note-rhythm").html(RhythmToText[note.rhythm] + "");
                                           $("#pianote-performed-note").html(note.getDescriptionOfPerformed(piece.isSharpKey) + "");
-                                          $("#pianote-performed-rhythm").html(note.performedRhythm + "");*/
+                                          $("#pianote-performed-rhythm").html(note.performedRhythm + "");
                                           $("#note-dialog").css("left", (mouseX - 250) + "px");
                                           $("#note-dialog").css("top", mouseY + "px");
+                                          openDialog();
                                           //console.log(document.getElementById("note-dialog").open);
                                           
                                         }, 
