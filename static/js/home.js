@@ -14,7 +14,6 @@ function renderSong(piece, location, color) {
                                     {},
                                     {
                                       scale: 1.5,
-                                      //staffwidth: 1110,
                                       paddingright: 0,
                                       paddingleft: 0,
                                       add_classes: true, 
@@ -58,9 +57,8 @@ function renderSong(piece, location, color) {
                                           $("#note-dialog").css("top", mouseY + "px");
                                           console.log(document.getElementById("note-dialog").open);
                                           document.getElementById("note-dialog").open();
-                                        } 
-                                        
-                                      }
+                                        }, 
+                                      },
                                     },
                                     {});
 
