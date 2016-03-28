@@ -149,14 +149,14 @@ Musical_Piece.prototype.generatePhraseRhythm = function() {
     //Pick a good rhythm to end the phrase on
     if (curMeasure == this.numMeasures - 1) {
       //If on 3rd beat, don't pick a dotted quarter
-      if (curBeat == 8) {
+      if (curBeat == this.measureDuration - NoteRhythms.HALF) {
         while(rhythm == NoteRhythms.D_QUARTER) {
           rhythmIdx = Math.random() * possibleRhythms.length << 0;
           rhythm = possibleRhythms[rhythmIdx];
         }
       }
       //always end last beat with a quarter note
-      else if (curBeat == 12) {
+      else if (curBeat == this.measureDuration - NoteRhythms.QUARTER) {
         rhythm = NoteRhythms.QUARTER;
       }
     }
@@ -877,6 +877,9 @@ Musical_Piece.prototype.addRests = function(startMeasure, endMeasure, hand) {
 
 };
 
+Musical_Piece.prototype.getType = function() {
+  throw new Error("CANNOT CALL ABSTRACT FUNCTION");
+}
 
 //all subclasses of musical piece
 
@@ -905,7 +908,9 @@ SeparateHandPiece.prototype.generatePiece = function() {
 
 };
 
-
+SeparateHandPiece.prototype.getType = function() {
+  return "SeparateHandPiece";
+}
 
 function ChordPiece(config) {
   Musical_Piece.call(this, config);
@@ -949,6 +954,10 @@ TriadPiece.prototype.generateLeftHandChords = function() {
   }
 }
 
+TriadPiece.prototype.getType = function() {
+  return "TriadPiece";
+};
+
 function SuspendedChordPiece(config) {
   ChordPiece.call(this, config);
 }
@@ -975,7 +984,11 @@ SuspendedChordPiece.prototype.generateLeftHandChords = function() {
   var note = new Triad({tone: baseTone + this.chords[lastMeasure].interval, chord: this.chords[lastMeasure], rhythm: this.measureDuration, hand: 'l'});
   var time = lastMeasure*this.measureDuration;
   this.addToPiece(time, note);
-}
+};
+
+SuspendedChordPiece.prototype.getType = function() {
+  return "SuspendedChordPiece";
+};
 
 function InvertedChordPiece(config) {
   ChordPiece.call(this, config);
@@ -1005,6 +1018,10 @@ InvertedChordPiece.prototype.generateLeftHandChords = function() {
   this.addToPiece(time, note);  
 }
 
+InvertedChordPiece.prototype.getType = function() {
+  return "InvertedChordPiece";
+};
+
 function MixedChordPiece(config) {
   
 }
@@ -1033,7 +1050,11 @@ LegatoChordPiece.prototype.generateLeftHandChords = function() {
         idx = (idx + 1) % note.tone.length;
     }
   }
-}
+};
+
+LegatoChordPiece.prototype.getType = function() {
+  return "LegatoChordPiece";
+};
 
 //end chordPieces
 
@@ -1061,6 +1082,10 @@ HandsTogetherPiece.prototype.generatePiece = function() {
   this.generatePhrase(0, 3, 'l', possibleIntervalsL);
 
 };
+
+HandsTogetherPiece.prototype.getType = function() {
+  return "HandsTogetherPiece";
+}
 
 
 function HandsTogetherComplexPiece() {

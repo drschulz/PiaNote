@@ -2,6 +2,7 @@ var user;
 var engine;
 var main_piano;
 var musicPiece;
+var pianote;
 
 function renderSong(piece, location, color) {
   tuneObjectArray = ABCJS.renderAbc(location, 
@@ -105,6 +106,7 @@ function playSong() {
 window.addEventListener('load', function() {
 	user = new UserProfile();
 	engine = new RecommendationEngine(user);
+	pianote = new PiaNote(new UserStats());
 	console.log(user.currentLevel);
 	$("#level").html(JSON.stringify(user.currentLevel));
 	$("#base").html(JSON.stringify(user.baseLevel));

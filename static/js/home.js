@@ -287,6 +287,8 @@ function calculateAccuracies() {
   pianote.userStats.addToTimeStats(results.rhythms, JSON.stringify(pianote.expectedPiece.time));
   pianote.userStats.addToKeyStats(results.notes, pianote.expectedPiece.key);
   //TODO Song stats
+  pianote.userStats.addToSongStats(results.notes, pianote.expectedPiece.getType());
+  pianote.userStats.addToSongStats(results.rhythms, pianote.expectedPiece.getType());
 
 }
 
