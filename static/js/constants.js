@@ -166,7 +166,8 @@ const RhythmToText = {
   4: "Quarter Note",
   3: "Dotted Eigth Note",
   2: "Eigth Note",
-  1: "16th Note"
+  1: "16th Note",
+  0: "None"
 };
 
 const REST = -1;

@@ -64,6 +64,17 @@
           Logout
         </paper-button>
     </paper-toolbar>
+    <div id="midi-status" class="horizontal left-justified layout">    
+      <paper-material elevation=1 class="midi-status" id="midi-not-connected">
+        <iron-icon icon="icons:report"></iron-icon>
+        Midi Not Connected
+      </paper-material>
+      <paper-material elevation=1 class="midi-status" id="midi-connected">
+        <iron-icon icon="icons:check-circle"></iron-icon>
+        Midi Connected
+      </paper-material>
+    </div>
+
     <div class="horizontal center-justified layout">
       Session: {{ sessionNum }}
     </div>

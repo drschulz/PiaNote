@@ -117,6 +117,10 @@ Note.prototype.setToHit = function() {
   }
 }
 
+Note.prototype.getPerformedRhythm = function() {
+  throw new Error("CANNOT CALL ABSTRACT FUNCTION");
+}
+
 function SingleNote(config) {
   this.tone = config.tone;
   Note.call(this, config);
@@ -127,6 +131,10 @@ function SingleNote(config) {
 
 SingleNote.prototype = Object.create(Note.prototype);
 SingleNote.prototype.constructor = SingleNote;
+
+SingleNote.prototype.getPerformedRhythm = function() {
+  return this.performedRhythm == undefined ? 0 : this.performedRhythm;
+}
 
 SingleNote.prototype.getAccuracies = function(lastNote) {
   if (this.tone == REST) {
@@ -167,7 +175,10 @@ SingleNote.prototype.updateCss = function() {
     }  
   }
   else {
-    $(this.svgElements[j]).addClass("hit-all");
+    console.log("hit note! changing css ....");
+    for (var j = 0; j < this.svgElements.length; j++) {
+      $(this.svgElements[j]).addClass("hit-all");
+    }
   }
 }
 
@@ -272,7 +283,9 @@ SingleNote.prototype.match = function(note) {
   intervalScore = this.interval == note.interval ? MATCH_SCORES.INTERVAL_MATCH 
     : MATCH_SCORES.INTERVAL_MISMATCH;
   
-  if (this.rhythm <= note.rhythm + 1.2 && this.rhythm >= note.rhythm - 1.2) {
+  var diff = Math.abs(this.rhythm - note.rhythm);
+  var percentDiff = diff / this.rhythm;
+  if (percentDiff <= 0.3) {//this.rhythm <= note.rhythm + 1.2 && this.rhythm >= note.rhythm - 1.2) {
     rhythmScore = MATCH_SCORES.RHYTHM_MATCH;
   }
   else {
@@ -305,6 +318,30 @@ function PolyNote(config) {
 
 PolyNote.prototype = Object.create(Note.prototype);
 PolyNote.prototype.constructor = PolyNote;
+
+PolyNote.prototype.getPerformedRhythm = function() {
+  var allRhythmsUndefined = true;
+  for (var i = 0; i < this.tone.length; i++) {
+    var note = this.tone[i];
+    allRhythmsUndefined = allRhythmsUndefined && note.performedRhythm == undefined;
+  }
+
+  if (allRhythmsUndefined) {
+    return 0;
+  }
+
+  var smallestRhythm = NoteRhythms.WHOLE;
+  
+
+  for (var i = 0; i < this.tone.length; i++) {
+    var note = this.tone[i];
+    if (note.performedRhythm < smallestRhythm) {
+      smallestRhythm = note.performedRhythm;
+    }
+  }
+
+  return smallestRhythm;
+}
 
 PolyNote.prototype.getAccuracies = function(lastNote) {
   var bundle = {};
@@ -382,30 +419,39 @@ PolyNote.prototype.getType = function() {
 }
 
 PolyNote.prototype.updateCss = function() {
+  var missedRhythm = false;
+  var missedNote = false;
   for (var i = 0; i < this.tone.length; i++) {
     var note = this.tone[i];
-    if(note.tone != note.performedTone && note.rhythm != note.performedRhythm) {
-      for (var j = 0; j < this.svgElements.length; j++) {
-        $(this.svgElements[j]).addClass("missed-all");//.css("fill", "#E83034");
-      }
-      return;
+    if (note.rhythm != note.performedRhythm) {
+      missedRhythm = true;
     }
-    else if (note.tone != note.performedTone) {
-      for (var j = 0; j < this.svgElements.length; j++) {
-        $(this.svgElements[j]).addClass("missed-note");//.css("fill", "#A257DE");
-      }  
-      return;
-    }
-    else if (note.rhythm != note.performedRhythm) {
-      for (var j = 0; j < this.svgElements.length; j++) {
-        $(this.svgElements[j]).addClass("missed-rhythm");//.css("fill", "#455ede");
-      }  
-      return;
+    if (note.tone != note.performedTone) {
+      missedNote = true;
     }
   }
 
-  $(this.svgElements[j]).addClass("hit-all");
-}
+  if (missedNote && missedRhythm) {
+    for (var j = 0; j < this.svgElements.length; j++) {
+      $(this.svgElements[j]).addClass("missed-all");//.css("fill", "#E83034");
+    }
+  }
+  else if (missedNote) {
+    for (var j = 0; j < this.svgElements.length; j++) {
+      $(this.svgElements[j]).addClass("missed-note");//.css("fill", "#A257DE");
+    }  
+  }
+  else if (missedRhythm) {
+    for (var j = 0; j < this.svgElements.length; j++) {
+      $(this.svgElements[j]).addClass("missed-rhythm");//.css("fill", "#455ede");
+    }
+  }
+  else {
+    for (var j = 0; j < this.svgElements.length; j++) {
+      $(this.svgElements[j]).addClass("hit-all");
+    }  
+  }
+};
 
 function Triad(config) {
   var chord = config.chord;

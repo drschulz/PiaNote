@@ -32,7 +32,6 @@ function renderSong(piece, location, color) {
                                       add_classes: true, 
                                       listener: {
                                         highlight: function(abcElem) {
-                                          console.log("highlighting!");
                                           var note = null;
                                           var voices = piece.getVoiceTuneList();
                                           var v1 = voices.voice1;
@@ -52,20 +51,21 @@ function renderSong(piece, location, color) {
                                                 break;
                                               }
                                             }
-                                          } 
+                                          }
+
+                                          //$(".note_selected").removeClass("note_selected");
+
 
                                           if (note == null) {
                                             console.log("no note found");
                                             return;
                                           }
-
-                                          console.log(note);
                                           
                                           //document.getElementById("note-dialog").close();
                                           $("#pianote-note-num").html(note.getDescription(piece.isSharpKey) +"");
                                           $("#pianote-note-rhythm").html(RhythmToText[note.rhythm] + "");
                                           $("#pianote-performed-note").html(note.getDescriptionOfPerformed(piece.isSharpKey) + "");
-                                          $("#pianote-performed-rhythm").html(note.performedRhythm + "");
+                                          $("#pianote-performed-rhythm").html(RhythmToText[note.getPerformedRhythm()] + "");
                                           $("#note-dialog").css("left", (mouseX - 250) + "px");
                                           $("#note-dialog").css("top", mouseY + "px");
                                           openDialog();
@@ -417,8 +417,10 @@ function initializeButtons() {
     pianote.unMonitorTempo();
     $("#stop-button").hide();
     $("#play-button").show();
+    $("#play-button").prop("disabled", true);
     $("#playButtons").show();
     scorePerformance();
+
     $("#generate-button").prop("disabled", false);
     $("#retry-button").prop("disabled", false);
     
@@ -432,12 +434,14 @@ function initializeButtons() {
     songNum++;
     $("#generate-button").prop("disabled", true);
     $("#retry-button").prop("disabled", true);
+    $("#play-button").prop("disabled", false);
   });
 
   $("#retry-button").click(function() {
     pianote.expectedPiece.clearPerformance();
     renderSong(pianote.expectedPiece, "mystave", "black");
     $("#retry-button").prop("disabled", true);
+    $("#play-button").prop("disabled", false);
   });
   
   //$("#score-button").click(scorePerformance);

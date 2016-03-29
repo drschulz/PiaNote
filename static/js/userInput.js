@@ -20,16 +20,47 @@ function UserInput(config) {
     var note = boardToMidi[String.fromCharCode(event.keyCode)];
     that.noteOff(note, 0);
   }
+
+  function onStateChange(event) {
+    var port = event.port;
+    if (port.state == "disconnected") {
+      $("#midi-connected").hide();
+      $("#midi-not-connected").show();
+      console.log("midi disconnected");
+    }
+    else {
+      midiIn = midiAccess.inputs.values().next().value;
+      midiIn.onmidimessage = midiMessageReceived;
+
+      console.log("midi connected");
+      $("#midi-connected").show();
+      $("#midi-not-connected").hide();
+
+    }
+  }
   
+
+
   function onMIDIStarted( midi ) {
     var preferredIndex = 0;
-  
     midiAccess = midi;
     midiIn = midiAccess.inputs.values().next().value;
     
+    console.log(midi);
+
+    midiAccess.onstatechange = onStateChange;
+
     if (midiIn) {
       console.log("midi connected");
+      $("#midi-connected").show();
+      $("#midi-not-connected").hide();
+
       midiIn.onmidimessage = midiMessageReceived;
+    }
+    else {
+      $("#midi-connected").hide();
+      $("#midi-not-connected").show();
+      console.log("midi not connected");
     }
   }
   
@@ -64,6 +95,6 @@ function UserInput(config) {
     navigator.requestMIDIAccess().then( onMIDIStarted, onMIDISystemError );
   }
   
-  addEvent(window, "keydown", handleKeyDown);
-  addEvent(window, "keyup", handleKeyUp);
+  //addEvent(window, "keydown", handleKeyDown);
+  //addEvent(window, "keyup", handleKeyUp);
 }

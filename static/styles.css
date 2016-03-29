@@ -59,8 +59,12 @@ a, a:hover {
   fill: red;//#455ede;
 }
 
-#mystave path.note_selected {
-  fill: #455ede;
+#mystave .note_selected {
+  fill: black;//#455ede;
+}
+
+#mystave path.note {
+  fill: black;
 }
 
 #note-dialog {
@@ -95,19 +99,19 @@ svg > rect {
   /*text-align: center;*/
 }
 
-.hit-all {
+#mystave path.note.hit-all {
   fill: green;
 }
 
-.missed-all {
+#mystave path.note.missed-all {
   fill: #E83034;
 }
 
-.missed-note {
+#mystave path.note.missed-note {
   fill: #A257DE;
 }
 
-.missed-rhythm {
+#mystave path.note.missed-rhythm {
   fill: #455ede;
 }
 
@@ -311,4 +315,29 @@ paper-tabs {
 
 paper-tabs paper-tab.iron-selected {
   color: #ffff8d;
+}
+
+.paper-button-0[disabled] {
+  pointer-events: auto !important;
+  cursor: not-allowed;
+}
+
+#midi-status {
+  margin-top: 10px;
+  margin-left: 10px;
+}
+
+.midi-status {
+  background-color: white;  
+  padding: 10px;
+}
+
+#midi-not-connected {
+  color: red;
+  display: none;
+}
+
+#midi-connected {
+  color: green;
+  display: none;
 }

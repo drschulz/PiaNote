@@ -599,7 +599,7 @@ Musical_Piece.prototype.match = function(notes) {
         }
         else if (current.dir == MatchDirection.TOP) {
           //Note deletion, count as the user resting.
-          expectedNote.performedRhythm = REST;
+          expectedNote.performedRhythm = 0;
           expectedNote.performedTone = REST;
           results.notes.unshift(new Note({tone: REST, rhythm: expectedNote.rhythm}));
           results.scores.unshift(current);
