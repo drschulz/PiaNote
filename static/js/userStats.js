@@ -1,9 +1,9 @@
-function UserStats(stats) {
-  this.userKeys = ['C', 'G', 'F', 'D', 'Bb', 'A', 'Eb'];
+function UserStats(config) {
+  //this.userKeys = ['C', 'G', 'F', 'D', 'Bb', 'A', 'Eb'];
   var that = this;
 
 
-  function createStats() {
+  /*function createStats() {
     var stats = {};
     var keyMedian = 4;
     stats.sharpKeyLevel = keyMedian;
@@ -59,16 +59,16 @@ function UserStats(stats) {
     stats.maxIntervalJump = 7; //Major 5th  
     
     return stats;
-  }
+  }*/
 
 
-  if(stats === undefined) {
+  /*if(stats === undefined) {
     this.stats = createStats();
   }
   else {
     this.stats = stats;
     console.log("loading stats");
-  }
+  }*/
 
   this.getMin = function(obj) {
     var max = 100.0;
@@ -100,18 +100,31 @@ function UserStats(stats) {
     if (stats[item] == undefined) {
       return 1;
     }
-    var itemAccuracy = stats[item].hit / stats[item].numAppeared;
+    var itemAccuracy = stats[item].hit / stats[item].num;
     var focusedAccuracy = 0.7;
     var diff = itemAccuracy - focusedAccuracy;
-    return 0.9 *Math.exp(-((diff * diff) / (2*0.03*0.03))) + 0.1;
+    var fitness = 0.9 *Math.exp(-((diff * diff) / (2*0.03*0.03))) + 0.1;
+    return fitness;
   }
 
-  this.noteStats = {};
-  this.rhythmStats = {};
-  this.intervalStats = {};
-  this.keyStats = {};
-  this.songStats = {};
-  this.timeStats = {};
+  if (config == undefined) {
+    this.noteStats = {};
+    this.rhythmStats = {};
+    this.intervalStats = {};
+    this.keyStats = {};
+    this.songStats = {};
+    this.timeStats = {};  
+  }
+  else {
+    this.noteStats = config.noteStats;
+    this.rhythmStats = config.rhythmStats;
+    this.intervalStats = config.intervalStats;
+    this.keyStats = config.keyStats;
+    this.songStats = config.songStats;
+    this.timeStats = config.timeStats;  
+  }
+
+  
 
   this.addToStats = function(stats, type, newStats) {
     if (stats[type] == undefined) {
@@ -123,6 +136,7 @@ function UserStats(stats) {
 
     return stats;
   };
+
 
 }
 
@@ -159,9 +173,11 @@ UserStats.prototype.addToTimeStats = function(stats, time) {
 UserStats.prototype.getBestItem = function(items, stats) {
   var best = [];
   var bestFitness = 0;
+  console.log("here!!");
 
   for (var i = 0; i < items.length; i++) {
     var fitness = this.getStatFitness(stats, items[i]);
+    console.log(fitness);
     if (fitness > bestFitness) {
       bestFitness = fitness;
       best = [items[i]];
@@ -175,7 +191,7 @@ UserStats.prototype.getBestItem = function(items, stats) {
   return best[Math.random()*best.length << 0];
 };
 
-UserStats.prototype.getMostMissedVoice1Note = function() {
+/*UserStats.prototype.getMostMissedVoice1Note = function() {
   return this.getMin(this.stats.noteHitRateVoice1);
 };
 
@@ -275,4 +291,4 @@ UserStats.prototype.updateNoteAccuracy = function(scores, isVoice1) {
 
 UserStats.prototype.getStats = function () {
   return this.stats;
-};
+};*/

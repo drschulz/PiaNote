@@ -1,18 +1,30 @@
-const tier0 = [[]];
-const tier1 = [[0], [1], [2], [3]];
-const tier2 = [[0, 1], [0, 2], [0, 3], [1, 2], [1, 3], [2, 3]];
-const tier3 = [[0, 1, 2], [0, 1, 3], [0, 2, 3], [1, 2, 3]];
-const tiers = [tier0, tier1, tier2, tier3];
+function UserProfile(config) {
+	if (config == undefined) {
+		this.songNum = 0; // the current song
+		this.updateStatuses();
+		//this.performanceData = {}; //level: {list of accuracy lists}
+	}
+	else {
+		console.log("loading!!");
+		this.songNum = config.songNum;
+		this.setInformation(config);
+		//this.performanceData = config.performanceData;
+	}
+}
 
-const INTERVALS = 0;
-const RHYTHMS = 1;
-const KEYLEVEL = 2;
-const CHORDLEVEL = 3;
-
-function UserProfile() {
-	this.songNum = 0; // the current song
-	this.updateStatuses();
-	this.performanceData = {}; //level: {list of accuracy lists}
+UserProfile.prototype.setInformation = function(config) {
+	this.currentLevel = config.currentLevel;
+	this.baseLevel = config.baseLevel;
+	this.nextBaseLevel = config.nextBaseLevel;
+	this.drillingLevel = config.drillingLevel;
+	PianoteLevels.setLevels(this.drillingLevel);
+	this.tiers = PianoteLevels.getTiers();
+	this.currentTier = config.currentTier;
+	this.currentLevelInTier = config.currentLevelInTier;
+	PianoteLevels.unlockAllLevels();
+	PianoteLevels.lockLevels(this.currentLevelInTier.level);
+	this.numAttemptsAtLevel = config.numAttemptsAtLevel;
+	this.numSuccessesInLevel = config.numSuccessesInLevel;
 }
 
 UserProfile.prototype.updateStatuses = function() {
@@ -21,7 +33,6 @@ UserProfile.prototype.updateStatuses = function() {
 	this.baseLevel = PianoteLevels.getCurrentLevels(); //current base level that current level is derived from
 	this.nextBaseLevel = PianoteLevels.getNextLevels(); //next level that current level is gradually working towards
 	this.drillingLevel = PianoteLevels.getCurrentLevels(); //the drilling level that is targeting the current level
-	this.isDrilling = false; //whether the user is currently drilling or practicing the current level
 	this.tiers = PianoteLevels.getTiers();
 	this.currentTier = 0; //the tier the user is on towards the next base
 	this.chooseAnotherLevelInTier();
@@ -87,7 +98,7 @@ UserProfile.prototype.passedAllLevelsInTier = function() {
 	return passed;
 }
 
-UserProfile.prototype.getOverallAccuracyForLevel = function(level) {
+/*UserProfile.prototype.getOverallAccuracyForLevel = function(level) {
 	var curLevelString = JSON.stringify(level);
 
 	if (this.performanceData[curLevelString] == undefined) {
@@ -171,7 +182,7 @@ UserProfile.prototype.getLowestAccuracyForCurrentLevelFocus = function() {
 	}
 
 	return minAccuracy;
-}
+}*/
 
 UserProfile.prototype.getLevelFocusComponents = function() {
 	return this.currentLevelInTier.level;

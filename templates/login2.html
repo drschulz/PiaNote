@@ -26,7 +26,7 @@
     </paper-toolbar>
     <div class="horizontal center-justified layout">
       <form is="iron-form" id="form" method="post" action="/login">
-        <paper-input name="name" label="Cal Poly Username"></paper-input>  
+        <paper-input name="name" label="Cal Poly Username" id="name"></paper-input>  
       </form>
     </div>
     {% for message in get_flashed_messages() %}
@@ -36,14 +36,14 @@
       <paper-button class="mainButton" raised id="login-button" onclick="submitForm()">
         Login
       </paper-button>
-      <paper-button data-dialog="register-dialog" raised id="reg-button" onclick="openDialog()">
+      <paper-button data-dialog="register-dialog" raised id="reg-button" onclick="submitRegistration()">
         Register
       </paper-button>
     </div>
     <paper-dialog modal id="register-dialog">
     <h2>Register for PiaNote</h2>
     <paper-dialog-scrollable>
-      <form is="iron-form" id="registerForm" method="post" onsubmit="submitRegistration()">
+      <form is="iron-form" id="registerForm" onsubmit="submitRegistration()">
         <paper-input name="name" id="registerUname" label="Cal Poly Username"></paper-input>  
       </form>
     </paper-dialog-scrollable>
@@ -81,8 +81,13 @@
     }
 
     function registerPostSuccess(res) {
-      var toast = document.getElementById('toast');
-      toast.open();
+      if (res == "userExists") {
+        alert("Unable to register: User already exists");
+      }
+      else {
+        var toast = document.getElementById('toast');
+        toast.open();
+      }
     }
 
     function registerPostError(res, status, error) {
@@ -90,7 +95,7 @@
     }
 
     function submitRegistration() {
-      var name = $('#registerUname').val();
+      var name = $('#name').val();
 
       if (!name) {
         alert("Please enter a username");

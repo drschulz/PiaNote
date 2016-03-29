@@ -90,15 +90,17 @@ PiaNote.prototype.generateSong = function() {
   this.resetTime();
 
   var availableKeys = keyLevels.lockLevel ? keyLevels.getCurrentChoicesStrict() : keyLevels.getCurrentChoices();
-  var key = this.userStats.getBestItem(availableKeys, this.userStats.keyStats);//availableKeys[Math.random() * availableKeys.length << 0];
+  var key = this.playerStats.getBestItem(availableKeys, this.playerStats.keyStats);//availableKeys[Math.random() * availableKeys.length << 0];
 
   var availableTime = timeLevels.lockLevel ? timeLevels.getCurrentChoicesStrict() : timeLevels.getCurrentChoices();
   var availableTimeString = [];
   for (var i = 0; i < availableTime.length; i++) {
     availableTimeString.push(JSON.stringify(availableTime[i]));
   }
-
-  var timeSig = JSON.parse(this.userStats.getBestItem(availableTimeString, this.userStats.timeStats));//availableTime[Math.random() * availableTime.length << 0];
+  console.log(availableTimeString);
+  var bestTimeSig = this.playerStats.getBestItem(availableTimeString, this.playerStats.timeStats); 
+  console.log(bestTimeSig);
+  var timeSig = JSON.parse(bestTimeSig);//availableTime[Math.random() * availableTime.length << 0];
 
 
   var config = {
@@ -113,7 +115,7 @@ PiaNote.prototype.generateSong = function() {
   for (var i = 0; i < availableSongTypes.length; i++) {
     availableSongTypesString.push(availableSongTypes[i].prototype.getType());
   }
-  var piece = this.userStats.getBestItem(availableSongTypesString, this.userStats.songStats);//availableSongTypes[Math.random() * availableSongTypes.length << 0];
+  var piece = this.playerStats.getBestItem(availableSongTypesString, this.playerStats.songStats);//availableSongTypes[Math.random() * availableSongTypes.length << 0];
   for (var i = 0; i < availableSongTypes.length; i++) {
     if (availableSongTypes[i].prototype.getType() == piece) {
       this.expectedPiece = new availableSongTypes[i](config);

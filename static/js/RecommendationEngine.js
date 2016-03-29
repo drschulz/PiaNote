@@ -54,12 +54,20 @@ RecommendationEngine.prototype.getNextSongParameters = function(lastSongAccuraci
 		that.userProfile.updateDrillingLevel();
 	}
 
-	
+	function isEqual(level1, level2) {
+		var equal = true;
+		for (var i in level1) {
+			equal = equal && level1[i] == level2[i];
+		}
+		return equal;
+	}
 
+	
+	console.log("in recommendations ....");
 	//if drilling level is same as target level
-	if (JSON.stringify(this.userProfile.drillingLevel) == JSON.stringify(this.userProfile.currentLevel)) {		
+	if (isEqual(this.userProfile.drillingLevel, this.userProfile.currentLevel)) {		
 		//add to level accuracies	
-		var curLevelString = JSON.stringify(this.userProfile.currentLevel);
+		/*var curLevelString = JSON.stringify(this.userProfile.currentLevel);
 		if (this.userProfile.performanceData[curLevelString] == undefined) {
 			this.userProfile.performanceData[curLevelString] = [];
 		}
@@ -69,7 +77,7 @@ RecommendationEngine.prototype.getNextSongParameters = function(lastSongAccuraci
 		if (this.userProfile.performanceData[curLevelString].length > 5) {
 			console.log("getting rid of data for current level");
 			this.userProfile.performanceData[curLevelString].shift();
-		}
+		}*/
 
 		//get lowest accuracy
 		var lowestAccuracy = 1;
@@ -114,12 +122,11 @@ RecommendationEngine.prototype.getNextSongParameters = function(lastSongAccuraci
 
 
 		}
+		//number of attempts in level go up
+		this.userProfile.numAttemptsAtLevel++;
 
 		//if component accuracies are so so
 		if (lowestAccuracy >= 0.6 && lowestAccuracy < 0.8) {
-			//number of attempts in level go up
-			this.userProfile.numAttemptsAtLevel++;
-
 			//if number of attempts is greater than 5
 			if (this.userProfile.numAttemptsAtLevel > 5) {
 				//choose another level in the tier
@@ -133,7 +140,6 @@ RecommendationEngine.prototype.getNextSongParameters = function(lastSongAccuraci
 				return this.userProfile.drillingLevel;
 			}	
 		}
-
 		
 	}
 

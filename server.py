@@ -11,27 +11,30 @@ db = SQLAlchemy(app)
 def ind():
 	if 'username' in session:
 		print(" .... uhhh")
-		return render_template('index.html', username=session['username'])
+		return render_template('index.html', username=session['username'], sessionNum=session['sessionNum'])
 
 	return render_template('login2.html')    
 
 
-@app.route('/home/<name>')
-def index(name):
-	return render_template('index.html', username=name)#app.send_static_file('index.html')
+#@app.route('/home/<name>')
+#def index(name):
+#	return render_template('index.html', username=name)#app.send_static_file('index.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
 	if request.method == 'POST':
 		#print('here!')
 		username = request.form['name'];
+		if Users.query.filter_by(username=username).scalar():
+			return "userExists"
 		#print('also here!')
 		#print(username);
 		#pDB = get_db();
 		user = Users(str(username));
+		user.session = 0;
 		db.session.add(user);
 		db.session.commit();
-		g.db.addNewUser(str(username));
+		#g.db.addNewUser(str(username));
 		print("done!")
 
 		return "registered"
@@ -42,11 +45,14 @@ def register():
 @app.route('/load') 
 def loadScores():
 	if 'username' in session:
-		data = Users.query.filter_by(username=session['username']).first().data; #g.db.getUserData(session['username']);
+		data = Users.query.filter_by(username=session['username']).first(); #g.db.getUserData(session['username']);
 		print(data);
-		if data is None:
+		if data.profile is None or data.stats is None:
 			abort(404);
-		return data
+		
+		bundle = {"stats": json.loads(data.stats), "profile": json.loads(data.profile)}
+
+		return json.dumps(bundle);
 		#resp = make_response(data);
 		#resp.content_type = "application/json";
 		#return resp;
@@ -60,8 +66,23 @@ def saveScores():
 
 	if 'username' in session:
 		user = Users.query.filter_by(username=session['username']).first();
-		user.data = json.dumps(data);
-		db.session.commit();
+		#print (data['sharpKeyLevel']);
+		performance = PerformanceData(user.id, session['sessionNum'], data['songNum'], json.dumps(data['piece']), json.dumps(data['level']))
+		performance.performance = json.dumps(data['performance'])
+		performance.accuracies = json.dumps(data['accuracies'])
+		performance.profile = json.dumps(data['profile'])
+		performance.stats = json.dumps(data['stats'])
+		db.session.add(performance)
+		db.session.commit()
+
+		user.profile = json.dumps(data['profile'])
+		user.stats = json.dumps(data['stats'])
+		db.session.commit()
+
+		#user.data = json.dumps(data);
+		#db.session.commit();
+
+
 		#g.db.submitUserData(session['username'], json.dumps(data))
 		return "data saved"
 
@@ -74,10 +95,15 @@ def login():
 		print(str(request.form['name']));
 		#pDB = get_db();
 		name = str(request.form['name']);
-		userExists = db.session.query(Users.query.filter_by(username=name).exists()); #g.db.userExists(request.form['name']);
-
+		userExists = Users.query.filter_by(username=name).scalar(); #g.db.userExists(request.form['name']);
+		print ("exists: " + str(Users.query.filter_by(username=name).scalar()))
 		if userExists:
 			session['username'] = request.form['name'];
+			user = Users.query.filter_by(username=session['username']).first();
+			user.session = user.session + 1;
+			db.session.commit()
+			session['sessionNum'] = user.session
+
 			return redirect(url_for('ind'));
 		else:
 			flash("Invalid Username, please try again")
@@ -91,9 +117,10 @@ def login():
 def logout():
     # remove the username from the session if it's there
 	session.pop('username', None)
+	session.pop('sessionNum', None)
 	print("logging out!")
     
-	return render_template('login2.html')#redirect(url_for('login'));
+	return redirect(url_for('ind'));#render_template('login2.html')#redirect(url_for('login'));
 
 
 
@@ -123,13 +150,45 @@ def close_connection(exception):
 class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True)
-    data = db.Column(db.TEXT, unique=True)
+    session = db.Column(db.Integer)
+    profile = db.Column(db.TEXT) #current profile
+    stats = db.Column(db.TEXT) #current stats
+    performances = db.relationship('PerformanceData', backref='users', lazy='dynamic')
 
     def __init__(self, username):
         self.username = username
 
     def __repr__(self):
         return '<User %r>' % self.username
+
+
+class PerformanceData(db.Model):
+	id = db.Column(db.Integer, primary_key=True)
+	user_id = db.Column(db.ForeignKey('users.id'))
+	session_number = db.Column(db.Integer)
+	piece_number = db.Column(db.Integer)
+	piece = db.Column(db.TEXT)
+	performance = db.Column(db.TEXT)
+	accuracies = db.Column(db.TEXT) #component accuracies
+	level = db.Column(db.TEXT) #song level with components
+	profile = db.Column(db.TEXT) #current profile and user state
+	#current_level = db.Column(db.TEXT)
+	#base_level = db.Column(db.TEXT)
+	#next_level = db.Column(db.TEXT)
+	#focus_levels = db.Column(db.TEXT)
+	stats = db.Column(db.TEXT) #current user statistics for components
+
+
+	def __init__(self, user_id, sessionNumber, pieceNumber, piece, level):
+		self.user_id = user_id
+		self.session_number = sessionNumber
+		self.piece_number = pieceNumber
+		self.piece = piece
+		self.level = level
+
+	def __repr__(self):
+		return '<Performance %r, level: %r, session: %r, song: %r>' % (self.user_id, self.level, self.sessionNumber, self.pieceNumber)
+
 
 def wsgi(environ, start_response):
 	port = int(os.environ.get("PORT", 5000))

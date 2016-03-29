@@ -51,9 +51,15 @@ function makeNewPiece() {
 
 	var availableSongTypes = songLevels.lockLevel ? songLevels.getCurrentChoicesStrict() : songLevels.getCurrentChoices();
 	var piece = availableSongTypes[Math.random() * availableSongTypes.length << 0];
-	musicPiece = new piece(config);
+	pianote.generateSong();
+	musicPiece = pianote.expectedPiece;//new piece(config);
 	console.log("new piece done!");
-	console.log(musicPiece);
+	console.log(JSON.stringify(musicPiece, function(k, v) {
+		if (k == 'svgElements') {
+			return undefined;
+		}
+		return v;
+	}));
 	renderSong(musicPiece, "mystave", "black");
 }
 

@@ -8,6 +8,9 @@ var mouseX;
 var mouseY;
 var engine;
 var user;
+var sessionNum = 1;
+var songNum = 1;
+var currentAccuracies;
 //Sheet music rendering
 
 function openDialog() {
@@ -230,6 +233,59 @@ function saveUserStats() {
   });
 }
 
+function savePiece() {
+  var stats = pianote.playerStats;
+  var profile = user;
+  var level = PianoteLevels.getCurrentLevels();
+  var performance = pianote.pianotePiece;
+  var bundle = {
+    stats: stats,
+    profile: profile,
+    level: level,
+    performance: performance,
+    sessionNum: sessionNum,
+    songNum: songNum,
+    piece: pianote.expectedPiece,
+    accuracies: currentAccuracies
+  };
+
+
+  function registerPostSuccess() {
+    var toast = document.getElementById('success-toast');
+    //toast.text = "saved current scores";
+    toast.open();
+  }
+
+  function registerPostError() {
+    var toast = document.getElementById('fail-toast');
+    //toast.text = "error saving scores";
+    toast.open();  
+  }
+
+  var bundleJson = JSON.stringify(bundle, function(k, v) {
+    if (k == 'svgElements' || k == 'tiers') {
+      return undefined;
+    }
+    return v;
+  });
+
+  console.log(bundleJson);
+
+  $.ajax({
+    method: 'POST',
+    url: '/score',
+    contentType: 'application/json',
+    processData: true,
+    data: bundleJson,
+    dataType: 'text',
+    success: registerPostSuccess,
+    error: registerPostError,
+  });
+
+
+
+}
+
 function updateStave() {
   var voice = flatTuneList(pianote.expectedPiece.piece);
   for(var i = 0; i < voice.length; i++) {
@@ -257,8 +313,10 @@ function scorePerformance() {
   
   //updateStave();
   displayResults(results);
+  currentAccuracies = calculateAccuracies();
+  savePiece();
 
-  saveUserStats();
+  //saveUserStats();
 }
 
 function calculateAccuracies() {
@@ -272,8 +330,8 @@ function calculateAccuracies() {
 
   var accuracies = {
     'r': results.rhythms.hit / results.rhythms.num, // weight more by type of rhythm
-    't': results.rhythms.hit / results.rhythms.num,
-    'k': results.notes.hit / results.notes.num,
+    't': (results.notes.hit + results.rhythms.hit) / (results.notes.num + results.rhythms.num),//results.rhythms.hit / results.rhythms.num,
+    'k': (results.notes.hit + results.rhythms.hit) / (results.notes.num + results.rhythms.num),//results.notes.hit / results.notes.num,
     'i': results.intervals.hit / results.intervals.num, //weight more by type of interval
     's': (results.notes.hit + results.rhythms.hit) / (results.notes.num + results.rhythms.num) //do both notes and rhythms
   }
@@ -281,15 +339,30 @@ function calculateAccuracies() {
   engine.getNextSongParameters(accuracies);
   
   //enter stats into the userStats
-  pianote.userStats.addToNoteStats(results.notes.accuracies);
-  pianote.userStats.addToRhythmStats(results.rhythms.accuracies);
-  pianote.userStats.addToIntervalStats(results.intervals.accuracies);
-  pianote.userStats.addToTimeStats(results.rhythms, JSON.stringify(pianote.expectedPiece.time));
-  pianote.userStats.addToKeyStats(results.notes, pianote.expectedPiece.key);
-  //TODO Song stats
-  pianote.userStats.addToSongStats(results.notes, pianote.expectedPiece.getType());
-  pianote.userStats.addToSongStats(results.rhythms, pianote.expectedPiece.getType());
+  pianote.playerStats.addToNoteStats(results.notes.accuracies);
+  pianote.playerStats.addToRhythmStats(results.rhythms.accuracies);
+  pianote.playerStats.addToIntervalStats(results.intervals.accuracies);
+  var timeStats = {
+    hit: accuracies['t'],
+    num: 1
+  };
 
+  pianote.playerStats.addToTimeStats(timeStats, JSON.stringify(pianote.expectedPiece.time));
+  
+  var keyStats = {
+    hit: accuracies['k'],
+    num: 1
+  };
+
+  pianote.playerStats.addToKeyStats(keyStats, pianote.expectedPiece.key);
+  //TODO Song stats
+  var songStats = {
+    hit: accuracies['s'],
+    num: 1
+  }
+  pianote.playerStats.addToSongStats(songStats, pianote.expectedPiece.getType());
+
+  return accuracies;
 }
 
 function playSong(tune) {
@@ -348,7 +421,7 @@ function initializeButtons() {
     scorePerformance();
     $("#generate-button").prop("disabled", false);
     $("#retry-button").prop("disabled", false);
-    calculateAccuracies();
+    
   });
   
   $("#generate-button").click(function() {
@@ -407,14 +480,23 @@ function enableButtons() {
   $("#score-button").prop("disabled", false);
 }
 
-function initializeApplication(statsData) {
-  pianote = new PiaNote(statsData);
+function initializeApplication(userData) {
+  if (userData != undefined) {
+    pianote = new PiaNote(userData['stats']);
+    user = new UserProfile(userData['profile']);  
+  }
+  else {
+    pianote = new PiaNote();
+    user = new UserProfile();
+  }
+  
   metronome = new Metronome();
   MIDI.setVolume(MidiChannels.MAIN_PIANO, MidiConstants.MAX_VOLUME);
   MIDI.programChange(MidiChannels.MAIN_PIANO, GeneralMIDI.PIANO);
   initializeButtons();
-  user = new UserProfile();
   engine = new RecommendationEngine(user);
+  console.log(user);
+  console.log(pianote.playerStats);
   /*timeLevels.setLevel(2);
   songLevels.setLevel(1);
   rhythmLevels.setLevel(2);*/
@@ -458,6 +540,7 @@ window.addEventListener('load', function() {
 
   var progressBar = progressJs("#main-panel").setOption("theme", "red");
   var statsData = undefined;
+  var userData = undefined;
 
   function loadProgress(state, progress) {
     progressBar.set(progress * 100);
@@ -465,14 +548,15 @@ window.addEventListener('load', function() {
   
   function loadEnd() {
     progressBar.end();
-    initializeApplication(statsData);  
+    initializeApplication(userData);  
   }
   
   progressBar.start();
   
   function init(res) {
     console.log(res);
-    statsData = JSON.parse(res);
+    //statsData = JSON.parse(res);
+    userData = JSON.parse(res);
     initializeMidi(loadProgress, loadEnd);
   }
 

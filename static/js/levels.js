@@ -203,5 +203,9 @@ const PianoteLevels = {
 
 	getNumLevels: function() {
 		return this.levels.length;
+	},
+
+	getLevelKey: function() {
+
 	}
 };
