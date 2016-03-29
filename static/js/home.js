@@ -429,6 +429,7 @@ function initializeButtons() {
     $("#results-card").hide();
     $("#playButtons").hide();
     generateNextMelody();
+    songNum++;
     $("#generate-button").prop("disabled", true);
     $("#retry-button").prop("disabled", true);
   });
