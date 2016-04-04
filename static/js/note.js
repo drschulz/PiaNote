@@ -29,14 +29,6 @@ function Note(config) {
   this.hand = config.hand;
   this.svgElements = [];
   this.fingering = undefined;
-  /*if (config.last_tone === undefined) {
-    this.interval = 0;
-  }
-  else {
-    this.interval = this.tone - this.last_tone;
-  }
-  
-  this.dynamic = config.dynamic;*/
 }
 
 Note.prototype.getAccuracies = function(lastNote) {
@@ -166,9 +158,9 @@ SingleNote.prototype.getAccuracies = function(lastNote) {
 }
 
 SingleNote.prototype.updateCss = function() {
-  if (this.tone == REST) {
-    return;
-  }
+  //if (this.tone == REST) {
+    //return;
+  //}
 
   if(this.tone != this.performedTone && this.rhythm != this.performedRhythm) {
     for (var j = 0; j < this.svgElements.length; j++) {
@@ -197,6 +189,10 @@ SingleNote.prototype.getDescription = function(isSharpKey) {
   if (Array.isArray(this.tone)) {
     return "chord";
   }
+  
+  if (this.tone == REST) {
+      return "Rest";
+  }
 
   var note = midiToNote(this.tone);
 
@@ -209,6 +205,10 @@ SingleNote.prototype.getDescription = function(isSharpKey) {
 }
 
 SingleNote.prototype.getDescriptionOfPerformed = function(isSharpKey) {  
+  if (this.performedTone == REST) {
+      return "Rest";
+  }
+  
   if (this.performedTone == undefined || this.performedTone <= 0) {
     return "None";
   }

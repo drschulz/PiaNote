@@ -952,8 +952,6 @@ Musical_Piece.prototype.generatePhrase = function(startMeasure, endMeasure, hand
       possibleNextChordIntervals = getPossibleIntervalsForChord(chord, possibleNextIntervals);
       
     }
-
-    //return tones;
   } 
 
   for(var i = startMeasure; i <= endMeasure; i++) {
