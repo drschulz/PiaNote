@@ -78,65 +78,6 @@ function renderSong(piece, location, color) {
   //$("svg").attr("width", 1110);
 }
 
-function bindNotesToSheetMusic() {
-  //start with voice 1
-  var totalMeasures = 4;
-  var curMeasure = 0;
-  var measureBeat = 0;
-  var noteIdx = 0;
-  var abcIdx = 0;
-  var voice1 = pianote.expectedPiece.getVoiceTuneList().voice1;
-  var beatValue = WHOLE_NOTE_VALUE / pianote.expectedPiece.time.rhythm;
-  var measureAccent = Math.ceil(pianote.expectedPiece.time.beats / 2) * beatValue;
-  var measureDuration = pianote.expectedPiece.time.beats * beatValue;
-
-  var measureNotes = $(".note.m0.v0");
-  for(var i = 0; i < voice1.length; i++) {
-    $(measureNotes[abcIdx]).data("note", voice1[i]);
-    voice1[i].svgElements.push(measureNotes[abcIdx]);
-    if(measureBeat > 0 && measureBeat < measureAccent && measureBeat + voice1[i].rhythm > measureAccent) {
-      abcIdx++;
-      $(measureNotes[abcIdx]).data("note", voice1[i]);
-      voice1[i].svgElements.push(measureNotes[abcIdx]);
-      abcIdx++;
-    
-      if (measureBeat + voice1[i].rhythm == measureDuration) {
-        abcIdx = 0;
-        curMeasure++;
-        measureBeat = 0;
-        measureNotes = $(".note.m" + curMeasure + ".v0");
-      }
-      else {
-        measureBeat += voice1[i].rhythm;
-      }
-    }
-    else if (measureBeat + voice1[i].rhythm > measureDuration) {
-      var diff = measureDuration - measureBeat;
-      var overflow = voice1[i].rhythm - diff;
-      abcIdx = 0;
-      curMeasure++;
-      measureBeat = overflow;
-      measureNotes = $(".note.m" + curMeasure + ".v0");
-      $(measureNotes[abcIdx]).data("note", voice1[i]);
-      voice1[i].svgElements.push(measureNotes[abcIdx]);
-      abcIdx++;
-    }
-    else {
-      abcIdx++;
-      
-      if (measureBeat + voice1[i].rhythm == measureDuration) {
-        abcIdx = 0;
-        curMeasure++;
-        measureBeat = 0;
-        measureNotes = $(".note.m" + curMeasure + ".v0");
-      }
-      else {
-        measureBeat += voice1[i].rhythm;
-      }
-    }
-  }
-}
-
 function generateNextMelody() {
   songNum++;
   console.log(PianoteLevels.getCurrentLevels());
@@ -196,32 +137,6 @@ function displayResults(results) {
   }
 }
 
-function saveUserStats() {
-  var stats = pianote.getCurrentStats();
-
-  function registerPostSuccess() {
-    var toast = document.getElementById('success-toast');
-    //toast.text = "saved current scores";
-    toast.open();
-  }
-
-  function registerPostError() {
-    var toast = document.getElementById('fail-toast');
-    toast.open();  
-  }
-
-  $.ajax({
-    method: 'POST',
-    url: '/score',
-    contentType: 'application/json',
-    processData: true,
-    data: JSON.stringify(stats),
-    dataType: 'text',
-    success: registerPostSuccess,
-    error: registerPostError,
-  });
-}
-
 function savePiece() {
   var stats = pianote.playerStats;
   var profile = user;
@@ -268,9 +183,6 @@ function savePiece() {
     success: registerPostSuccess,
     error: registerPostError,
   });
-
-
-
 }
 
 function scorePerformance() {
