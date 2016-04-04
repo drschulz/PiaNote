@@ -11,30 +11,25 @@ db = SQLAlchemy(app)
 def ind():
 	if 'username' in session:
 		print(" .... uhhh")
+		user = Users.query.filter_by(username=session['username']).first();
+		user.session = user.session + 1;
+		db.session.commit()
+		session['sessionNum'] = user.session
 		return render_template('index.html', username=session['username'], sessionNum=session['sessionNum'])
 
 	return render_template('login2.html')    
 
 
-#@app.route('/home/<name>')
-#def index(name):
-#	return render_template('index.html', username=name)#app.send_static_file('index.html')
-
 @app.route('/register', methods=['GET', 'POST'])
 def register():
 	if request.method == 'POST':
-		#print('here!')
 		username = request.form['name'];
 		if Users.query.filter_by(username=username).scalar():
 			return "userExists"
-		#print('also here!')
-		#print(username);
-		#pDB = get_db();
 		user = Users(str(username));
 		user.session = 0;
 		db.session.add(user);
 		db.session.commit();
-		#g.db.addNewUser(str(username));
 		print("done!")
 
 		return "registered"
@@ -53,9 +48,6 @@ def loadScores():
 		bundle = {"stats": json.loads(data.stats), "profile": json.loads(data.profile)}
 
 		return json.dumps(bundle);
-		#resp = make_response(data);
-		#resp.content_type = "application/json";
-		#return resp;
 
 	abort(404);
 	
@@ -79,9 +71,6 @@ def saveScores():
 		user.stats = json.dumps(data['stats'])
 		db.session.commit()
 
-		#user.data = json.dumps(data);
-		#db.session.commit();
-
 
 		#g.db.submitUserData(session['username'], json.dumps(data))
 		return "data saved"
@@ -93,16 +82,12 @@ def saveScores():
 def login():
 	if request.method == 'POST':
 		print(str(request.form['name']));
-		#pDB = get_db();
 		name = str(request.form['name']);
 		userExists = Users.query.filter_by(username=name).scalar(); #g.db.userExists(request.form['name']);
 		print ("exists: " + str(Users.query.filter_by(username=name).scalar()))
 		if userExists:
 			session['username'] = request.form['name'];
-			user = Users.query.filter_by(username=session['username']).first();
-			user.session = user.session + 1;
-			db.session.commit()
-			session['sessionNum'] = user.session
+			
 
 			return redirect(url_for('ind'));
 		else:
@@ -172,10 +157,6 @@ class PerformanceData(db.Model):
 	accuracies = db.Column(db.TEXT) #component accuracies
 	level = db.Column(db.TEXT) #song level with components
 	profile = db.Column(db.TEXT) #current profile and user state
-	#current_level = db.Column(db.TEXT)
-	#base_level = db.Column(db.TEXT)
-	#next_level = db.Column(db.TEXT)
-	#focus_levels = db.Column(db.TEXT)
 	stats = db.Column(db.TEXT) #current user statistics for components
 
 

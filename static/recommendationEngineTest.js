@@ -52,14 +52,15 @@ function makeNewPiece() {
 	var availableSongTypes = songLevels.lockLevel ? songLevels.getCurrentChoicesStrict() : songLevels.getCurrentChoices();
 	var piece = availableSongTypes[Math.random() * availableSongTypes.length << 0];
 	pianote.generateSong();
-	musicPiece = pianote.expectedPiece;//new piece(config);
-	console.log("new piece done!");
-	console.log(JSON.stringify(musicPiece, function(k, v) {
-		if (k == 'svgElements') {
-			return undefined;
-		}
-		return v;
-	}));
+    musicPiece = pianote.expectedPiece;
+	//musicPiece = new piece(config);
+	//console.log("new piece done!");
+	//console.log(JSON.stringify(musicPiece, function(k, v) {
+	//	if (k == 'svgElements') {
+	//		return undefined;
+	//	}
+	//	return v;
+	//}));
 	renderSong(musicPiece, "mystave", "black");
 }
 
@@ -114,6 +115,8 @@ window.addEventListener('load', function() {
 	engine = new RecommendationEngine(user);
 	pianote = new PiaNote(new UserStats());
 	console.log(user.currentLevel);
+    //rhythmLevels.setLevel(4);
+    //songLevels.setLevel(1);
 	$("#level").html(JSON.stringify(user.currentLevel));
 	$("#base").html(JSON.stringify(user.baseLevel));
 	$("#next").html(JSON.stringify(user.nextBaseLevel));
@@ -129,7 +132,31 @@ window.addEventListener('load', function() {
 			i: parseFloat($("#val4").val()),
 			s: parseFloat($("#val5").val())
 		};
-		var nextLevel = engine.getNextSongParameters(accuracies);
+        //Object.assign(pianote.pianotePiece, pianote.expectedPiece.piece);
+        var keys = Object.keys(pianote.expectedPiece.piece);
+        console.log(keys);
+        console.log(pianote.expectedPiece.piece);
+        for (var key in pianote.expectedPiece.piece) {
+            var arr = pianote.expectedPiece.piece[key];
+            if (arr != undefined) {
+                pianote.pianotePiece[key] = [];
+                for (var i = 0; i < arr.length; i++) {
+                    var rhythm;
+                    if (arr[i].rhythm == NoteRhythms.QUARTER) {
+                        rhythm = NoteRhythms.QUARTER;
+                    }
+                    else {
+                        rhythm = arr[i].rhythm;
+                    }
+                    pianote.pianotePiece[key].push(new SingleNote({tone: arr[i].tone, rhythm: rhythm}));
+                }
+            }
+        }
+        
+        console.log(pianote.pianotePiece);
+        var results = pianote.scorePerformance();
+		console.log(results);
+        var nextLevel = engine.getNextSongParameters(results);
 		$("#level").html(JSON.stringify(user.currentLevel));
 		$("#base").html(JSON.stringify(user.baseLevel));
 		$("#next").html(JSON.stringify(user.nextBaseLevel));

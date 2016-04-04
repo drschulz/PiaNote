@@ -9,7 +9,7 @@ var mouseY;
 var engine;
 var user;
 var sessionNum = 1;
-var songNum = 1;
+var songNum = 0;
 var currentAccuracies;
 //Sheet music rendering
 
@@ -18,7 +18,6 @@ function openDialog() {
   
   document.getElementById("note-dialog").open();
   document.getElementById("my-dialog").open();
-  console.log(document.getElementById("note-dialog"));
 }
 
 function renderSong(piece, location, color) {
@@ -66,8 +65,8 @@ function renderSong(piece, location, color) {
                                           $("#pianote-note-rhythm").html(RhythmToText[note.rhythm] + "");
                                           $("#pianote-performed-note").html(note.getDescriptionOfPerformed(piece.isSharpKey) + "");
                                           $("#pianote-performed-rhythm").html(RhythmToText[note.getPerformedRhythm()] + "");
-                                          $("#note-dialog").css("left", (mouseX - 250) + "px");
-                                          $("#note-dialog").css("top", mouseY + "px");
+                                          //$("#note-dialog").css("left", (mouseX - 250) + "px");
+                                          //$("#note-dialog").css("top", mouseY + "px");
                                           openDialog();
                                           //console.log(document.getElementById("note-dialog").open);
                                           
@@ -139,7 +138,10 @@ function bindNotesToSheetMusic() {
 }
 
 function generateNextMelody() {
-  pianote.generateSong();
+  songNum++;
+  console.log(PianoteLevels.getCurrentLevels());
+  //console.log(keyLevels.getCurrentChoices());
+  pianote.generateSong(songNum);
   renderSong(pianote.expectedPiece, "mystave", "black");
   //pianote.expectedPiece.bindNotesToSheetMusic();
 
@@ -202,6 +204,16 @@ function displayResults(results) {
   //renderSong(pianote.expectedPiece, "performedstave", "black");
   pianote.expectedPiece.bindNotesToSheetMusic("#mystave");
   pianote.expectedPiece.updateCss();
+  var score = results['s'] * 100 << 0;
+  $("#score").html(" " + score + "/100");
+  
+  //show score key
+  var moreInfo = document.getElementById('more-info');
+  if (!moreInfo.opened) {
+    _toggle();
+  }
+  
+  
   //document.getElementById("results-dialog").open();
   //TODO
 }
@@ -269,8 +281,6 @@ function savePiece() {
     return v;
   });
 
-  console.log(bundleJson);
-
   $.ajax({
     method: 'POST',
     url: '/score',
@@ -286,46 +296,18 @@ function savePiece() {
 
 }
 
-function updateStave() {
-  var voice = flatTuneList(pianote.expectedPiece.piece);
-  for(var i = 0; i < voice.length; i++) {
-    var note = voice[i];
-    if(note.tone != note.performedTone && note.rhythm != note.performedRhythm) {
-      for (var j = 0; j < note.svgElements.length; j++) {
-        $(note.svgElements[j]).css("fill", "#E83034");
-      }
-    }
-    else if (note.tone != note.performedTone) {
-      for (var j = 0; j < note.svgElements.length; j++) {
-        $(note.svgElements[j]).css("fill", "#A257DE");
-      }  
-    }
-    else if (note.rhythm != note.performedRhythm) {
-      for (var j = 0; j < note.svgElements.length; j++) {
-        $(note.svgElements[j]).css("fill", "#455ede");
-      }  
-    }
-  }
-}
-
 function scorePerformance() {
   var results = pianote.scorePerformance();
-  
-  //updateStave();
+  engine.getNextSongParameters(results);
   displayResults(results);
-  currentAccuracies = calculateAccuracies();
+  currentAccuracies = results;
+  //currentAccuracies = calculateAccuracies();
   savePiece();
 
   //saveUserStats();
 }
 
 function calculateAccuracies() {
-  //TODO calculate note accuracy
-  //TODO calculate rhythm accuracy
-  //TODO calculate interval accuracy
-  //TODO calculate time signature accuracy (rhythms??)
-  //TODO calculate key signature accuracy (notes??)
-  //TODO calculate song type accuracy (notes and rhythms??)
   var results = pianote.expectedPiece.getAccuracies();
 
   var accuracies = {
@@ -419,6 +401,8 @@ function initializeButtons() {
     $("#play-button").show();
     $("#play-button").prop("disabled", true);
     $("#playButtons").show();
+    $("#score-div").show();
+    
     scorePerformance();
 
     $("#generate-button").prop("disabled", false);
@@ -430,8 +414,9 @@ function initializeButtons() {
     
     $("#results-card").hide();
     $("#playButtons").hide();
+    $("#score-div").hide();
     generateNextMelody();
-    songNum++;
+    
     $("#generate-button").prop("disabled", true);
     $("#retry-button").prop("disabled", true);
     $("#play-button").prop("disabled", false);
@@ -442,6 +427,8 @@ function initializeButtons() {
     renderSong(pianote.expectedPiece, "mystave", "black");
     $("#retry-button").prop("disabled", true);
     $("#play-button").prop("disabled", false);
+    $("#playButtons").hide();
+    $("#score-div").hide();
   });
   
   //$("#score-button").click(scorePerformance);
@@ -500,8 +487,6 @@ function initializeApplication(userData) {
   MIDI.programChange(MidiChannels.MAIN_PIANO, GeneralMIDI.PIANO);
   initializeButtons();
   engine = new RecommendationEngine(user);
-  console.log(user);
-  console.log(pianote.playerStats);
   /*timeLevels.setLevel(2);
   songLevels.setLevel(1);
   rhythmLevels.setLevel(2);*/
@@ -559,7 +544,6 @@ window.addEventListener('load', function() {
   progressBar.start();
   
   function init(res) {
-    console.log(res);
     //statsData = JSON.parse(res);
     userData = JSON.parse(res);
     initializeMidi(loadProgress, loadEnd);

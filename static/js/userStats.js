@@ -152,6 +152,24 @@ UserStats.prototype.addToRhythmStats = function(stats) {
   }  
 };
 
+UserStats.prototype.getRhythmAccuracy = function(rhythm) {
+    if (this.rhythmStats[rhythm] == undefined || this.rhythmStats[rhythm].num == 0) {
+        return 1;
+    }
+    
+    return this.rhythmStats[rhythm].hit / this.rhythmStats[rhythm].num + 0.1;
+}
+
+UserStats.prototype.getRhythmFitnessStats = function() {
+    var stats = {};
+    
+    for (var i in this.rhythmStats) {
+        stats[i] = this.getStatFitness(this.rhythmStats, i);
+    }
+    
+    return stats;
+}
+
 UserStats.prototype.addToIntervalStats = function(stats) {
   for (var i in stats) {
     this.addToStats(this.intervalStats, i, stats[i]);
@@ -173,11 +191,10 @@ UserStats.prototype.addToTimeStats = function(stats, time) {
 UserStats.prototype.getBestItem = function(items, stats) {
   var best = [];
   var bestFitness = 0;
-  console.log("here!!");
 
   for (var i = 0; i < items.length; i++) {
     var fitness = this.getStatFitness(stats, items[i]);
-    console.log(fitness);
+    
     if (fitness > bestFitness) {
       bestFitness = fitness;
       best = [items[i]];
@@ -190,6 +207,7 @@ UserStats.prototype.getBestItem = function(items, stats) {
   //If there are multiple tied, pick a random one
   return best[Math.random()*best.length << 0];
 };
+
 
 /*UserStats.prototype.getMostMissedVoice1Note = function() {
   return this.getMin(this.stats.noteHitRateVoice1);

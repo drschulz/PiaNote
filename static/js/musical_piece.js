@@ -38,6 +38,88 @@ function flatTuneList(tune) {
   return tuneList;
 }
 
+function flatTuneListSeparatedByNote(tune, separationNote) {
+  var times = Object.keys(tune);
+
+  times.sort(function(a, b) {
+    return parseInt(a) - parseInt(b);
+  });
+
+  var lowerTuneList = [];
+  var upperTuneList = [];
+  var lastTimeUpperPlayed = 0;
+  var lastTimeLowerPlayed = 0;
+  //Flatten the times
+  for(var j = 0; j < times.length; j++) {
+    var time = times[j];
+    var notes = tune[time];
+    var noteArr = [];
+
+    //Flatten all notes
+    for (var i = 0; i < notes.length; i++) {
+      //Flatten all PolyNotes
+      if (Array.isArray(notes[i].tone)) {
+        for (var k = 0; k < notes[i].tone.length; k++) {
+          noteArr.push(notes[i].tone[k]);
+        }
+      }
+      else {
+        noteArr.push(notes[i]);
+      }
+    }
+
+    noteArr.sort(function(a, b) {
+      return a.tone - b.tone;
+    });
+
+    var lower = [];
+    var upper = [];
+    for (var i = 0; i < noteArr.length; i++) {
+      
+      if (noteArr[i].tone < separationNote || (noteArr[i].tone == REST && noteArr[i].hand == "l")) {
+          var timeNum = parseInt(time);
+          if (timeNum - lastTimeLowerPlayed > 0) {
+              lowerTuneList.push(new SingleNote({tone: REST, rhythm: timeNum - lastTimeLowerPlayed}));
+          }
+          lowerTuneList.push(noteArr[i]);
+          lastTimeLowerPlayed = parseInt(time) + noteArr[i].rhythm;
+      }
+      else {
+          var timeNum = parseInt(time);
+          if (timeNum - lastTimeUpperPlayed > 0) {
+              upperTuneList.push(new SingleNote({tone: REST, rhythm: timeNum - lastTimeUpperPlayed}));
+          }
+          upperTuneList.push(noteArr[i]);
+          lastTimeUpperPlayed = parseInt(time) + noteArr[i].rhythm;
+      }
+      //tuneList.push(noteArr[i]);
+    }
+    
+    /*if (!upper.length == 0) {
+        if (upper.length == 1) {
+            upperTuneList.push(upper[0]);
+        }
+        else {
+            upperTuneList.push(new PolyNote({tone: upper, rhythm: upper[0].rhythm}));
+        }
+    }
+    if (!lower.length == 0) {
+        if (lower.length == 1) {
+            lowerTuneList.push(lower[0]);
+        }
+        else {
+            lowerTuneList.push(new PolyNote({tone: lower, rhythm: lower[0].rhythm}));
+        }
+    }*/
+    
+  }
+
+  return {
+      lower: lowerTuneList,
+      upper: upperTuneList
+  };
+}
+
 
 function Musical_Piece(config) {
   var that = this;
@@ -58,11 +140,11 @@ function Musical_Piece(config) {
 
   this.measureBeat *= beatValue;
 
-  this.rhythms = this.generatePhraseRhythm();
-  console.log(this.rhythms);
+  this.rhythms = this.generatePhraseRhythm(config.stats);
   this.chords = this.generateChords();
   this.piece = {};
   this.generatePiece();
+  this.num = config.num;
 }
 
 Musical_Piece.prototype.addToPiece = function(time, note) {
@@ -110,41 +192,45 @@ Musical_Piece.prototype.clearPerformance = function() {
 };
 
 
-Musical_Piece.prototype.generatePhraseRhythm = function() {
+Musical_Piece.prototype.generatePhraseRhythm = function(stats) {
   var rhythms = [];
   var curMeasure = 0;
   var curBeat = 0;
 
-  var possibleRhythms = rhythmLevels.getCurrentChoices();
-
+  /*var rhythmLevel = rhythmLevels.getCurrentChoices();
+  var keys = Object.keys(rhythmLevel);*/
+  var possibleRhythms = rhythmLevels.getCurrentChoices();/*keys.map(function(e) {
+    return parseInt(e);  
+  });*/
+  console.log(possibleRhythms);
+  console.log(rhythmLevels.currentLevel);
   var measureRhythms = [];
 
   //get weights based on idx.
   var cdf = 0;
   for(var i = 0; i < possibleRhythms.length; i++) {
-    cdf += i+1;
+    cdf += (i + 1) * stats.getRhythmAccuracy(possibleRhythms[i]);//rhythmLevel[possibleRhythms[i]];//i+1;
   }
 
-  console.log(this.numMeasures);
-
   while(curMeasure < this.numMeasures) {
+    console.log("hello");
     var rhythmIdx = 0;
     var rhythm;
 
     //weighted pick of rhythms
     var randWieght;
-    console.log(cdf);
-    randWeight = Math.random() * cdf << 0;
-    console.log(randWeight);
+    randWeight = Math.random() * cdf; //<< 0;
     var upTo = 0;
     for (var i = 0; i < possibleRhythms.length; i++) {
-      if (upTo + i + 1 >= randWeight) {
+      if (upTo + (i + 1)*stats.getRhythmAccuracy(possibleRhythms[i]) /*rhythmLevel[possibleRhythms[i]]*/ /*+ 1*/ >= randWeight) {
         rhythmIdx = i;
         break;
       }
-      upTo += i + 1;
+      upTo += (i + 1)*stats.getRhythmAccuracy(possibleRhythms[i]); //rhythmLevel[possibleRhythms[i]];//i + 1;
     }
     rhythm = possibleRhythms[rhythmIdx];
+    console.log(rhythm);
+    console.log(curMeasure);
     
     //Pick a good rhythm to end the phrase on
     if (curMeasure == this.numMeasures - 1) {
@@ -163,6 +249,7 @@ Musical_Piece.prototype.generatePhraseRhythm = function() {
 
     //if the rhythm fits in the measure, add it
     if(curBeat + rhythm <= this.measureDuration) {
+      console.log("got a rhythm!");
       var totalDur = rhythm;//rhythmDur;
       measureRhythms.push(rhythm);
       
@@ -191,6 +278,7 @@ Musical_Piece.prototype.generatePhraseRhythm = function() {
       }
       
       if (curBeat + totalDur >= this.measureDuration) {
+        console.log("finishedMeasure!");
         curMeasure++;
         curBeat = 0;
         rhythms.push(measureRhythms);
@@ -259,17 +347,6 @@ Musical_Piece.prototype.getVoiceTuneList = function() {
 Musical_Piece.prototype.abcDump = function() {
   var that = this;
 
-  //var beatValue = WHOLE_NOTE_VALUE / this.time.rhythm;
-  //var measureBeat = Math.floor(this.time.beats / 2);
-  /*while (measureBeat % 2 == 0) {
-    measureBeat /= 2;
-  }
-
-  measureBeat *= beatValue;
-
-  var measureDuration = this.time.beats * beatValue;
-  var measureAccent = Math.ceil(this.time.beats / 2) * beatValue;*/
-
   //Current accidentals marks the current status of accidentals
   //that carry through the music
   var currentAccidentals = (function() { 
@@ -309,7 +386,8 @@ Musical_Piece.prototype.abcDump = function() {
   var abc = "";
   
   //initial stuff
-  abc += "M: " + this.time.beats + "/" + this.time.rhythm + "\n" 
+  abc += "T: Song " + this.num + "\n"
+       + "M: " + this.time.beats + "/" + this.time.rhythm + "\n" 
        + "L: 1/" + WHOLE_NOTE_VALUE + "\n" 
        + "K: " + this.key + "\n"
        + "%%staves {V1 V2}\n"
@@ -514,9 +592,10 @@ Musical_Piece.prototype.match = function(notes) {
     return mat;
   }
 
-  var tuneList = flatTuneList(this.piece);
-  console.log(tuneList);
-  var matrix1 = generateMatrix(tuneList, notes);
+  var separationNote = MIDDLE_C + keys[this.key];
+  var tuneList = flatTuneListSeparatedByNote(this.piece, separationNote);
+  var matrix1 = generateMatrix(tuneList.lower, notes.lower);
+  var matrix2 = generateMatrix(tuneList.upper, notes.upper);
   
 
   //The edit distance algorithm to match the pieces
@@ -571,6 +650,7 @@ Musical_Piece.prototype.match = function(notes) {
         var actualNote = givenNotes[j-1];
         
         if (current.dir == MatchDirection.DIAG) {
+          //expectedNote.setPerformanceNote(actualNote.tone);
           expectedNote.performedTone = actualNote.tone;
 
           results.notes.unshift(actualNote);
@@ -583,10 +663,12 @@ Musical_Piece.prototype.match = function(notes) {
           }
           
           if (current.rhythm == MATCH_SCORES.RHYTHM_MATCH) {
+            //expectedNote.setPerformedRhythm(expectedNote.rhythm);
             expectedNote.performedRhythm = expectedNote.rhythm;
             results.totals.rhythmsHit++;
           }
           else {
+            //expectedNote.setPerformedRhythm(findClosest(actualNote.rhythm, NoteRhythms));
             expectedNote.performedRhythm = findClosest(actualNote.rhythm, NoteRhythms);
             results.totals.rhythmsMissed++;
           }
@@ -599,6 +681,8 @@ Musical_Piece.prototype.match = function(notes) {
         }
         else if (current.dir == MatchDirection.TOP) {
           //Note deletion, count as the user resting.
+          //expectedNote.setPerformanceNote(REST);
+          //expectedNote.setPerformedRhythm(0);
           expectedNote.performedRhythm = 0;
           expectedNote.performedTone = REST;
           results.notes.unshift(new Note({tone: REST, rhythm: expectedNote.rhythm}));
@@ -625,9 +709,11 @@ Musical_Piece.prototype.match = function(notes) {
       return results;
   }
   
-  var results = matchVoice(tuneList, notes, matrix1);
-
-  return results;
+  //var results = 
+  
+  matchVoice(tuneList.lower, notes.lower, matrix1);
+  matchVoice(tuneList.upper, notes.upper, matrix2);
+  return {};
   
 };
 
@@ -771,6 +857,12 @@ Musical_Piece.prototype.generatePhrase = function(startMeasure, endMeasure, hand
   var lastIntervalIdx = 0;
   var possibleNextIntervals;
   var possibleNextChordIntervals;
+  
+  var intervalsNeeded = intervalLevels.getCurrentChoicesStrict();
+  var intervalsCheckList = [];
+  for (var i = 0; i < intervalsNeeded.length; i++) {
+      intervalsCheckList.push(false);
+  }
 
   function generateMeasureNotes(possibleIntervals, curMeasure) {
     var tones = [];
@@ -799,7 +891,6 @@ Musical_Piece.prototype.generatePhrase = function(startMeasure, endMeasure, hand
     }
     
     var tone = baseTone + interval; 
-    console.log(tone);
     var note = new SingleNote({tone: tone, rhythm: rhythms[0], hand: hand, interval: Math.abs(lastIntervalIdx - possibleIntervals.indexOf(interval))});
     lastIntervalIdx = possibleIntervals.indexOf(interval);
     if (curMeasure == startMeasure) {
@@ -813,11 +904,29 @@ Musical_Piece.prototype.generatePhrase = function(startMeasure, endMeasure, hand
     var possibleIndices = intervalLevels.getCurrentChoices();
 
     possibleNextIntervals = [];
+    //first see if there are any intervals that are of the current level. if 
+    //there are and they have not been selected yet, only put those in the possible
+    //next intervals.
     for (var i = 0; i < possibleIntervals.length; i++) {
-      var diff = Math.abs(i - lastIntervalIdx);
-      if (possibleIndices.indexOf(diff) != -1) {
-        possibleNextIntervals.push(possibleIntervals[i]);
-      }
+        var diff = Math.abs(i - lastIntervalIdx);
+        
+        var idx = intervalsNeeded.indexOf(diff);
+        
+        //if it is a needed interval that has not been selected yet
+        if (idx != -1 && intervalsCheckList[idx] == false)  {
+            possibleNextIntervals.push(possibleIntervals[i]);           
+        }
+    }
+    
+    //only fill up the intervals with other intervals if there were no needed intervals
+    if (possibleNextIntervals.length == 0) {
+        for (var i = 0; i < possibleIntervals.length; i++) {
+            var diff = Math.abs(i - lastIntervalIdx);
+            
+            if (possibleIndices.indexOf(diff) != -1) {
+                possibleNextIntervals.push(possibleIntervals[i]);
+            }
+        }
     }
 
     possibleNextChordIntervals = getPossibleIntervalsForChord(chord, possibleNextIntervals);
@@ -838,8 +947,13 @@ Musical_Piece.prototype.generatePhrase = function(startMeasure, endMeasure, hand
         }
       }
       tone = baseTone + interval;
-      console.log(tone);
       var note = new SingleNote({tone: tone, rhythm: rhythms[i], hand: hand, interval: Math.abs(lastIntervalIdx - possibleIntervals.indexOf(interval))});
+      
+      //check if it is a needed interval
+      if (intervalsNeeded.indexOf(note.interval) != -1) {
+          intervalsCheckList[intervalsNeeded.indexOf(note.interval)] = true;
+      }
+      
       lastIntervalIdx = possibleIntervals.indexOf(interval);
       //note.setFingering(hand == "l" ? 5 - lastIntervalIdx : lastIntervalIdx + 1);
       that.addToPiece(time, note);
@@ -865,15 +979,25 @@ Musical_Piece.prototype.generatePhrase = function(startMeasure, endMeasure, hand
   for(var i = startMeasure; i <= endMeasure; i++) {
     generateMeasureNotes(possibleIntervals, i);
   }
+  
+  var allNeededIntervalsMet = false;
+  
+  for (var i = 0; i < intervalsCheckList.length; i++) {
+      allNeededIntervalsMet = allNeededIntervalsMet || intervalsCheckList[i];
+  }
+  console.log(intervalsNeeded);
+  console.log(intervalsCheckList);
+  
+  return allNeededIntervalsMet;
 }
 
 Musical_Piece.prototype.addRests = function(startMeasure, endMeasure, hand) {
   
-  for (var i = startMeasure; i <= endMeasure; i++) {
-    var note = new SingleNote({tone: REST, rhythm: this.measureDuration, hand: hand});
+  //for (var i = startMeasure; i <= endMeasure; i++) {
+    var note = new SingleNote({tone: REST, rhythm: this.measureDuration*(endMeasure - startMeasure + 1), hand: hand});
     var time = i*this.measureDuration;
-    this.addToPiece(time, note);
-  }
+    this.addToPiece(startMeasure*this.measureDuration, note);
+  //}
 
 };
 
@@ -891,21 +1015,27 @@ SeparateHandPiece.prototype = Object.create(Musical_Piece.prototype);
 SeparateHandPiece.prototype.constructor = SeparateHandPiece;
 
 SeparateHandPiece.prototype.generatePiece = function() {
-  var rightThumbPosition = Math.random() * 4 << 0;
-  var rlowestIntervalIdx = rightThumbPosition;
-  var rhighestIntervalIdx = rightThumbPosition + 5;
-  var possibleIntervalsR = NoteIntervals.slice(rlowestIntervalIdx, rhighestIntervalIdx);
-  this.generatePhrase(0, 1, 'r', possibleIntervalsR);
-  this.addRests(0,1,'l');
+  var iterations = 0;
+  do {
+    this.piece = {};
+    var rightThumbPosition = Math.random() * 3 << 0;
+    var rlowestIntervalIdx = rightThumbPosition;
+    var rhighestIntervalIdx = rightThumbPosition + 5;
+    var possibleIntervalsR = NoteIntervals.slice(rlowestIntervalIdx, rhighestIntervalIdx);
+    var rIntervalsMet = this.generatePhrase(0, 1, 'r', possibleIntervalsR);
+    this.addRests(0,1,'l');
 
 
-  var leftPinkyPosition = Math.random() * 4 << 0;
-  var llowestIntervalIdx = leftPinkyPosition;
-  var lhighestIntervalIdx = leftPinkyPosition + 5;
-  var possibleIntervalsL = NoteIntervals.slice(llowestIntervalIdx, lhighestIntervalIdx);
-  this.generatePhrase(2, 3, 'l', possibleIntervalsL);
-  this.addRests(2,3, 'r');
-
+    var leftPinkyPosition = Math.random() * 3 << 0;
+    var llowestIntervalIdx = leftPinkyPosition;
+    var lhighestIntervalIdx = leftPinkyPosition + 5;
+    var possibleIntervalsL = NoteIntervals.slice(llowestIntervalIdx, lhighestIntervalIdx);
+    var lIntervalsMet = this.generatePhrase(2, 3, 'l', possibleIntervalsL);
+    this.addRests(2,3, 'r');
+    console.log("done");
+    iterations++;
+  }
+  while(!rIntervalsMet && !lIntervalsMet && iterations < 100);
 };
 
 SeparateHandPiece.prototype.getType = function() {
@@ -914,19 +1044,23 @@ SeparateHandPiece.prototype.getType = function() {
 
 function ChordPiece(config) {
   Musical_Piece.call(this, config);
-  console.log(this);
 }
 
 ChordPiece.prototype = Object.create(Musical_Piece.prototype);
 ChordPiece.prototype.constructor = ChordPiece;
 
 ChordPiece.prototype.generatePiece = function() {
-  var rightThumbPosition = Math.random() * 4 << 0;
-  var rlowestIntervalIdx = rightThumbPosition;
-  var rhighestIntervalIdx = rightThumbPosition + 5;
-  var possibleIntervalsR = NoteIntervals.slice(rlowestIntervalIdx, rhighestIntervalIdx);
-  this.generatePhrase(0, 3, 'r', possibleIntervalsR);
-
+  var iterations = 0;
+  do {
+    var rightThumbPosition = Math.random() * 4 << 0;
+    var rlowestIntervalIdx = rightThumbPosition;
+    var rhighestIntervalIdx = rightThumbPosition + 5;
+    var possibleIntervalsR = NoteIntervals.slice(rlowestIntervalIdx, rhighestIntervalIdx);
+    this.piece = {};
+    var intervalsMet = this.generatePhrase(0, 3, 'r', possibleIntervalsR);
+    iterations++;
+  }while(!intervalsMet && iterations < 100);
+  
   this.generateLeftHandChords();
 }
 
@@ -1042,12 +1176,32 @@ LegatoChordPiece.prototype.generateLeftHandChords = function() {
     var note = new Triad({tone: baseTone + this.chords[i].interval, chord: this.chords[i], rhythm: this.measureDuration, hand: 'l'});
     var measureBeat = 0;
     var idx = 0;
+    var goingUp = true;
     while (measureBeat + NoteRhythms.QUARTER <= this.measureDuration) {
         note.tone[idx].rhythm = NoteRhythms.QUARTER;
         this.addToPiece(time, note.tone[idx]);
         time+=NoteRhythms.QUARTER;
         measureBeat+= NoteRhythms.QUARTER;
-        idx = (idx + 1) % note.tone.length;
+        
+        if (goingUp) {
+            if (idx + 1 == note.tone.length) {
+                goingUp = false;
+                idx = idx - 1;
+            }
+            else {
+                idx = idx + 1;
+            }
+        }
+        else {
+            if (idx - 1 < 0) {
+                goingUp = true;
+                idx = idx + 1;
+            }
+            else {
+                idx = idx - 1;
+            }
+        }
+        //idx = (idx + 1) % note.tone.length;
     }
   }
 };
@@ -1068,18 +1222,23 @@ HandsTogetherPiece.prototype = Object.create(Musical_Piece.prototype);
 HandsTogetherPiece.prototype.constructor = HandsTogetherPiece;
 
 HandsTogetherPiece.prototype.generatePiece = function() {
-  var rightThumbPosition = Math.random() * 4 << 0;
-  var rlowestIntervalIdx = rightThumbPosition;
-  var rhighestIntervalIdx = rightThumbPosition + 5;
-  var possibleIntervalsR = NoteIntervals.slice(rlowestIntervalIdx, rhighestIntervalIdx);
-  this.generatePhrase(0, 3, 'r', possibleIntervalsR);
+  var iterations = 0;
+  do {
   
+    var rightThumbPosition = Math.random() * 4 << 0;
+    var rlowestIntervalIdx = rightThumbPosition;
+    var rhighestIntervalIdx = rightThumbPosition + 5;
+    var possibleIntervalsR = NoteIntervals.slice(rlowestIntervalIdx, rhighestIntervalIdx);
+    var rIntervalsMet = this.generatePhrase(0, 3, 'r', possibleIntervalsR);
+    
 
-  var leftPinkyPosition = Math.random() * 4 << 0;
-  var llowestIntervalIdx = leftPinkyPosition;
-  var lhighestIntervalIdx = leftPinkyPosition + 5;
-  var possibleIntervalsL = NoteIntervals.slice(llowestIntervalIdx, lhighestIntervalIdx);
-  this.generatePhrase(0, 3, 'l', possibleIntervalsL);
+    var leftPinkyPosition = Math.random() * 4 << 0;
+    var llowestIntervalIdx = leftPinkyPosition;
+    var lhighestIntervalIdx = leftPinkyPosition + 5;
+    var possibleIntervalsL = NoteIntervals.slice(llowestIntervalIdx, lhighestIntervalIdx);
+    var lIntervalsMet = this.generatePhrase(0, 3, 'l', possibleIntervalsL);
+    iterations++;
+  }while(!rIntervalsMet && !lIntervalsMet && iterations < 100);
 
 };
 

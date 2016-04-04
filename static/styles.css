@@ -103,16 +103,40 @@ svg > rect {
   fill: green;
 }
 
+#hit-key {
+    fill: green;
+}
+
 #mystave path.note.missed-all {
   fill: #E83034;
+}
+
+#miss-key {
+    fill: #E83034;
 }
 
 #mystave path.note.missed-note {
   fill: #A257DE;
 }
 
+#note-miss-key {
+    fill: #A257DE;
+}
+
 #mystave path.note.missed-rhythm {
   fill: #455ede;
+}
+
+#rhythm-miss-key {
+    fill: #455ede;
+}
+
+#key-list {
+    padding: 30px 0 !important;
+}
+
+#score-div {
+    display: none;
 }
 
 #playerstave {
@@ -228,14 +252,11 @@ td.note-info {
 }
 
 #play-button {
-  margin-top: 1em;
   background: #1DD20B;
   color: #fff;
-  
 }
 
 #stop-button {
-  margin-top: 1em;
   background: red;
   color: #fff;
   display: none;
@@ -249,8 +270,6 @@ td.note-info {
   background: #455ede;
   color: #fff;
 }
-
-
 
 #blackkeys {
   position: absolute; 
@@ -323,14 +342,26 @@ paper-tabs paper-tab.iron-selected {
 }
 
 #midi-status {
-  margin-top: 10px;
-  margin-left: 10px;
+  margin-top: 20px;
+  margin-right: 30px;
+  position: fixed;
+  right: 0;
+}
+
+#score-key {
+  margin-top: 80px;
+  margin-right: 30px;
+  position: fixed;
+  right: 0;
 }
 
 .midi-status {
   background-color: white;  
   padding: 10px;
+  //margin-right: 30px;
 }
+
+
 
 #midi-not-connected {
   color: red;
@@ -340,4 +371,8 @@ paper-tabs paper-tab.iron-selected {
 #midi-connected {
   color: green;
   display: none;
+}
+
+.song-button {
+  background-color: white;
 }

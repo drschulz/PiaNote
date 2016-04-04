@@ -1,2 +1,4 @@
 */bower_components/
 *.db
+node_modules/
+__pycache__

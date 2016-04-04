@@ -21,10 +21,13 @@
   <script src='{{url_for("static", filename="js/libs/combinatorics.js")}}'></script>
   <link rel="import" href='{{url_for("static", filename="bower_components/iron-flex-layout/iron-flex-layout-classes.html")}}'/>
   <link rel="import" href='{{url_for("static", filename="bower_components/font-roboto/roboto.html")}}'>
+  <link rel="import" href='{{url_for("static", filename="bower_components/iron-collapse/iron-collapse.html")}}'>
+  
   <link rel="import" href='{{url_for("static", filename="bower_components/paper-styles/paper-styles-classes.html")}}'>
   <link rel="import" href='{{url_for("static", filename="bower_components/paper-elements/paper-elements.html")}}'>
   <link rel="import" href='{{url_for("static", filename="bower_components/iron-icons/av-icons.html")}}'>
   <link rel="import" href='{{url_for("static", filename="bower_components/iron-icons/image-icons.html")}}'>
+  <link rel="import" href='{{url_for("static", filename="bower_components/iron-icons/hardware-icons.html")}}'>
   
   <!--<link rel="import" href='{{url_for("static", filename="bower_components/google-chart/google-chart.html")}}'/>-->
   <link rel="stylesheet" href='{{url_for("static", filename="bower_components/Progress.js/minified/progressjs.min.css")}}'/> 
@@ -64,20 +67,65 @@
           Logout
         </paper-button>
     </paper-toolbar>
-    <div id="midi-status" class="horizontal left-justified layout">    
-      <paper-material elevation=1 class="midi-status" id="midi-not-connected">
-        <iron-icon icon="icons:report"></iron-icon>
-        Midi Not Connected
-      </paper-material>
-      <paper-material elevation=1 class="midi-status" id="midi-connected">
-        <iron-icon icon="icons:check-circle"></iron-icon>
-        Midi Connected
-      </paper-material>
-    </div>
-
-    <div class="horizontal center-justified layout">
-      Session: {{ sessionNum }}
-    </div>
+      <div id="midi-status" class="horizontal end-justified layout">    
+        <paper-material elevation=1 class="midi-status" id="midi-not-connected">
+          <iron-icon icon="icons:report"></iron-icon>
+          Midi Not Connected
+        </paper-material>
+        <paper-material elevation=1 class="midi-status" id="midi-connected">
+          <iron-icon icon="icons:check-circle"></iron-icon>
+          Midi Connected
+        </paper-material>
+      </div>
+      
+      <div id="score-key" class="horizontal end-justified layout">
+        <paper-card heading="Scoring Key">    
+            <div class="card-actions">
+            <paper-icon-button icon="hardware:keyboard-arrow-down" title="more info" onclick="_toggle()" style="float:right;">
+                </paper-icon-button>
+            <iron-collapse id="more-info" style="width:100%;">
+                <br>
+                <paper-listbox id="key-list">
+                    <paper-item>
+                        <svg width="20" height="20">
+                            <rect id="hit-key" width="20" height="20" />
+                        </svg> = correct note and rhythm
+                    </paper-item>
+                    <paper-item>
+                        <svg width="20" height="20">
+                            <rect id="miss-key" width="20" height="20" />
+                        </svg> = Incorrect note and rhythm
+                    </paper-item>
+                    <paper-item>
+                        <svg width="20" height="20">
+                            <rect id="note-miss-key" width="20" height="20"  />
+                        </svg> = Incorrect note
+                    </paper-item>
+                    <paper-item>
+                        <svg width="20" height="20">
+                            <rect id="rhythm-miss-key" width="20" height="20" />
+                        </svg> = Incorrect rhythm
+                    </paper-item>
+                    
+                </paper-listbox>
+            </iron-collapse>
+            </div>
+            <!--<script>
+                function _toggle() {
+                    var moreInfo = document.getElementById('more-info');
+                    var iconButton = Polymer.dom(event).localTarget;
+                    iconButton.icon = moreInfo.opened ? 'hardware:keyboard-arrow-up'
+                                                    : 'hardware:keyboard-arrow-down';
+                    moreInfo.toggle();
+                }
+            </script>-->            
+        </paper-card>
+      </div>
+      
+      
+      <p class="horizontal center-justified layout" style="{float: center}">
+        Session: {{ sessionNum }}
+      </p>
     <div class="horizontal center-justified layout">
       <paper-button raised id="play-button">
         <iron-icon icon="av:fiber-manual-record"></iron-icon>
@@ -95,13 +143,18 @@
       <paper-input id="bpm" label="bpm" type="number" value="120" min="80" max="120">
       </paper-input>
     </div>
+    <div id="score-div" class="horizontal center-justified layout">
+      <h2>Score: </h2>
+      <h2 id="score"></h2>
+    </div>  
     <div class="horizontal center-justified layout" >
+      
       <div id="playButtons">
-        <paper-button raised id="play-song-button">
+        <paper-button raised id="play-song-button" class="song-button">
           <iron-icon icon="av:play-circle-outline"></iron-icon>
           Play Expected Piece
         </paper-button>
-        <paper-button raised id="play-performed-button">
+        <paper-button raised id="play-performed-button" class="song-button">
           <iron-icon icon="av:play-circle-outline"></iron-icon>
           Play Your Performance
         </paper-button>
@@ -292,5 +345,13 @@
       error: registerError,
     });*/
   }
+  
+    function _toggle() {
+        var moreInfo = document.getElementById('more-info');
+        var iconButton = Polymer.dom(event).localTarget;
+        iconButton.icon = moreInfo.opened ? 'hardware:keyboard-arrow-down'
+                                        : 'hardware:keyboard-arrow-up';
+        moreInfo.toggle();
+    }
 </script>
 </html>

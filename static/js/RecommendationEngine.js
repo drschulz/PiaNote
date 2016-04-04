@@ -28,7 +28,7 @@ RecommendationEngine.prototype.getNextSongParameters = function(lastSongAccuraci
 			return minAccuracy;		
 		})();
 
-		if (lowestAccuracies < 0.6) {
+		if (lowestAccuracies < 0.7) {
 			console.log("decreasing!");
 			PianoteLevels.decreaseLevels();
 		}
@@ -38,7 +38,7 @@ RecommendationEngine.prototype.getNextSongParameters = function(lastSongAccuraci
 				if (focusComponents.indexOf(i) == -1) {
 
 					//lower the component level if the accuracy is bad (shows they are having trouble at the level)
-					if (accuracies[i] < 0.6) {
+					if (accuracies[i] < 0.7) {
 						PianoteLevels.decreaseLevel(i);
 					}
 					//raise the component level if the accuracy is good, cap at current level to drill to
@@ -98,7 +98,7 @@ RecommendationEngine.prototype.getNextSongParameters = function(lastSongAccuraci
 
 			console.log(this.userProfile.numSuccessesInLevel);
 			//if number of successes is greater than 3
-			if (this.userProfile.numSuccessesInLevel >= 3) {
+			if (this.userProfile.numSuccessesInLevel >= 1) {
 				console.log("passed level!");
 				//pass level
 				this.userProfile.currentLevelInTier.passed = true;
@@ -126,9 +126,9 @@ RecommendationEngine.prototype.getNextSongParameters = function(lastSongAccuraci
 		this.userProfile.numAttemptsAtLevel++;
 
 		//if component accuracies are so so
-		if (lowestAccuracy >= 0.6 && lowestAccuracy < 0.8) {
+		if (lowestAccuracy >= 0.7 && lowestAccuracy < 0.8) {
 			//if number of attempts is greater than 5
-			if (this.userProfile.numAttemptsAtLevel > 5) {
+			if (this.userProfile.numAttemptsAtLevel > 3) {
 				//choose another level in the tier
 				this.userProfile.chooseAnotherLevelInTier();
 

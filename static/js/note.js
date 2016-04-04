@@ -94,6 +94,9 @@ Note.prototype.abcDump = function(isSharpKey, currentAccidentals, measureBeat, m
     var r2 = findClosest(overflow, NoteRhythms);
 
     sheetNote = "(" + collection.note + r1 + "|" + collection.note + r2 + ")";
+    if (r2 >= measureDuration) {
+        sheetNote += "|";
+    }
   }
   else {
     sheetNote = collection.note + this.rhythm;
@@ -119,6 +122,14 @@ Note.prototype.setToHit = function() {
 
 Note.prototype.getPerformedRhythm = function() {
   throw new Error("CANNOT CALL ABSTRACT FUNCTION");
+}
+
+Note.prototype.match = function() {
+    throw new Error("CANNOT CALL ABSTRACT FUNCTION");
+}
+
+Note.prototype.setPerformanceNote = function(note) {
+    throw new Error("CANNOT CALL ABSTRACT FUNCTION");
 }
 
 function SingleNote(config) {
@@ -262,7 +273,7 @@ SingleNote.prototype.getSheetNote = function(currentAccidentals, isSharpKey) {
 SingleNote.prototype.match = function(note) {
   var score = 0;
   var noteScore;
-  var intervalScore;
+  var intervalScore = 0;
   var rhythmScore;
   
   if (this.tone == note.tone) {
@@ -280,12 +291,12 @@ SingleNote.prototype.match = function(note) {
   
   score += noteScore;
     
-  intervalScore = this.interval == note.interval ? MATCH_SCORES.INTERVAL_MATCH 
-    : MATCH_SCORES.INTERVAL_MISMATCH;
+  //intervalScore = this.interval == note.interval ? MATCH_SCORES.INTERVAL_MATCH 
+    //: MATCH_SCORES.INTERVAL_MISMATCH;
   
   var diff = Math.abs(this.rhythm - note.rhythm);
   var percentDiff = diff / this.rhythm;
-  if (percentDiff <= 0.3) {//this.rhythm <= note.rhythm + 1.2 && this.rhythm >= note.rhythm - 1.2) {
+  if (percentDiff < 0.4) {//this.rhythm <= note.rhythm + 1.2 && this.rhythm >= note.rhythm - 1.2) {
     rhythmScore = MATCH_SCORES.RHYTHM_MATCH;
   }
   else {
@@ -303,10 +314,20 @@ SingleNote.prototype.match = function(note) {
   };
 };
 
+SingleNote.prototype.setPerformanceNote = function(tone) {
+    this.performedTone = tone;
+};
+
+SingleNote.prototype.setPerformedRhythm = function(rhythm) {
+    this.performedRhythm = rhythm;
+}
+
 SingleNote.prototype.resetPerformance = function() {
   this.performedTone = 0;
   this.performedRhythm = 0;
 }
+
+
 
 function PolyNote(config) {
   //tone here is an array of SingleNotes
@@ -318,6 +339,82 @@ function PolyNote(config) {
 
 PolyNote.prototype = Object.create(Note.prototype);
 PolyNote.prototype.constructor = PolyNote;
+
+PolyNote.prototype.match = function(note) {
+  var score = 0;
+  var noteScore;
+  var intervalScore = 0;
+  var rhythmScore;
+  
+  var toneNumbers = this.tone.map(function(e) {
+      return e.tone;
+  });
+  
+  for (var i = 0; i < note.tone.length; i++) {
+      var idx = toneNumbers.indexOf(note.tone[i].tone);
+      
+      if (idx == -1) {
+          noteScore += MATCH_SCORES.TONE_MISMATCH;
+          rhythmScore += MATCH_SCORES.RHYTHM_MISMATCH;
+      }
+      else {
+          this.tone[idx].match(note.tone[i]);
+      }
+  }
+  
+  return {
+    raw: noteScore + intervalScore + rhythmScore,
+    tone: noteScore,
+    inteval: intervalScore,
+    rhythm: rhythmScore,
+    dir: MatchDirection.DIAG,
+    expected: this.tone,
+    expectedRhythm: this.rhythm
+  };
+};
+
+PolyNote.prototype.setPerformanceNote = function(notes) {
+  var toneNumbers = notes.map(function(e) {
+      return e.tone;
+  });
+  
+  var toneSet = new Set(toneNumbers);
+  
+  var leftOverTones = [];
+  
+  for (var i = 0; i < this.tone.length; i++) {
+    if (toneSet.has(this.tone[i].tone)) {
+        this.tone[i].setPerformanceNote(this.tone[i].tone);
+        toneSet.delete(this.tone[i].tone);
+    }
+    else {
+        leftOverTones.push(this.tone[i]);
+    }
+  }
+  
+  leftOverTones.sort(function(a, b) {
+      return a.tone < b.tone;
+  });
+  
+  var setVals = Array.from(toneSet);
+  setVals.sort();
+  
+  for (var i = 0; i < leftOverTones.length; i++) {
+      if (setVals.length > 0) {
+          leftOverTones[i].setPerformanceNote(setVals[0]);
+          setVals.shift();
+      }
+      else {
+          leftOverTones[i].setPerformanceNote(REST);
+      }
+  } 
+};
+
+PolyNote.prototype.setPerformedRhythm = function(rhythm) {
+    for (var i = 0; i < this.tone.length; i++) {
+        this.tone[i].setPerformedRhythm(rhythm);
+    }
+}
 
 PolyNote.prototype.getPerformedRhythm = function() {
   var allRhythmsUndefined = true;
@@ -353,8 +450,8 @@ PolyNote.prototype.getAccuracies = function(lastNote) {
   var allRhythmsHit = true;
   var allNotesHit = true;
   for (var i = 0; i < this.tone.length; i++) {
-    allRhythmsHit = allRhythmsHit && (this.tone[i].rhythm == this.tone.performedRhythm);
-    allNotesHit = allNotesHit && (this.tone[i].tone == this.tone.performedTone);
+    allRhythmsHit = allRhythmsHit && (this.tone[i].rhythm == this.tone[i].performedRhythm);
+    allNotesHit = allNotesHit && (this.tone[i].tone == this.tone[i].performedTone);
   }
 
   bundle.rhythm = addToBundle(this.rhythm, allRhythmsHit);

@@ -60,7 +60,8 @@ const NoteIntervals = [
   7, //MJR 5th
   9, //MJR 6th
   11, //MJR 7th
-  12, //Octave
+//  12, //Octave
+
 //  14, //Octave 2nd
 //  16, //Octave 3rd
 //  17, //Octave 4th
@@ -101,7 +102,7 @@ const keyChords = [
   {interval: 0, type: 'M'},
   {interval: 2, type: 'm'},
   {interval: 4, type: 'm'},
-  {interval: 5, type: 'M'},
+  {interval: -7, type: 'M'},
   {interval: -5, type: 'M'},
   {interval: -3, type: 'm'},
 
@@ -181,8 +182,8 @@ const MATCH_SCORES = {
   INTERVAL_MATCH: 1,
   INTERVAL_MISMATCH: 0,
   
-  RHYTHM_MATCH: 2,
-  RHYTHM_MISMATCH: -2,
+  RHYTHM_MATCH: 3,
+  RHYTHM_MISMATCH: -3,
   
   INSERTION_DELETION: -4,
 };

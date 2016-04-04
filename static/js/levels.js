@@ -50,21 +50,24 @@ MusicLevel.prototype.atMaxLevel = function() {
 };
 
 const rhythmLevels = new MusicLevel({
-	musicComponents: [16, 12, 8, 4, 6, 2, 3, 1],
-	numLevels: 3,
-	baseIdx: 4, //start with quarter notes
-	increment: 2
+	musicComponents: [
+        16, 8, 4, 12, 2, 6, 1, 3
+        
+        ],
+	numLevels: 5,//3,
+	baseIdx: 4,//4, //start with quarter notes
+	increment: 1//2
 });
 
 const keyLevels = new MusicLevel({
 	musicComponents: ['C', 'G', 'F', 'D', 'Bb', 'A', 'Eb'],
-	numLevels: 3,
-	baseIdx: 3, //start with one sharp or flat
+	numLevels: 4,
+	baseIdx: 1, //start with one sharp or flat
 	increment: 2
 });
 
 const timeLevels = new MusicLevel({
-	musicComponents: [{beats: 2, rhythm: 4}, {beats: 4, rhythm: 4}, {beats: 3, rhythm: 4}, {beats: 6, rhythm: 8}],
+	musicComponents: [{beats: 4, rhythm: 4}, {beats: 2, rhythm: 4}, {beats: 3, rhythm: 4}, {beats: 6, rhythm: 8}],
 	numLevels: 4,
 	baseIdx: 1,
 	increment: 1

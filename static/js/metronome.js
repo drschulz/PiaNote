@@ -112,10 +112,6 @@ Metronome.prototype.stop = function() {
   this.metronomeInterval = null;
 };
 
-Metronome.prototype.isPlaying = function() {
-    return isPlaying;
-}
-
 Metronome.prototype.setTempo = function(tempo) {
   this.tempo = tempo;
 }

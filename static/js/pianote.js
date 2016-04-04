@@ -33,47 +33,55 @@ function PiaNote(config) {
   this.playerStats = new UserStats(config);
 
   this.playTime = null;
+  this.monitoring = false;
 
 }
 
 PiaNote.prototype.noteOn = function(note, velocity) {
-  if (this.playTime == null) {
-    this.playTime = performance.now();
+  if (this.monitoring) {
+  
+    if (this.playTime == null) {
+        this.playTime = performance.now();
+    }
+
+    //get time in terms of the song measure and beat
+    var startTime = (performance.now() - this.playTime) / 1000.0;
+    //round to the nearest 16th note
+    var beat = Math.round((startTime / this.tempo) * WHOLE_NOTE_VALUE / 4);
+
+
+    this.currentNotes[note] = {start: performance.now(), time: beat, tone: note};
   }
-
-  //get time in terms of the song measure and beat
-  var startTime = (performance.now() - this.playTime) / 1000.0;
-  //round to the nearest 16th note
-  var beat = Math.floor((startTime / this.tempo) * WHOLE_NOTE_VALUE / 4);
-
-
-  this.currentNotes[note] = {start: performance.now(), time: beat, tone: note};
 };
 
 PiaNote.prototype.noteOff = function(note) {
-  var now = performance.now();
-  var n = this.currentNotes[note];
-  var timePassed = (now - n.start) / 1000.0;
-  var duration = timePassed / this.tempo;
+  if (this.monitoring) {
+    var now = performance.now();
+    var n = this.currentNotes[note];
+    var timePassed = (now - n.start) / 1000.0;
+    var duration = timePassed / this.tempo;
 
-  var rhythm = duration*WHOLE_NOTE_VALUE / 4;
-  var time = n.time;
-  if (this.pianotePiece[time] == undefined) {
-    this.pianotePiece[time] = [];
+    var rhythm = duration*WHOLE_NOTE_VALUE / 4;
+    var time = n.time;
+    if (this.pianotePiece[time] == undefined) {
+        this.pianotePiece[time] = [];
+    }
+
+    //There is no way for us to know the hand this came from ... so we ignore it
+    //and later just try to map the tone to the expected piece
+    this.pianotePiece[time].push(new SingleNote({tone: note, rhythm: rhythm}));
+
+    delete this.currentNotes[note];
   }
-
-  //There is no way for us to know the hand this came from ... so we ignore it
-  //and later just try to map the tone to the expected piece
-  this.pianotePiece[time].push(new SingleNote({tone: note, rhythm: rhythm}));
-
-  delete this.currentNotes[note];
 };
 
 PiaNote.prototype.monitorTempo = function(tempo) {
+  this.monitoring = true;
   this.tempo = tempo;
 };
 
 PiaNote.prototype.unMonitorTempo = function() {
+  this.monitoring = false;
   this.playTime = null;
 };
 
@@ -81,7 +89,7 @@ PiaNote.prototype.isMonitoring = function() {
   return this.playTime != null;
 };
 
-PiaNote.prototype.generateSong = function() {
+PiaNote.prototype.generateSong = function(num) {
   var that = this;
 
   //monitored piece
@@ -97,9 +105,8 @@ PiaNote.prototype.generateSong = function() {
   for (var i = 0; i < availableTime.length; i++) {
     availableTimeString.push(JSON.stringify(availableTime[i]));
   }
-  console.log(availableTimeString);
   var bestTimeSig = this.playerStats.getBestItem(availableTimeString, this.playerStats.timeStats); 
-  console.log(bestTimeSig);
+  
   var timeSig = JSON.parse(bestTimeSig);//availableTime[Math.random() * availableTime.length << 0];
 
 
@@ -107,7 +114,9 @@ PiaNote.prototype.generateSong = function() {
     time: timeSig,
     key: key,
     numMeasures: 4,
-    isSharpKey: sharpKeys.indexOf(key) > 0 ? true : false
+    isSharpKey: sharpKeys.indexOf(key) > 0 ? true : false,
+    num: num,
+    stats: this.playerStats
   };
 
   var availableSongTypes = songLevels.lockLevel ? songLevels.getCurrentChoicesStrict() : songLevels.getCurrentChoices();
@@ -125,12 +134,47 @@ PiaNote.prototype.generateSong = function() {
 };
 
 PiaNote.prototype.scorePerformance = function() {
-  var playerTuneList = flatTuneList(this.pianotePiece);
+  var separationNote = MIDDLE_C + keys[this.expectedPiece.key];
+  var playerTuneList = flatTuneListSeparatedByNote(this.pianotePiece, separationNote);
   var matchResults = this.expectedPiece.match(playerTuneList);
-  
-  console.log(matchResults);
 
-  return matchResults;
+  var results = this.expectedPiece.getAccuracies();
+
+  var accuracies = {
+    'r': results.rhythms.hit / results.rhythms.num, // weight more by type of rhythm
+    't': (results.notes.hit + results.rhythms.hit) / (results.notes.num + results.rhythms.num),//results.rhythms.hit / results.rhythms.num,
+    'k': (results.notes.hit + results.rhythms.hit) / (results.notes.num + results.rhythms.num),//results.notes.hit / results.notes.num,
+    'i': results.intervals.hit / results.intervals.num, //weight more by type of interval
+    's': (results.notes.hit + results.rhythms.hit) / (results.notes.num + results.rhythms.num) //do both notes and rhythms
+  }
+
+  //engine.getNextSongParameters(accuracies);
+  
+  //enter stats into the userStats
+  this.playerStats.addToNoteStats(results.notes.accuracies);
+  this.playerStats.addToRhythmStats(results.rhythms.accuracies);
+  this.playerStats.addToIntervalStats(results.intervals.accuracies);
+  var timeStats = {
+    hit: accuracies['t'],
+    num: 1
+  };
+
+  this.playerStats.addToTimeStats(timeStats, JSON.stringify(pianote.expectedPiece.time));
+  
+  var keyStats = {
+    hit: accuracies['k'],
+    num: 1
+  };
+
+  this.playerStats.addToKeyStats(keyStats, pianote.expectedPiece.key);
+  //TODO Song stats
+  var songStats = {
+    hit: accuracies['s'],
+    num: 1
+  }
+  this.playerStats.addToSongStats(songStats, pianote.expectedPiece.getType());
+
+  return accuracies;
 };
 
 PiaNote.prototype.getCurrentStats = function() {
