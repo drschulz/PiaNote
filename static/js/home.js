@@ -140,23 +140,8 @@ function bindNotesToSheetMusic() {
 function generateNextMelody() {
   songNum++;
   console.log(PianoteLevels.getCurrentLevels());
-  //console.log(keyLevels.getCurrentChoices());
   pianote.generateSong(songNum);
   renderSong(pianote.expectedPiece, "mystave", "black");
-  //pianote.expectedPiece.bindNotesToSheetMusic();
-
-  var voices = pianote.expectedPiece.getVoiceTuneList();
-  var v1 = voices.voice1;
-  var v2 = voices.voice2;
-
-  for (var i = 0; i < v1.length; i++) {
-    v1[i].setToHit();
-  }
-
-  for (var i = 0; i < v2.length; i++) {
-    v2[i].setToHit();
-  }
-  //renderSong(pianote.playerPiece, "playerstave", "#455ede");
 }
 
 var song = 1;
@@ -199,9 +184,6 @@ function updateChart(results) {
 }
 
 function displayResults(results) {
-  //populateTables(results);
-  //updateChart(results);
-  //renderSong(pianote.expectedPiece, "performedstave", "black");
   pianote.expectedPiece.bindNotesToSheetMusic("#mystave");
   pianote.expectedPiece.updateCss();
   var score = results['s'] * 100 << 0;
@@ -212,10 +194,6 @@ function displayResults(results) {
   if (!moreInfo.opened) {
     _toggle();
   }
-  
-  
-  //document.getElementById("results-dialog").open();
-  //TODO
 }
 
 function saveUserStats() {
@@ -229,7 +207,6 @@ function saveUserStats() {
 
   function registerPostError() {
     var toast = document.getElementById('fail-toast');
-    //toast.text = "error saving scores";
     toast.open();  
   }
 
@@ -301,50 +278,7 @@ function scorePerformance() {
   engine.getNextSongParameters(results);
   displayResults(results);
   currentAccuracies = results;
-  //currentAccuracies = calculateAccuracies();
   savePiece();
-
-  //saveUserStats();
-}
-
-function calculateAccuracies() {
-  var results = pianote.expectedPiece.getAccuracies();
-
-  var accuracies = {
-    'r': results.rhythms.hit / results.rhythms.num, // weight more by type of rhythm
-    't': (results.notes.hit + results.rhythms.hit) / (results.notes.num + results.rhythms.num),//results.rhythms.hit / results.rhythms.num,
-    'k': (results.notes.hit + results.rhythms.hit) / (results.notes.num + results.rhythms.num),//results.notes.hit / results.notes.num,
-    'i': results.intervals.hit / results.intervals.num, //weight more by type of interval
-    's': (results.notes.hit + results.rhythms.hit) / (results.notes.num + results.rhythms.num) //do both notes and rhythms
-  }
-
-  engine.getNextSongParameters(accuracies);
-  
-  //enter stats into the userStats
-  pianote.playerStats.addToNoteStats(results.notes.accuracies);
-  pianote.playerStats.addToRhythmStats(results.rhythms.accuracies);
-  pianote.playerStats.addToIntervalStats(results.intervals.accuracies);
-  var timeStats = {
-    hit: accuracies['t'],
-    num: 1
-  };
-
-  pianote.playerStats.addToTimeStats(timeStats, JSON.stringify(pianote.expectedPiece.time));
-  
-  var keyStats = {
-    hit: accuracies['k'],
-    num: 1
-  };
-
-  pianote.playerStats.addToKeyStats(keyStats, pianote.expectedPiece.key);
-  //TODO Song stats
-  var songStats = {
-    hit: accuracies['s'],
-    num: 1
-  }
-  pianote.playerStats.addToSongStats(songStats, pianote.expectedPiece.getType());
-
-  return accuracies;
 }
 
 function playSong(tune) {

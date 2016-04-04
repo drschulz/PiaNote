@@ -5,7 +5,6 @@ function UserProfile(config) {
 		//this.performanceData = {}; //level: {list of accuracy lists}
 	}
 	else {
-		console.log("loading!!");
 		this.songNum = config.songNum;
 		this.setInformation(config);
 		//this.performanceData = config.performanceData;
@@ -48,7 +47,6 @@ UserProfile.prototype.updateTier = function() {
 		PianoteLevels.setLevels(this.baseLevel);
 		PianoteLevels.increaseAllLevels();
 		this.updateStatuses();
-		console.log(this.currentLevel);
 	}
 	
 	this.currentTier = (this.currentTier + 1) % this.tiers.length;
@@ -62,7 +60,6 @@ UserProfile.prototype.chooseAnotherLevelInTier = function() {
 	var that = this;
 
 	//only choose levels that have not been passed and that are not the current tier
-	console.log(this.tiers[this.currentTier]);
 	var filteredTierLevels = this.tiers[this.currentTier].filter(function(val, idx) {
 		return val != that.currentLevelInTier && !val.passed;
 	});
@@ -74,7 +71,6 @@ UserProfile.prototype.chooseAnotherLevelInTier = function() {
 
 	//pick a random available level
 	this.currentLevelInTier = filteredTierLevels[Math.random() * filteredTierLevels.length << 0];
-	console.log(this.currentLevelInTier);
 
 	//set the new current level
 	PianoteLevels.unlockAllLevels();
@@ -84,8 +80,6 @@ UserProfile.prototype.chooseAnotherLevelInTier = function() {
 
 	this.currentLevel = PianoteLevels.getCurrentLevels();
 	this.drillingLevel = PianoteLevels.getCurrentLevels();
-
-	console.log(this.currentLevel);
 }
 
 UserProfile.prototype.passedAllLevelsInTier = function() {

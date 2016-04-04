@@ -128,9 +128,9 @@ PiaNote.prototype.generateSong = function(num) {
   for (var i = 0; i < availableSongTypes.length; i++) {
     if (availableSongTypes[i].prototype.getType() == piece) {
       this.expectedPiece = new availableSongTypes[i](config);
+      break;
     }
   }
-  //this.expectedPiece = new HandsTogetherPiece(config); //choose by level
 };
 
 PiaNote.prototype.scorePerformance = function() {
@@ -159,20 +159,20 @@ PiaNote.prototype.scorePerformance = function() {
     num: 1
   };
 
-  this.playerStats.addToTimeStats(timeStats, JSON.stringify(pianote.expectedPiece.time));
+  this.playerStats.addToTimeStats(timeStats, JSON.stringify(this.expectedPiece.time));
   
   var keyStats = {
     hit: accuracies['k'],
     num: 1
   };
 
-  this.playerStats.addToKeyStats(keyStats, pianote.expectedPiece.key);
+  this.playerStats.addToKeyStats(keyStats, this.expectedPiece.key);
   //TODO Song stats
   var songStats = {
     hit: accuracies['s'],
     num: 1
   }
-  this.playerStats.addToSongStats(songStats, pianote.expectedPiece.getType());
+  this.playerStats.addToSongStats(songStats, this.expectedPiece.getType());
 
   return accuracies;
 };

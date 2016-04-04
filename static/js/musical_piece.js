@@ -197,40 +197,31 @@ Musical_Piece.prototype.generatePhraseRhythm = function(stats) {
   var curMeasure = 0;
   var curBeat = 0;
 
-  /*var rhythmLevel = rhythmLevels.getCurrentChoices();
-  var keys = Object.keys(rhythmLevel);*/
-  var possibleRhythms = rhythmLevels.getCurrentChoices();/*keys.map(function(e) {
-    return parseInt(e);  
-  });*/
-  console.log(possibleRhythms);
-  console.log(rhythmLevels.currentLevel);
+  var possibleRhythms = rhythmLevels.getCurrentChoices();
   var measureRhythms = [];
 
-  //get weights based on idx.
+  //get weights based on difficulty (the index) as well as the user's accuracy in that rhythm
   var cdf = 0;
   for(var i = 0; i < possibleRhythms.length; i++) {
-    cdf += (i + 1) * stats.getRhythmAccuracy(possibleRhythms[i]);//rhythmLevel[possibleRhythms[i]];//i+1;
+    cdf += (i + 1) * stats.getRhythmAccuracy(possibleRhythms[i]);
   }
 
   while(curMeasure < this.numMeasures) {
-    console.log("hello");
     var rhythmIdx = 0;
     var rhythm;
 
-    //weighted pick of rhythms
+    //weighted pick of rhythms through accuracies and difficulty type
     var randWieght;
-    randWeight = Math.random() * cdf; //<< 0;
+    randWeight = Math.random() * cdf;
     var upTo = 0;
     for (var i = 0; i < possibleRhythms.length; i++) {
-      if (upTo + (i + 1)*stats.getRhythmAccuracy(possibleRhythms[i]) /*rhythmLevel[possibleRhythms[i]]*/ /*+ 1*/ >= randWeight) {
+      if (upTo + (i + 1)*stats.getRhythmAccuracy(possibleRhythms[i]) >= randWeight) {
         rhythmIdx = i;
         break;
       }
-      upTo += (i + 1)*stats.getRhythmAccuracy(possibleRhythms[i]); //rhythmLevel[possibleRhythms[i]];//i + 1;
+      upTo += (i + 1)*stats.getRhythmAccuracy(possibleRhythms[i]);
     }
     rhythm = possibleRhythms[rhythmIdx];
-    console.log(rhythm);
-    console.log(curMeasure);
     
     //Pick a good rhythm to end the phrase on
     if (curMeasure == this.numMeasures - 1) {
@@ -249,10 +240,10 @@ Musical_Piece.prototype.generatePhraseRhythm = function(stats) {
 
     //if the rhythm fits in the measure, add it
     if(curBeat + rhythm <= this.measureDuration) {
-      console.log("got a rhythm!");
       var totalDur = rhythm;//rhythmDur;
       measureRhythms.push(rhythm);
       
+      //for certain rhythms, we need to add a second rhythm to match it
       switch(rhythm) {
         case NoteRhythms.D_EIGTH:
           //add eighth note
@@ -278,7 +269,6 @@ Musical_Piece.prototype.generatePhraseRhythm = function(stats) {
       }
       
       if (curBeat + totalDur >= this.measureDuration) {
-        console.log("finishedMeasure!");
         curMeasure++;
         curBeat = 0;
         rhythms.push(measureRhythms);
@@ -292,8 +282,6 @@ Musical_Piece.prototype.generatePhraseRhythm = function(stats) {
 
   return rhythms;
 };
-
-
 
 Musical_Piece.prototype.getVoiceTuneList = function() {
   var tune = this.piece;
@@ -330,7 +318,6 @@ Musical_Piece.prototype.getVoiceTuneList = function() {
     });
 
     for (var j = 0; j < notes.length; j++) {
-      //console.log(notes[j]);
       if (notes[j].hand == 'l') {
         tuneList.voice2.push(notes[j]);
       }
@@ -421,7 +408,6 @@ Musical_Piece.prototype.abcDump = function() {
       }
 
       //Dump the note
-      //console.log(voice[i]);
       var bundle = voice[i].abcDump(that.isSharpKey, currentAccidentals, measureRhythm, that.measureDuration, that.measureAccent);
 
       voiceString += bundle.sheetNote;
@@ -815,15 +801,18 @@ Musical_Piece.prototype.getAccuracies = function() {
 
 Musical_Piece.prototype.generatePhrase = function(startMeasure, endMeasure, hand, possibleIntervals) {
   var tones = [];
+  
   //offset from c
   var baseOfKey = keys[this.key];
-  
   //base of octave
   var baseTone = hand == 'l' ? LOW_C : MIDDLE_C;
   baseTone += baseOfKey;
 
   function getPossibleIntervalsForChord(chord, intervals) {
+    //Get either major or minor chord intervals
     var chordIntervals = chord.type == 'M' ? MajorChordIntervals : MinorChordIntervals;
+    
+    //map the intervals to the key by taking the interval of the base note of the chord
     var chordIntervalsMappedToKey = chordIntervals.map(function(i) {
         return chord.interval + i;
     });
@@ -844,21 +833,18 @@ Musical_Piece.prototype.generatePhrase = function(startMeasure, endMeasure, hand
 
   var that = this;
 
-  //NOT CURRENTLY USED
-  function filterOutChordIntervals(e) {
-    for (var i = 0; i < chord.notes.length; i++) {
-      if (baseTone + e == chord.notes[i]) {
-        return false;
-      }
-    }
-    return true;
-  }
-
+  //the last note's interval index (to use to get the interval of the next note)
   var lastIntervalIdx = 0;
-  var possibleNextIntervals;
-  var possibleNextChordIntervals;
   
+  //the possible intervals for the next note
+  var possibleNextIntervals;
+  //the possible intervals for the next chord note
+  var possibleNextChordIntervals;
+
+  //Get the intervals that absolutely need to be in the song of this level  
   var intervalsNeeded = intervalLevels.getCurrentChoicesStrict();
+  
+  //Make a checklist to keep track of the intervals that have been picked so far
   var intervalsCheckList = [];
   for (var i = 0; i < intervalsNeeded.length; i++) {
       intervalsCheckList.push(false);
@@ -871,122 +857,114 @@ Musical_Piece.prototype.generatePhrase = function(startMeasure, endMeasure, hand
     
     //get all intervals that the chord hits that are within the interval range 
     var chordIntervals = getPossibleIntervalsForChord(chord, possibleIntervals);
-    //ensure left and right hand don't play same note at same time
-    chordIntervals = chordIntervals;//.filter(filterOutChordIntervals);
-    var pIntervals = possibleIntervals;//.filter(filterOutChordIntervals);
+    
+    chordIntervals = chordIntervals;
+    var pIntervals = possibleIntervals;
 
+    //get the current time in the song
     var time = curMeasure*that.measureDuration;
+    
     //generate first note by taking an interval that is in the chord      
     var interval;
-    if (curMeasure == startMeasure) {
-      interval = chordIntervals[Math.random()*chordIntervals.length << 0];  
-      lastIntervalIdx = interval;
-    }
-    else {
-      possibleNextChordIntervals = getPossibleIntervalsForChord(chord, possibleNextIntervals);
-      interval = possibleNextChordIntervals[Math.random()*possibleNextChordIntervals.length << 0];
-      if (interval == undefined) {
-        interval = chordIntervals[Math.random()*chordIntervals.length << 0];
-      }
-    }
-    
-    var tone = baseTone + interval; 
-    var note = new SingleNote({tone: tone, rhythm: rhythms[0], hand: hand, interval: Math.abs(lastIntervalIdx - possibleIntervals.indexOf(interval))});
-    lastIntervalIdx = possibleIntervals.indexOf(interval);
-    if (curMeasure == startMeasure) {
-      note.setFingering(hand == "l" ? 5 - lastIntervalIdx : lastIntervalIdx + 1);
-    }
-    that.addToPiece(time, note);
-    
-    //update the current time
-    time += rhythms[0];
-
+        
+    //get the intervals allowed in this level
     var possibleIndices = intervalLevels.getCurrentChoices();
-
-    possibleNextIntervals = [];
-    //first see if there are any intervals that are of the current level. if 
-    //there are and they have not been selected yet, only put those in the possible
-    //next intervals.
-    for (var i = 0; i < possibleIntervals.length; i++) {
-        var diff = Math.abs(i - lastIntervalIdx);
-        
-        var idx = intervalsNeeded.indexOf(diff);
-        
-        //if it is a needed interval that has not been selected yet
-        if (idx != -1 && intervalsCheckList[idx] == false)  {
-            possibleNextIntervals.push(possibleIntervals[i]);           
-        }
-    }
     
-    //only fill up the intervals with other intervals if there were no needed intervals
-    if (possibleNextIntervals.length == 0) {
-        for (var i = 0; i < possibleIntervals.length; i++) {
-            var diff = Math.abs(i - lastIntervalIdx);
-            
-            if (possibleIndices.indexOf(diff) != -1) {
-                possibleNextIntervals.push(possibleIntervals[i]);
-            }
-        }
-    }
-
-    possibleNextChordIntervals = getPossibleIntervalsForChord(chord, possibleNextIntervals);
-
     //generate next notes
-    for(var i = 1; i < rhythms.length; i++) {
+    for(var i = 0; i < rhythms.length; i++) {
       //Make sure last note of the song ends on a chord note
-      if(i == rhythms.length - 1 && curMeasure == that.numMeasures - 1) {
+      //Start the first measure on a chord note
+      if (i == 0 && curMeasure == startMeasure) {
+          interval = chordIntervals[Math.random()*chordIntervals.length << 0];  
+          lastIntervalIdx = possibleIntervals.indexOf(interval);//interval
+      }
+      //start all measures on a chord note and end the song on a chord note
+      else if(i == 0 || (i == rhythms.length - 1 && curMeasure == that.numMeasures - 1)) {
+        //get the possible chord intervals that are within the jump range of the interval level
+        possibleNextChordIntervals = getPossibleIntervalsForChord(chord, possibleNextIntervals);
         interval = possibleNextChordIntervals[Math.random()*possibleNextChordIntervals.length << 0];
+        //If no such interval exists, then just pick a random one
         if (interval == undefined) {
-          interval = chordIntervals[Math.random()*chordIntervals.length << 0];
+            interval = chordIntervals[Math.random()*chordIntervals.length << 0];
         }
       }
+      //otherwise, pick any interval that is within the level
       else {
         interval = possibleNextIntervals[Math.random()*possibleNextIntervals.length << 0];
         if (interval == undefined) {
           alert("UNDEFINED");
         }
       }
+      
+      //create the note
       tone = baseTone + interval;
-      var note = new SingleNote({tone: tone, rhythm: rhythms[i], hand: hand, interval: Math.abs(lastIntervalIdx - possibleIntervals.indexOf(interval))});
+      var note = new SingleNote({
+          tone: tone, 
+          rhythm: rhythms[i], 
+          hand: hand, 
+          interval: Math.abs(lastIntervalIdx - possibleIntervals.indexOf(interval))
+      });
       
       //check if it is a needed interval
       if (intervalsNeeded.indexOf(note.interval) != -1) {
           intervalsCheckList[intervalsNeeded.indexOf(note.interval)] = true;
       }
       
+      //get the index of the interval so we can calculate the interval of the next note
       lastIntervalIdx = possibleIntervals.indexOf(interval);
-      //note.setFingering(hand == "l" ? 5 - lastIntervalIdx : lastIntervalIdx + 1);
+      
+      //Put fingering on the note if it is the first one in the piece
+      if (i == 0 && curMeasure == startMeasure) {
+        note.setFingering(hand == "l" ? 5 - lastIntervalIdx : lastIntervalIdx + 1);
+      }
+      
+      //add note to piece
       that.addToPiece(time, note);
       
+      //add the rhythm to time
       time+= rhythms[i];
       
       possibleNextIntervals = [];
+      //first see if there are any intervals that are of the strict current level. If 
+      //there are and they have not been selected yet, only put those in the possible
+      //next intervals.
       for (var j = 0; j < possibleIntervals.length; j++) {
-        var diff = Math.abs(j - lastIntervalIdx);
-        if (possibleIndices.indexOf(diff) != -1) {
-          possibleNextIntervals.push(possibleIntervals[j]);
-        }
+          var diff = Math.abs(j - lastIntervalIdx);
+          var idx = intervalsNeeded.indexOf(diff);
+          //if it is a needed interval that has not been selected yet
+          if (idx != -1 && intervalsCheckList[idx] == false)  {
+              possibleNextIntervals.push(possibleIntervals[j]);           
+          }
+      }
+      
+      possibleNextChordIntervals = getPossibleIntervalsForChord(chord, possibleNextIntervals);
+        
+      //only fill up the intervals with other intervals if there were no needed intervals
+      if (possibleNextIntervals.length == 0 || possibleNextChordIntervals.length == 0) {
+          for (var j = 0; j < possibleIntervals.length; j++) {
+              var diff = Math.abs(j - lastIntervalIdx);
+                
+              if (possibleIndices.indexOf(diff) != -1) {
+                  possibleNextIntervals.push(possibleIntervals[j]);
+              }
+          }
       }
       possibleNextChordIntervals = getPossibleIntervalsForChord(chord, possibleNextIntervals);
-      //console.log(possibleNextIntervals);
-
-      //tones.push(tone);
+      
     }
 
-    return tones;
+    //return tones;
   } 
 
   for(var i = startMeasure; i <= endMeasure; i++) {
     generateMeasureNotes(possibleIntervals, i);
   }
   
+  //check if the needed intervals were met
   var allNeededIntervalsMet = false;
-  
   for (var i = 0; i < intervalsCheckList.length; i++) {
       allNeededIntervalsMet = allNeededIntervalsMet || intervalsCheckList[i];
   }
-  console.log(intervalsNeeded);
-  console.log(intervalsCheckList);
   
   return allNeededIntervalsMet;
 }
@@ -1032,7 +1010,6 @@ SeparateHandPiece.prototype.generatePiece = function() {
     var possibleIntervalsL = NoteIntervals.slice(llowestIntervalIdx, lhighestIntervalIdx);
     var lIntervalsMet = this.generatePhrase(2, 3, 'l', possibleIntervalsL);
     this.addRests(2,3, 'r');
-    console.log("done");
     iterations++;
   }
   while(!rIntervalsMet && !lIntervalsMet && iterations < 100);

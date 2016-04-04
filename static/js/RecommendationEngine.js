@@ -12,8 +12,6 @@ function RecommendationEngine(userProfile) {
 
 RecommendationEngine.prototype.getNextSongParameters = function(lastSongAccuracies) {
 	var that = this;
-	console.log(lastSongAccuracies);
-	console.log("hello!");
 
 	function updateDrillingLevel(accuracies) {
 		var focusComponents = that.userProfile.getLevelFocusComponents();
@@ -29,7 +27,6 @@ RecommendationEngine.prototype.getNextSongParameters = function(lastSongAccuraci
 		})();
 
 		if (lowestAccuracies < 0.7) {
-			console.log("decreasing!");
 			PianoteLevels.decreaseLevels();
 		}
 		else {
@@ -62,8 +59,6 @@ RecommendationEngine.prototype.getNextSongParameters = function(lastSongAccuraci
 		return equal;
 	}
 
-	
-	console.log("in recommendations ....");
 	//if drilling level is same as target level
 	if (isEqual(this.userProfile.drillingLevel, this.userProfile.currentLevel)) {		
 		//add to level accuracies	
@@ -88,24 +83,20 @@ RecommendationEngine.prototype.getNextSongParameters = function(lastSongAccuraci
 		}
 
 		//if component accuracies are high
-		if (lowestAccuracy >= 0.8) {	
-			console.log("success!");
+		if (lowestAccuracy >= 0.8) {
 			//number of successes in level go up
 			this.userProfile.numSuccessesInLevel++;
 
 			//number of successive failed attempts is reset
 			this.userProfile.numAttemptsAtLevel = 0;
 
-			console.log(this.userProfile.numSuccessesInLevel);
 			//if number of successes is greater than 3
 			if (this.userProfile.numSuccessesInLevel >= 1) {
-				console.log("passed level!");
 				//pass level
 				this.userProfile.currentLevelInTier.passed = true;
 
 				//choose next level
 				if (this.userProfile.passedAllLevelsInTier()) {
-					console.log("passed all levels!");
 					this.userProfile.updateTier();
 				}
 				else {
@@ -145,88 +136,5 @@ RecommendationEngine.prototype.getNextSongParameters = function(lastSongAccuraci
 
 	updateDrillingLevel(lastSongAccuracies);
 	return this.userProfile.drillingLevel;
-
-	/*
-
-	//Drilling to a target level
-	if (this.userProfile.isDrilling) {
-		console.log("drilling!");
-		//Drill
-		updateDrillingLevel(lastSongAccuracies);
-
-		//if drilling level is equal to the current level
-		if (JSON.stringify(this.userProfile.drillingLevel) == JSON.stringify(this.userProfile.currentLevel)) {
-			this.userProfile.isDrilling = false;
-			return this.userProfile.currentLevel;
-		}
-
-		return this.userProfile.drillingLevel;
-	}
-	//Practicing target level
-	else {
-		this.userProfile.numAttemptsAtLevel++;
-		//add last song accuracies to current level accuracies
-		var curLevelString = JSON.stringify(this.userProfile.currentLevel);
-		if (this.userProfile.performanceData[curLevelString] == undefined) {
-			this.userProfile.performanceData[curLevelString] = [];
-		}
-		this.userProfile.performanceData[curLevelString].push(lastSongAccuracies);
-
-		//Only keep last 5 accuracies
-		if (this.userProfile.performanceData[curLevelString].length > 3) {
-			console.log("getting rid of data for current level");
-			this.userProfile.performanceData[curLevelString].shift();
-		}
-		
-		if (this.userProfile.numAttemptsAtLevel > 3) {
-			console.log("more than 3 attempts!");
-			var totalAccuracy = this.userProfile.getOverallAccuracyForLevel(this.userProfile.currentLevel);
-			//if total accuracy is over all attempts is 80 or above
-			var lowestAccuracy = this.userProfile.getLowestAccuracyForCurrentLevelFocus();//Math.min.apply(Math, this.userProfile.getComponentAccuracyForLevel(this.userProfile.currentLevel));
-			
-			console.log(this.userProfile.getComponentAccuracyForLevel(this.userProfile.currentLevel));
-			console.log(lowestAccuracy);
-			if(lowestAccuracy >= .8) {
-				//check other accuracy levels
-				//if they are sub 
-
-
-				console.log("passed current level");
-				//set current level as passed
-				this.userProfile.tierProgress[this.userProfile.currentLevelInTier] = true;
-
-				//if all levels in tier have been passed, update the tier (possibly going to next base level)
-				if (this.userProfile.passedAllLevelsInTier()) {
-					console.log("passed all levels!");
-					this.userProfile.updateTier();
-				}
-				else {
-					this.userProfile.chooseAnotherLevelInTier();
-				}
-			}
-			//ise if the total accuracy over the attempts is between 60 and 80
-			else if (lowestAccuracy >= 0.6 && lowestAccuracy < 0.8) {
-				console.log("haven't passed yet, choose another level");
-				this.userProfile.chooseAnotherLevelInTier();
-				//choose new level in the tier
-			}
-			// if the total accuracy is below 60 percent
-			else {
-				console.log("you suck, time to drill");
-				this.userProfile.isDrilling = true;
-				this.userProfile.drillingLevel = this.userProfile.currentLevel.slice();
-
-				updateDrillingLevel(this.userProfile.getComponentAccuracyForLevel(this.userProfile.currentLevel));
-				this.userProfile.numAttemptsAtLevel = 0;
-				return this.userProfile.drillingLevel;
-				//Start drilling with the current level as the target
-			}
-
-			this.userProfile.numAttemptsAtLevel = 0;
-		}
-		
-		return this.userProfile.currentLevel;
-
-	}	*/
 
 }

@@ -138,7 +138,6 @@ const PianoteLevels = {
 
 	increaseLevels: function(levs) {
 		for (var i = 0; i < levs.length; i++) {
-			console.log(this.levels[levs[i]]);
 			this.levels[levs[i]].increaseLevel();
 		}
 	},
