@@ -242,6 +242,12 @@ td.note-info {
   /*height: 300px;*/
 }
 
+.flash {
+  color: red;
+}
+
+
+
 #staff-container {
   margin-top: 2em;
 }
@@ -266,7 +272,20 @@ td.note-info {
   display: none;
 }
 
+#survey {
+  display: none;
+}
+
+#scoring {
+  margin-top: 10px;
+}
+
 #generate-button {
+  background: #455ede;
+  color: #fff;
+}
+
+#survey-button {
   background: #455ede;
   color: #fff;
 }

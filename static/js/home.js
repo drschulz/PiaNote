@@ -78,10 +78,43 @@ function renderSong(piece, location, color) {
   //$("svg").attr("width", 1110);
 }
 
+function getTitle(levels) {
+    var title = " ";
+    for (var i = 0; i < levels.length; i++) {
+        if (i != 0) {
+            title += ", " 
+        }
+        
+        if (levels[i] == 'r') {
+            title += rhythmLevels.getTextRepresentationOfLevel();
+        }
+        if (levels[i] == 'i') {
+            title += intervalLevels.getTextRepresentationOfLevel() + "Intervals";
+        }
+        if (levels[i] == 'k') {
+            title += keyLevels.getTextRepresentationOfLevel() + "Keys";
+        }
+        if (levels[i] == 's') {
+            title += songLevels.getTextRepresentationOfLevel();
+        }
+        if (levels[i] == 't') {
+            title += timeLevels.getTextRepresentationOfLevel() + "Time";
+        }
+    }
+    
+    console.log("title: " + title);
+    return title;
+}
+
+
 function generateNextMelody() {
   songNum++;
   console.log(PianoteLevels.getCurrentLevels());
-  pianote.generateSong(songNum);
+  var levels = user.getLevelFocusComponents();
+  console.log(user);
+  var title = getTitle(levels);
+  
+  pianote.generateSong("Song " + songNum, title);
   renderSong(pianote.expectedPiece, "mystave", "black");
 }
 
@@ -127,14 +160,14 @@ function updateChart(results) {
 function displayResults(results) {
   pianote.expectedPiece.bindNotesToSheetMusic("#mystave");
   pianote.expectedPiece.updateCss();
-  var score = results['s'] * 100 << 0;
-  $("#score").html(" " + score + "/100");
+  //var score = results['s'] * 100 << 0;
+  //$("#score").html(" " + score + "/100");
   
   //show score key
-  var moreInfo = document.getElementById('more-info');
+  /*var moreInfo = document.getElementById('more-info');
   if (!moreInfo.opened) {
     _toggle();
-  }
+  }*/
 }
 
 function savePiece() {
@@ -155,14 +188,14 @@ function savePiece() {
 
 
   function registerPostSuccess() {
-    var toast = document.getElementById('success-toast');
-    //toast.text = "saved current scores";
+    var toast = document.querySelector('#success-toast');
+    toast.text = "saved current scores";
     toast.open();
   }
 
   function registerPostError() {
-    var toast = document.getElementById('fail-toast');
-    //toast.text = "error saving scores";
+    var toast = document.querySelector('#fail-toast');
+    toast.text = "error saving scores";
     toast.open();  
   }
 
@@ -176,6 +209,57 @@ function savePiece() {
   $.ajax({
     method: 'POST',
     url: '/score',
+    contentType: 'application/json',
+    processData: true,
+    data: bundleJson,
+    dataType: 'text',
+    success: registerPostSuccess,
+    error: registerPostError,
+  });
+}
+
+function resetSurvey() {
+  document.querySelector('#ratings').value = 5;
+  document.querySelector('#helpfulratings').value = 5;
+  document.querySelector('#gradeCorrect').checked = false;
+}
+
+function saveSurvey() {
+  var bundle = {
+    sessionNum: sessionNum,
+    pieceNum: songNum,
+  }
+  
+  
+  function registerPostSuccess() {
+    var toast = document.querySelector('#success-toast');
+    toast.text = "submitted survey";
+    toast.open();
+  }
+
+  function registerPostError() {
+    var toast = document.querySelector('#fail-toast');
+    toast.text = "error submitting survey";
+    toast.open();  
+  }
+  
+  var difficulty = document.querySelector('#ratings').value;
+  var helpful = document.querySelector('#helpfulratings').value;
+  var correct = !document.querySelector('#gradeCorrect').checked;
+  
+  var survey = {
+    difficulty: difficulty,
+    helpful: helpful,
+    correct: correct
+  };
+  
+  bundle.survey = survey;
+  
+  var bundleJson = JSON.stringify(bundle);
+  
+  $.ajax({
+    method: 'POST',
+    url: '/saveSurvey',
     contentType: 'application/json',
     processData: true,
     data: bundleJson,
@@ -244,9 +328,10 @@ function initializeButtons() {
     metronome.play();
     pianote.unMonitorTempo();
     $("#stop-button").hide();
-    $("#play-button").show();
-    $("#play-button").prop("disabled", true);
+    
+    //$("#play-button").prop("disabled", true);
     $("#playButtons").show();
+    $("#survey").show();
     $("#score-div").show();
     
     scorePerformance();
@@ -257,9 +342,11 @@ function initializeButtons() {
   });
   
   $("#generate-button").click(function() {
-    
+    $("#play-button").show();
     $("#results-card").hide();
     $("#playButtons").hide();
+    $("#survey").hide();
+    resetSurvey();
     $("#score-div").hide();
     generateNextMelody();
     
@@ -271,9 +358,12 @@ function initializeButtons() {
   $("#retry-button").click(function() {
     pianote.expectedPiece.clearPerformance();
     renderSong(pianote.expectedPiece, "mystave", "black");
+    $("#play-button").show();
     $("#retry-button").prop("disabled", true);
     $("#play-button").prop("disabled", false);
     $("#playButtons").hide();
+    $("#survey").hide();
+    resetSurvey();
     $("#score-div").hide();
   });
   
@@ -311,6 +401,10 @@ function initializeButtons() {
   $("#play-performed-button").click(function() {
     playSong(pianote.pianotePiece);
   });
+  
+  $("#survey-button").click(function() {
+    saveSurvey();
+  });
 }
 
 function enableButtons() {
@@ -320,7 +414,7 @@ function enableButtons() {
 
 function initializeApplication(userData) {
   if (userData != undefined) {
-    pianote = new PiaNote(userData['stats']);
+    pianote = new PiaNote(userData['stats'], false);
     user = new UserProfile(userData['profile']);  
   }
   else {

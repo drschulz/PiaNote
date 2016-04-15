@@ -24,6 +24,13 @@ UserProfile.prototype.setInformation = function(config) {
 	PianoteLevels.lockLevels(this.currentLevelInTier.level);
 	this.numAttemptsAtLevel = config.numAttemptsAtLevel;
 	this.numSuccessesInLevel = config.numSuccessesInLevel;
+    this.numStrugglesInLevel = config.numStrugglesInLevel;
+    
+    
+    this.curPsetLevel = config.curPsetLevel;
+    this.pset = config.pset;
+    PianoteLevels.unlockAllLevels();
+    PianoteLevels.lockLevels(this.pset[this.curPsetLevel].level);
 }
 
 UserProfile.prototype.updateStatuses = function() {
@@ -37,7 +44,60 @@ UserProfile.prototype.updateStatuses = function() {
 	this.chooseAnotherLevelInTier();
 	this.numAttemptsAtLevel = 0; //attempts made to pass current level or drilling level
 	this.numSuccessesInLevel = 0;
+    this.numStrugglesInLevel = 0;
 
+
+    this.curPsetLevel = 0;
+    this.pset = PianoteLevels.getPowerSet();
+    console.log("new pset");
+    console.log(this.pset);
+    //this.pset.pop();
+    
+}
+
+UserProfile.prototype.updatePsetLevel = function() {
+    //set to the next tier of levels if all power set is done
+    if (this.curPsetLevel + 1 == this.pset.length) {
+        PianoteLevels.unlockAllLevels();
+        PianoteLevels.setLevels(this.baseLevel);
+        PianoteLevels.increaseAllLevels();
+        this.updateStatuses();
+    }
+    else {
+        this.curPsetLevel++;
+    }
+    
+    console.log(this.pset);
+    
+    //set the new current level
+	PianoteLevels.unlockAllLevels();
+	PianoteLevels.setLevels(this.baseLevel);
+	PianoteLevels.increaseLevels(this.pset[this.curPsetLevel].level);
+	PianoteLevels.lockLevels(this.pset[this.curPsetLevel].level);
+
+	this.currentLevel = PianoteLevels.getCurrentLevels();
+	this.drillingLevel = PianoteLevels.getCurrentLevels();
+}
+
+UserProfile.prototype.lowerPsetLevel = function() {
+    if (this.curPsetLevel - 1 < 0) {
+        return;
+    }
+    
+    this.curPsetLevel--;
+    
+    //set the new current level
+	PianoteLevels.unlockAllLevels();
+	PianoteLevels.setLevels(this.baseLevel);
+	PianoteLevels.increaseLevels(this.pset[this.curPsetLevel].level);
+	PianoteLevels.lockLevels(this.pset[this.curPsetLevel].level);
+
+	this.currentLevel = PianoteLevels.getCurrentLevels();
+	this.drillingLevel = PianoteLevels.getCurrentLevels();
+    this.numAttemptsAtLevel = 0; //attempts made to pass current level or drilling level
+	this.numSuccessesInLevel = 0;
+    this.numStrugglesInLevel = 0;
+    
 }
 
 UserProfile.prototype.updateTier = function() {
@@ -179,7 +239,7 @@ UserProfile.prototype.getLowestAccuracyForCurrentLevelFocus = function() {
 }*/
 
 UserProfile.prototype.getLevelFocusComponents = function() {
-	return this.currentLevelInTier.level;
+	return this.pset[this.curPsetLevel].level;//this.currentLevelInTier.level;
 }
 
 UserProfile.prototype.updateDrillingLevel = function() {

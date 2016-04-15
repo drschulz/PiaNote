@@ -24,14 +24,23 @@
       <iron-icon icon="image:music-note"></iron-icon>
       <div>PiaNote</div>
     </paper-toolbar>
+    
+    <center>
+      <h1>Welcome to PiaNote!</h1>
+      <h1>Login Below</h1>
+    </center>
     <div class="horizontal center-justified layout">
+      
       <form is="iron-form" id="form" method="post" action="/login">
-        <paper-input name="name" label="Cal Poly Username" id="name"></paper-input>  
+        <label>Username:</label>
+        <input name="name" label="Cal Poly Username" id="name"></input>  
       </form>
     </div>
+    <br>
     {% for message in get_flashed_messages() %}
-      <div class=flash>{{ message }}</div>
+      <div class="flash horizontal center-justified layout">{{ message }}</div>
     {% endfor %}
+    <br>
     <div class="horizontal center-justified layout">
       <paper-button class="mainButton" raised id="login-button" onclick="submitForm()">
         Login

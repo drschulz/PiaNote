@@ -10,7 +10,6 @@ db = SQLAlchemy(app)
 @app.route('/')
 def ind():
 	if 'username' in session:
-		print(" .... uhhh")
 		user = Users.query.filter_by(username=session['username']).first();
 		user.session = user.session + 1;
 		db.session.commit()
@@ -45,7 +44,7 @@ def loadScores():
 		if data.profile is None or data.stats is None:
 			abort(404);
 		
-		bundle = {"stats": json.loads(data.stats), "profile": json.loads(data.profile)}
+		bundle = {"stats": json.loads(data.stats), "profile": json.loads(data.profile), "control": data.control}
 
 		return json.dumps(bundle);
 
@@ -77,6 +76,25 @@ def saveScores():
 
 	return "data not saved"
 
+@app.route('/saveSurvey', methods=['POST'])
+def saveSurvey():
+	data = request.get_json();
+	
+	sessionNum = data['sessionNum'];
+	pieceNum = data['pieceNum'];
+	
+	if 'username' in session:
+		user = Users.query.filter_by(username=session['username']).first();
+		performance = PerformanceData.query.filter_by(user_id=user.id, session_number=sessionNum, piece_number=pieceNum).first();
+		if performance is None:
+			return "data not saved"
+		
+		performance.survey = json.dumps(data['survey']);
+		db.session.commit();
+		
+		return "data saved"
+	
+	return "data not saved"
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -135,6 +153,7 @@ def close_connection(exception):
 class Users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True)
+    control = db.Column(db.Boolean, default=False)
     session = db.Column(db.Integer)
     profile = db.Column(db.TEXT) #current profile
     stats = db.Column(db.TEXT) #current stats
@@ -158,7 +177,7 @@ class PerformanceData(db.Model):
 	level = db.Column(db.TEXT) #song level with components
 	profile = db.Column(db.TEXT) #current profile and user state
 	stats = db.Column(db.TEXT) #current user statistics for components
-
+	survey = db.Column(db.TEXT)
 
 	def __init__(self, user_id, sessionNumber, pieceNumber, piece, level):
 		self.user_id = user_id

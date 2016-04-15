@@ -1,9 +1,10 @@
-function PiaNote(config) {
+function PiaNote(config, isControl) {
   var time = 0;
   this.tempo = 120;
   this.previousNote = undefined;
   this.currentNotes = {};
   this.interval = null;
+  this.isControl = isControl;
   var that = this;
 
   function findClosest(query, obj) {
@@ -89,7 +90,7 @@ PiaNote.prototype.isMonitoring = function() {
   return this.playTime != null;
 };
 
-PiaNote.prototype.generateSong = function(num) {
+PiaNote.prototype.generateSong = function(title, description) {
   var that = this;
 
   //monitored piece
@@ -98,39 +99,60 @@ PiaNote.prototype.generateSong = function(num) {
   this.resetTime();
 
   var availableKeys = keyLevels.lockLevel ? keyLevels.getCurrentChoicesStrict() : keyLevels.getCurrentChoices();
-  var key = this.playerStats.getBestItem(availableKeys, this.playerStats.keyStats);//availableKeys[Math.random() * availableKeys.length << 0];
-
+  var key;
   var availableTime = timeLevels.lockLevel ? timeLevels.getCurrentChoicesStrict() : timeLevels.getCurrentChoices();
-  var availableTimeString = [];
-  for (var i = 0; i < availableTime.length; i++) {
-    availableTimeString.push(JSON.stringify(availableTime[i]));
-  }
-  var bestTimeSig = this.playerStats.getBestItem(availableTimeString, this.playerStats.timeStats); 
+  var timeSig;
+  var availableSongTypes = songLevels.lockLevel ? songLevels.getCurrentChoicesStrict() : songLevels.getCurrentChoices();
   
-  var timeSig = JSON.parse(bestTimeSig);//availableTime[Math.random() * availableTime.length << 0];
+  var stats;
 
+  if (!this.isControl) {
+    key = this.playerStats.getBestItem(availableKeys, this.playerStats.keyStats);//availableKeys[Math.random() * availableKeys.length << 0];
+
+
+    var availableTimeString = [];
+    for (var i = 0; i < availableTime.length; i++) {
+        availableTimeString.push(JSON.stringify(availableTime[i]));
+    }
+    var bestTimeSig = this.playerStats.getBestItem(availableTimeString, this.playerStats.timeStats); 
+    
+    timeSig = JSON.parse(bestTimeSig);//availableTime[Math.random() * availableTime.length << 0];
+    stats = this.playerStats;
+  }
+  else {
+      key = availableKeys[Math.random() * availableKeys.length << 0];
+      timeSig = availableTime[Math.random() * availableTime.length << 0];
+      stats = new UserStats();
+  } 
 
   var config = {
     time: timeSig,
     key: key,
     numMeasures: 4,
     isSharpKey: sharpKeys.indexOf(key) > 0 ? true : false,
-    num: num,
-    stats: this.playerStats
+    stats: stats,
+    title: title,
+    altTitle: description
   };
 
-  var availableSongTypes = songLevels.lockLevel ? songLevels.getCurrentChoicesStrict() : songLevels.getCurrentChoices();
-  var availableSongTypesString = [];
-  for (var i = 0; i < availableSongTypes.length; i++) {
-    availableSongTypesString.push(availableSongTypes[i].prototype.getType());
-  }
-  var piece = this.playerStats.getBestItem(availableSongTypesString, this.playerStats.songStats);//availableSongTypes[Math.random() * availableSongTypes.length << 0];
-  for (var i = 0; i < availableSongTypes.length; i++) {
-    if (availableSongTypes[i].prototype.getType() == piece) {
-      this.expectedPiece = new availableSongTypes[i](config);
-      break;
+  if (!this.isControl) {
+    var availableSongTypesString = [];
+    for (var i = 0; i < availableSongTypes.length; i++) {
+        availableSongTypesString.push(availableSongTypes[i].prototype.getType());
+    }
+    var piece = this.playerStats.getBestItem(availableSongTypesString, this.playerStats.songStats);//availableSongTypes[Math.random() * availableSongTypes.length << 0];
+    for (var i = 0; i < availableSongTypes.length; i++) {
+        if (availableSongTypes[i].prototype.getType() == piece) {
+        this.expectedPiece = new availableSongTypes[i](config);
+        break;
+        }
     }
   }
+  else {
+      var piece = availableSongTypes[Math.random() * availableSongTypes.length << 0];
+      this.expectedPiece = new piece(config);
+  }
+  
 };
 
 PiaNote.prototype.scorePerformance = function() {
@@ -143,7 +165,7 @@ PiaNote.prototype.scorePerformance = function() {
   var accuracies = {
     'r': results.rhythms.hit / results.rhythms.num, // weight more by type of rhythm
     't': (results.notes.hit + results.rhythms.hit) / (results.notes.num + results.rhythms.num),//results.rhythms.hit / results.rhythms.num,
-    'k': (results.notes.hit + results.rhythms.hit) / (results.notes.num + results.rhythms.num),//results.notes.hit / results.notes.num,
+    'k': results.notes.hit / results.notes.num,//results.key.num == 0 ? 1 : (results.key.hit) / results.key.num,//results.notes.hit / results.notes.num,
     'i': results.intervals.hit / results.intervals.num, //weight more by type of interval
     's': (results.notes.hit + results.rhythms.hit) / (results.notes.num + results.rhythms.num) //do both notes and rhythms
   }

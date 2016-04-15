@@ -74,10 +74,11 @@ function flatTuneListSeparatedByNote(tune, separationNote) {
 
     var lower = [];
     var upper = [];
+    var timeNum;
     for (var i = 0; i < noteArr.length; i++) {
       
       if (noteArr[i].tone < separationNote || (noteArr[i].tone == REST && noteArr[i].hand == "l")) {
-          var timeNum = parseInt(time);
+          timeNum = parseInt(time);
           if (timeNum - lastTimeLowerPlayed > 0) {
               lowerTuneList.push(new SingleNote({tone: REST, rhythm: timeNum - lastTimeLowerPlayed}));
           }
@@ -85,14 +86,24 @@ function flatTuneListSeparatedByNote(tune, separationNote) {
           lastTimeLowerPlayed = parseInt(time) + noteArr[i].rhythm;
       }
       else {
-          var timeNum = parseInt(time);
+          timeNum = parseInt(time);
           if (timeNum - lastTimeUpperPlayed > 0) {
               upperTuneList.push(new SingleNote({tone: REST, rhythm: timeNum - lastTimeUpperPlayed}));
           }
           upperTuneList.push(noteArr[i]);
           lastTimeUpperPlayed = parseInt(time) + noteArr[i].rhythm;
       }
+      
+      
       //tuneList.push(noteArr[i]);
+    }
+    timeNum += noteArr[noteArr.length - 1].rhythm;
+    
+    if (timeNum - lastTimeLowerPlayed > 0) {
+      lowerTuneList.push(new SingleNote({tone: REST, rhythm: timeNum - lastTimeLowerPlayed}));
+    }
+    if (timeNum - lastTimeUpperPlayed > 0) {
+      upperTuneList.push(new SingleNote({tone: REST, rhythm: timeNum - lastTimeUpperPlayed}));
     }
     
     /*if (!upper.length == 0) {
@@ -144,7 +155,8 @@ function Musical_Piece(config) {
   this.chords = this.generateChords();
   this.piece = {};
   this.generatePiece();
-  this.num = config.num;
+  this.title = config.title;
+  this.altTitle = config.altTitle;
 }
 
 Musical_Piece.prototype.addToPiece = function(time, note) {
@@ -373,7 +385,9 @@ Musical_Piece.prototype.abcDump = function() {
   var abc = "";
   
   //initial stuff
-  abc += "T: Song " + this.num + "\n"
+  abc += "%%subtitlefont   Times 9\n"
+       + "T: " + this.title + "\n"
+       + "T: " + this.altTitle + "\n"
        + "M: " + this.time.beats + "/" + this.time.rhythm + "\n" 
        + "L: 1/" + WHOLE_NOTE_VALUE + "\n" 
        + "K: " + this.key + "\n"
@@ -728,6 +742,10 @@ Musical_Piece.prototype.getAccuracies = function() {
   var rhythmAccuracies = {};
   var noteAccuracies = {};
   var intervalAccuracies = {};
+  var keyAccuracies = {};
+  
+  var keyNotesHit = 0;
+  var keyNotesNum = 0;
 
   var rhythmsHit = 0;
   var notesHit = 0;
@@ -736,8 +754,12 @@ Musical_Piece.prototype.getAccuracies = function() {
   var numNotes = 0;
 
   var lastTone = undefined;
+  var keySharpsAndFlats = keyToIntervalSharpsAndFlats[this.key];
+  var keyTones = keySharpsAndFlats.map(function(e) {
+      return MIDDLE_C + keys[this.key] + e;
+  });
   for (var i = 0; i < v.length; i++) {
-    var results = v[i].getAccuracies(lastTone);
+    var results = v[i].getAccuracies(lastTone, keyTones);
 
     if (results != undefined) {
       //get accuracies by category
@@ -750,6 +772,9 @@ Musical_Piece.prototype.getAccuracies = function() {
       notesHit += results.note.hit;
       intervalsHit += results.interval != undefined ? results.interval.hit : 0;
       numIntervals += results.interval != undefined ? 1 : 0;
+      keyNotesHit += results.key.hit;
+      keyNotesNum += results.key.num;
+      
       
       lastTone = v[i];
       numNotes++;
@@ -758,8 +783,12 @@ Musical_Piece.prototype.getAccuracies = function() {
 
   v = voices.voice2;
   var lastTone = undefined;
+  keyTones = keySharpsAndFlats.map(function(e) {
+      return LOW_C + keys[this.key] + e;
+  });
+  
   for (var i = 0; i < v.length; i++) {
-    var results = v[i].getAccuracies(lastTone);
+    var results = v[i].getAccuracies(lastTone, keyTones);
 
     if (results != undefined) {
       //get accuracies by category
@@ -772,6 +801,8 @@ Musical_Piece.prototype.getAccuracies = function() {
       notesHit += results.note.hit;
       intervalsHit += results.interval != undefined ? results.interval.hit : 0;
       numIntervals += results.interval != undefined ? 1 : 0;
+      keyNotesHit += results.key.hit;
+      keyNotesNum += results.key.num;
       
       lastTone = v[i];
       numNotes++;
@@ -793,6 +824,10 @@ Musical_Piece.prototype.getAccuracies = function() {
       accuracies: intervalAccuracies,
       num: numIntervals,
       hit: intervalsHit
+    },
+    key: {
+      num: keyNotesNum,
+      hit: keyNotesHit
     }
   };
 
@@ -1043,6 +1078,179 @@ ChordPiece.prototype.generateLeftHandChords = function() {
   throw new Error("CANNOT CALL ABSTRACT FUNCTION");
 }
 
+function SimpleChordPiece(config) {
+    ChordPiece.call(this, config);
+}
+
+SimpleChordPiece.prototype = Object.create(ChordPiece.prototype);
+SimpleChordPiece.prototype.constructor = SimpleChordPiece;
+
+SimpleChordPiece.prototype.generateChords = function() {
+  var chords = [];
+
+  //alwasy start with the chord of the key
+  chords.push(simpleKeyChords[0]);
+
+  //random chords for the rest of the piece
+  for (var i = 1; i < this.numMeasures - 1; i++) {
+    chords.push(simpleKeyChords[Math.random() * simpleKeyChords.length << 0]);
+  }
+
+  //always end with the chord of the key
+  chords.push(simpleKeyChords[0]);
+
+  return chords;
+};
+
+SimpleChordPiece.prototype.generateLeftHandChords = function() {
+  var baseOfKey = keys[this.key];
+  var baseTone = LOW_C;
+  baseTone += baseOfKey;
+
+  var note = new SimpleTriad({tone: baseTone + this.chords[0].interval, chord: this.chords[0], rhythm: this.measureDuration, hand: 'l'});
+  var time = 0;
+  this.addToPiece(time, note);
+
+  for (var i = 1; i < this.numMeasures - 1; i++) {
+    if (this.chords[i].interval == 0) {
+        var note = new SimpleSuspendedChord({tone: baseTone + this.chords[i].interval, chord: this.chords[i], rhythm: this.measureDuration, hand: 'l'});
+        var time = i*this.measureDuration;
+        this.addToPiece(time, note);
+    }
+    if (this.chords[i].interval == 5) {
+        var note = new SimpleInvertedChord({tone: baseTone + this.chords[i].interval, chord: this.chords[i], rhythm: this.measureDuration, hand: 'l'});
+        var time = i*this.measureDuration;
+        this.addToPiece(time, note);
+    }
+    if (this.chords[i].interval == 7) {
+        var note = new SimpleV7Chord({tone: baseTone + this.chords[i].interval, chord: this.chords[i], rhythm: this.measureDuration, hand: 'l'});
+        var time = i*this.measureDuration;
+        this.addToPiece(time, note);
+    }
+  }  
+  
+  var lastMeasure = this.numMeasures - 1;
+  var note = new SimpleTriad({tone: baseTone + this.chords[lastMeasure].interval, chord: this.chords[lastMeasure], rhythm: this.measureDuration, hand: 'l'});
+  var time = lastMeasure*this.measureDuration;
+  this.addToPiece(time, note);  
+  
+};
+
+SimpleChordPiece.prototype.getType = function() {
+    return "Simple Chords";
+};
+
+
+function SimpleFullChordPiece(config) {
+    SimpleChordPiece.call(this, config);
+}
+
+SimpleFullChordPiece.prototype = Object.create(SimpleChordPiece.prototype);
+SimpleFullChordPiece.prototype.constructor = SimpleFullChordPiece;
+
+SimpleFullChordPiece.prototype.generateLeftHandChords = function() {
+  var baseOfKey = keys[this.key];
+  var baseTone = LOW_C;
+  baseTone += baseOfKey;
+
+  var note = new Triad({tone: baseTone + this.chords[0].interval, chord: this.chords[0], rhythm: this.measureDuration, hand: 'l'});
+  var time = 0;
+  this.addToPiece(time, note);
+
+  for (var i = 1; i < this.numMeasures - 1; i++) {
+    if (this.chords[i].interval == 0) {
+        var note = new SuspendedChord({tone: baseTone + this.chords[i].interval, chord: this.chords[i], rhythm: this.measureDuration, hand: 'l'});
+        var time = i*this.measureDuration;
+        this.addToPiece(time, note);
+    }
+    if (this.chords[i].interval == 5) {
+        var note = new InvertedChord({tone: baseTone + this.chords[i].interval, chord: this.chords[i], rhythm: this.measureDuration, hand: 'l'});
+        var time = i*this.measureDuration;
+        this.addToPiece(time, note);
+    }
+    if (this.chords[i].interval == 7) {
+        var note = new V7Chord({tone: baseTone + this.chords[i].interval, chord: this.chords[i], rhythm: this.measureDuration, hand: 'l'});
+        var time = i*this.measureDuration;
+        this.addToPiece(time, note);
+    }
+  }  
+  
+  var lastMeasure = this.numMeasures - 1;
+  var note = new Triad({tone: baseTone + this.chords[lastMeasure].interval, chord: this.chords[lastMeasure], rhythm: this.measureDuration, hand: 'l'});
+  var time = lastMeasure*this.measureDuration;
+  this.addToPiece(time, note);  
+};
+
+SimpleFullChordPiece.prototype.getType = function() {
+    return "Chords";
+}
+
+function MixedChordPiece(config) {
+    ChordPiece.call(this, config);  
+}
+
+MixedChordPiece.prototype = Object.create(ChordPiece.prototype);
+MixedChordPiece.prototype.constructor = MixedChordPiece;
+
+MixedChordPiece.prototype.generateChords = function() {
+  var chords = [];
+
+  //alwasy start with the chord of the key
+  chords.push(mixedKeyChords[0]);
+
+  //random chords for the rest of the piece
+  for (var i = 1; i < this.numMeasures - 1; i++) {
+    chords.push(mixedKeyChords[Math.random() * mixedKeyChords.length << 0]);
+  }
+
+  //always end with the chord of the key
+  chords.push(mixedKeyChords[0]);
+
+  return chords;
+};
+
+MixedChordPiece.prototype.generateLeftHandChords = function() {
+  var baseOfKey = keys[this.key];
+  var baseTone = LOW_C;
+  baseTone += baseOfKey;
+
+  var note = new Triad({tone: baseTone + this.chords[0].interval, chord: this.chords[0], rhythm: this.measureDuration, hand: 'l'});
+  var time = 0;
+  this.addToPiece(time, note);
+
+  for (var i = 1; i < this.numMeasures - 1; i++) {
+    if (this.chords[i].interval == 4 || this.chords[i].interval == -3) {
+        var note = new Triad({tone: baseTone + this.chords[i].interval, chord: this.chords[i], rhythm: this.measureDuration, hand: 'l'});
+        var time = i*this.measureDuration;
+        this.addToPiece(time, note);
+    }
+    if (this.chords[i].interval == 0) {
+        var note = new SuspendedChord({tone: baseTone + this.chords[i].interval, chord: this.chords[i], rhythm: this.measureDuration, hand: 'l'});
+        var time = i*this.measureDuration;
+        this.addToPiece(time, note);
+    }
+    if (this.chords[i].interval == 5) {
+        var note = new InvertedChord({tone: baseTone + this.chords[i].interval, chord: this.chords[i], rhythm: this.measureDuration, hand: 'l'});
+        var time = i*this.measureDuration;
+        this.addToPiece(time, note);
+    }
+    if (this.chords[i].interval == 7) {
+        var note = new V7Chord({tone: baseTone + this.chords[i].interval, chord: this.chords[i], rhythm: this.measureDuration, hand: 'l'});
+        var time = i*this.measureDuration;
+        this.addToPiece(time, note);
+    }
+  }  
+  
+  var lastMeasure = this.numMeasures - 1;
+  var note = new Triad({tone: baseTone + this.chords[lastMeasure].interval, chord: this.chords[lastMeasure], rhythm: this.measureDuration, hand: 'l'});
+  var time = lastMeasure*this.measureDuration;
+  this.addToPiece(time, note);  
+};
+
+MixedChordPiece.prototype.getType = function() {
+    return "Mixed Chords";
+}
+
 //subclasses of chord piece
 function TriadPiece(config) {
   ChordPiece.call(this, config);
@@ -1131,30 +1339,60 @@ InvertedChordPiece.prototype.getType = function() {
   return "InvertedChordPiece";
 };
 
-function MixedChordPiece(config) {
-  
-}
 
-function LegatoChordPiece(config) {
+
+function ArpeggioPiece(config) {
   ChordPiece.call(this, config);
 }
 
-LegatoChordPiece.prototype = Object.create(ChordPiece.prototype);
-LegatoChordPiece.prototype.constructor = LegatoChordPiece;
+ArpeggioPiece.prototype = Object.create(ChordPiece.prototype);
+ArpeggioPiece.prototype.constructor = ArpeggioPiece;
 
-LegatoChordPiece.prototype.generateLeftHandChords = function() {
+ArpeggioPiece.prototype.generateChords = function() {
+  var chords = [];
+
+  //alwasy start with the chord of the key
+  chords.push(mixedKeyChords[0]);
+
+  //random chords for the rest of the piece
+  for (var i = 1; i < this.numMeasures - 1; i++) {
+    chords.push(mixedKeyChords[Math.random() * mixedKeyChords.length << 0]);
+  }
+
+  //always end with the chord of the key
+  chords.push(mixedKeyChords[0]);
+
+  return chords;
+};
+
+ArpeggioPiece.prototype.generateLeftHandChords = function() {
   var baseOfKey = keys[this.key];
   var baseTone = LOW_C;
   baseTone += baseOfKey;
   var time = 0;
   for (var i = 0; i < this.numMeasures; i++) {
-    var note = new Triad({tone: baseTone + this.chords[i].interval, chord: this.chords[i], rhythm: this.measureDuration, hand: 'l'});
+    var note;
+    if (i == 0 || i == this.numMeasures - 1 || this.chords[i].interval == 4 || this.chords[i].interval == -3) {
+        note = new Triad({tone: baseTone + this.chords[i].interval, chord: this.chords[i], rhythm: this.measureDuration, hand: 'l'});
+    }
+    else if (this.chords[i].interval == 0) {
+        note = new SuspendedChord({tone: baseTone + this.chords[i].interval, chord: this.chords[i], rhythm: this.measureDuration, hand: 'l'});
+    }
+    else if (this.chords[i].interval == 5) {
+        note = new InvertedChord({tone: baseTone + this.chords[i].interval, chord: this.chords[i], rhythm: this.measureDuration, hand: 'l'});
+    }
+    else if (this.chords[i].interval == 7) {
+        note = new V7Chord({tone: baseTone + this.chords[i].interval, chord: this.chords[i], rhythm: this.measureDuration, hand: 'l'});
+    }
+    
+    //var note = new Triad({tone: baseTone + this.chords[i].interval, chord: this.chords[i], rhythm: this.measureDuration, hand: 'l'});
     var measureBeat = 0;
     var idx = 0;
     var goingUp = true;
     while (measureBeat + NoteRhythms.QUARTER <= this.measureDuration) {
-        note.tone[idx].rhythm = NoteRhythms.QUARTER;
-        this.addToPiece(time, note.tone[idx]);
+        singleNote = new SingleNote({tone: note.tone[idx].tone, rhythm: NoteRhythms.QUARTER, hand: 'l'});
+        //note.tone[idx].rhythm = NoteRhythms.QUARTER;
+        this.addToPiece(time, singleNote);
         time+=NoteRhythms.QUARTER;
         measureBeat+= NoteRhythms.QUARTER;
         
@@ -1181,8 +1419,8 @@ LegatoChordPiece.prototype.generateLeftHandChords = function() {
   }
 };
 
-LegatoChordPiece.prototype.getType = function() {
-  return "LegatoChordPiece";
+ArpeggioPiece.prototype.getType = function() {
+  return "Arpeggios";
 };
 
 //end chordPieces

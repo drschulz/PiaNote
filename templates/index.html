@@ -49,6 +49,23 @@
   <script src='{{url_for("static", filename="js/RecommendationEngine.js")}}'></script>
   <script src='{{url_for("static", filename="js/home.js")}}'></script>
   <link rel="stylesheet" href='{{url_for("static", filename="styles.css")}}'>
+  <style is="custom-style">
+  .caption {
+    padding-left: 12px;
+    color: #a0a0a0;
+  }
+  
+  #success-toast {
+    --paper-toast-background-color: green;
+    --paper-toast-color: white;
+  }
+  
+  #fail-toast {
+    --paper-toast-background-color: red;
+    --paper-toast-color: white;
+  }
+  
+</style>
 </head> 
 <body unresolved class="fullbleed layout vertical">
   <paper-header-panel class="flex" id="main-panel">
@@ -77,52 +94,6 @@
           Midi Connected
         </paper-material>
       </div>
-      
-      <div id="score-key" class="horizontal end-justified layout">
-        <paper-card heading="Scoring Key">    
-            <div class="card-actions">
-            <paper-icon-button icon="hardware:keyboard-arrow-down" title="more info" onclick="_toggle()" style="float:right;">
-                </paper-icon-button>
-            <iron-collapse id="more-info" style="width:100%;">
-                <br>
-                <paper-listbox id="key-list">
-                    <paper-item>
-                        <svg width="20" height="20">
-                            <rect id="hit-key" width="20" height="20" />
-                        </svg> = correct note and rhythm
-                    </paper-item>
-                    <paper-item>
-                        <svg width="20" height="20">
-                            <rect id="miss-key" width="20" height="20" />
-                        </svg> = Incorrect note and rhythm
-                    </paper-item>
-                    <paper-item>
-                        <svg width="20" height="20">
-                            <rect id="note-miss-key" width="20" height="20"  />
-                        </svg> = Incorrect note
-                    </paper-item>
-                    <paper-item>
-                        <svg width="20" height="20">
-                            <rect id="rhythm-miss-key" width="20" height="20" />
-                        </svg> = Incorrect rhythm
-                    </paper-item>
-                    
-                </paper-listbox>
-            </iron-collapse>
-            </div>
-            <!--<script>
-                function _toggle() {
-                    var moreInfo = document.getElementById('more-info');
-                    var iconButton = Polymer.dom(event).localTarget;
-                    iconButton.icon = moreInfo.opened ? 'hardware:keyboard-arrow-up'
-                                                    : 'hardware:keyboard-arrow-down';
-                    moreInfo.toggle();
-                }
-            </script>-->            
-        </paper-card>
-      </div>
-      
-      
       <p class="horizontal center-justified layout" style="{float: center}">
         Session: {{ sessionNum }}
       </p>
@@ -142,12 +113,6 @@
     <div class="horizontal center-justified layout">
       <paper-input id="bpm" label="bpm" type="number" value="120" min="80" max="120">
       </paper-input>
-    </div>
-    <div class="horizontal center-justified layout">
-      <div id="score-div">
-      <h2>Score: </h2>
-      <h2 id="score"></h2>
-      </div>
     </div>  
     <div class="horizontal center-justified layout" >
       
@@ -161,6 +126,36 @@
           Play Your Performance
         </paper-button>
       </div>
+      
+    </div>
+    <div id="scoring" class="horizontal center-justified layout">
+      <div id="score-div">
+        <paper-card>
+          <div class="card-content horizontal inline layout">
+            <paper-item>
+                <svg width="20" height="20">
+                    <rect id="hit-key" width="20" height="20" />
+                </svg> = correct note and rhythm
+            </paper-item>
+            <paper-item>
+                <svg width="20" height="20">
+                    <rect id="miss-key" width="20" height="20" />
+                </svg> = Incorrect note and rhythm
+            </paper-item>
+            <paper-item>
+                <svg width="20" height="20">
+                    <rect id="note-miss-key" width="20" height="20"  />
+                </svg> = Incorrect note
+            </paper-item>
+            <paper-item>
+                <svg width="20" height="20">
+                    <rect id="rhythm-miss-key" width="20" height="20" />
+                </svg> = Incorrect rhythm
+            </paper-item>
+          </div>
+            
+        </paper-card>
+      </div>
     </div>
     <div class="horizontal center-justified layout">
       <paper-card id="staff-card">
@@ -170,6 +165,31 @@
         </div>
       </paper-card>
     </div>
+    <div class="horizontal center-justified layout">
+      <div id="survey">
+      <paper-card heading="Post Piece Survey">
+        <div class="card-content">
+        <div>1.</div>
+        <p>How Difficult was this Piece? (0: Too Easy, 5: Perfect Difficulty, 10: Too Hard):<p> 
+        <span id="ratingsLabel" class="caption"></span>
+         
+        <paper-slider id="ratings" pin snaps max="10" max-markers="10" step="1" value="5"></paper-slider>
+        <div>2.</div>
+        <div>How helpful was this piece towards your learning?(0: Not Helpful, 10: Very Helpful):</div>
+        <span id="helpfulratingsLabel" class="caption"></span>
+         
+        <paper-slider id="helpfulratings" pin snaps max="10" max-markers="10" step="1" value="5"></paper-slider>
+        <div>3.</div>
+        <paper-checkbox id="gradeCorrect">I believe the tool graded me incorrectly</paper-checkbox>
+        </div>
+        <div class="card-actions">
+          <paper-button raised=1 id="survey-button">Submit Survey</paper-button>
+        </div>
+          
+      </paper-card>
+      </div>
+    </div>
+    <br>
     <div id="playerstave"> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
     </div>
     <!--<paper-dialog id="results-dialog" modal="true">
@@ -355,5 +375,17 @@
                                         : 'hardware:keyboard-arrow-up';
         moreInfo.toggle();
     }
+    
+  document.addEventListener('WebComponentsReady', function() {
+    var ratings = document.querySelector('#ratings');
+    ratings.addEventListener('value-change', function() {
+      document.querySelector('#ratingsLabel').textContent = ratings.value;
+    });
+    
+    var helpfulratings = document.querySelector('#helpfulratings');
+    ratings.addEventListener('value-change', function() {
+      document.querySelector('#helpfulratingsLabel').textContent = ratings.value;
+    });
+  });
 </script>
 </html>

@@ -114,6 +114,20 @@ const keyChords = [
   {interval: -12, type: 'M'}*/
 ];
 
+const simpleKeyChords = [
+  {interval: 0, type: 'M'},
+  {interval: 5, type: 'M'},
+  {interval: 7, type: 'M'}  
+];
+
+const mixedKeyChords = [
+    {interval: 0, type: 'M'},
+    {interval: 4, type: 'm'},
+    {interval: 5, type: 'M'},
+    {interval: 7, type: 'M'},
+    {interval: -3, type: 'm'}  
+];
+
 //Form MidiIntervalFromKeyBase: Major or Minor
 const ChordsForKey = {
   0: 'M', //With key of C, chord C Major
@@ -166,11 +180,21 @@ const RhythmToText = {
   12: "Dotted Half Note",
   6: "Dotted Quarter Note",
   4: "Quarter Note",
-  3: "Dotted Eigth Note",
-  2: "Eigth Note",
+  3: "Dotted 8th Note",
+  2: "8th Note",
   1: "16th Note",
   0: "None"
 };
+
+const keyToIntervalSharpsAndFlats = {
+    'C': [],
+    'G': [-1, 11],
+    'F': [5],
+    'D': [-1, 4, 11],
+    'Bb': [0, 5, 12],
+    'A': [-1, 4, 9, 11],
+    'Eb': [0, 5, 7, 12]
+}
 
 const REST = -1;
 

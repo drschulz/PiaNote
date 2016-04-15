@@ -101,7 +101,7 @@ function UserStats(config) {
       return 1;
     }
     var itemAccuracy = stats[item].hit / stats[item].num;
-    var focusedAccuracy = 0.7;
+    var focusedAccuracy = 0.75;
     var diff = itemAccuracy - focusedAccuracy;
     var fitness = 0.9 *Math.exp(-((diff * diff) / (2*0.03*0.03))) + 0.1;
     return fitness;

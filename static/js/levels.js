@@ -6,6 +6,7 @@ function MusicLevel(config) {
 
 	this.currentLevel = 0;
 	this.lockLevel = false;
+    this.textRep = config.textRep;
 }
 
 MusicLevel.prototype.setLevel = function(level) {
@@ -49,6 +50,19 @@ MusicLevel.prototype.atMaxLevel = function() {
 	return this.currentLevel == this.numLevels - 1 || this.lockLevel;
 };
 
+MusicLevel.prototype.getTextRepresentationOfLevel = function() {
+    var comps = this.getCurrentChoicesStrict();
+    var text = "";
+    for (var i = 0; i < comps.length; i++) {
+        if (i != 0) {
+            text += ", ";
+        }
+        text += this.textRep(comps[i]);
+    }
+    text += " ";
+    return text;
+}
+
 const rhythmLevels = new MusicLevel({
 	musicComponents: [
         16, 8, 4, 12, 2, 6, 1, 3
@@ -56,45 +70,74 @@ const rhythmLevels = new MusicLevel({
         ],
 	numLevels: 5,//3,
 	baseIdx: 4,//4, //start with quarter notes
-	increment: 1//2
+	increment: 1,//2
+    textRep: function(comp) {
+         return RhythmToText[comp] + "s";  
+    }
 });
 
 const keyLevels = new MusicLevel({
 	musicComponents: ['C', 'G', 'F', 'D', 'Bb', 'A', 'Eb'],
 	numLevels: 4,
 	baseIdx: 1, //start with one sharp or flat
-	increment: 2
+	increment: 2,
+    textRep: function(comp) {
+        return comp;
+    }
 });
 
 const timeLevels = new MusicLevel({
-	musicComponents: [{beats: 4, rhythm: 4}, {beats: 2, rhythm: 4}, {beats: 3, rhythm: 4}, {beats: 6, rhythm: 8}],
-	numLevels: 4,
+	musicComponents: [{beats: 4, rhythm: 4}, {beats: 3, rhythm: 4}, {beats: 2, rhythm: 4}],
+	numLevels: 3,
 	baseIdx: 1,
-	increment: 1
+	increment: 1,
+    textRep: function(comp) {
+        return comp.beats + "/" + comp.rhythm;
+    }
 });
 
 const intervalLevels = new MusicLevel({
 	musicComponents: [0, 1, 2, 4, 3],
 	numLevels: 3,
 	baseIdx: 3,
-	increment: 1
+	increment: 1,
+    textRep: function(comp) {
+        var text = "";
+        if (comp != 0) {
+            text = comp + 1;
+            if (comp + 1 == 2) {
+                text += "nd";
+            }
+            else if (comp + 1 == 3) {
+                text += "rd";
+            }
+            else {
+                text += "th";
+            }
+            return text;
+        }
+        return "No";
+    }
 });
 
 const songLevels = new MusicLevel({
-	musicComponents: [SeparateHandPiece, TriadPiece, SuspendedChordPiece, InvertedChordPiece, LegatoChordPiece, HandsTogetherPiece],
+	musicComponents: [SeparateHandPiece, SimpleChordPiece, SimpleFullChordPiece, MixedChordPiece, ArpeggioPiece, HandsTogetherPiece],
 	numLevels: 6,
 	baseIdx: 1,
-	increment: 1
+	increment: 1,
+    textRep: function(comp) {
+        return comp.prototype.getType();
+    }
 });
 
 
 const PianoteLevels = {
 	levels: {
-		r: rhythmLevels, 
-		k: keyLevels, 
-		t: timeLevels, 
-		i: intervalLevels,
-		s: songLevels
+		k: keyLevels,
+        t: timeLevels,
+        s: songLevels,
+        i: intervalLevels,
+        r: rhythmLevels, 
 	},
 	
 	getLevelsThatCanIncrease: function() {
@@ -129,6 +172,25 @@ const PianoteLevels = {
 
 		return tiers;
 	},
+    
+    getPowerSet: function() {
+        var pset = [];
+        var levelsToIncrease = this.getLevelsThatCanIncrease();
+        console.log(levelsToIncrease);
+        if (levelsToIncrease.length == 0) {
+            console.log("hello!");
+            pset.push({level: [], passed: false});
+            console.log(pset);
+            return pset;
+        }
+        
+        cmb = Combinatorics.power(levelsToIncrease);
+        cmb.forEach(function(a) {
+            pset.push({level: a, passed: false});
+        });
+        
+        return pset;
+    },
 
 	increaseAllLevels: function() {
 		for (var i in this.levels) {
