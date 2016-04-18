@@ -16,8 +16,12 @@ var currentAccuracies;
 function openDialog() {
   //document.getElementById("note-dialog").close();
   
-  document.getElementById("note-dialog").open();
-  document.getElementById("my-dialog").open();
+  var dialog = document.getElementById("note-dialog");
+  console.log(dialog.noCancelOnOutsideClick);
+  //dialog.noCancelOnOutsideClick = false;
+  dialog.restoreFocusOnClose = true;
+  dialog.open();
+  //document.getElementById("my-dialog").open();
 }
 
 function renderSong(piece, location, color) {

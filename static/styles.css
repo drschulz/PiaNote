@@ -68,7 +68,7 @@ a, a:hover {
 }
 
 #note-dialog {
-  position: fixed;
+  //position: fixed;
   width: 500px;
   //height: 300px;
 }
