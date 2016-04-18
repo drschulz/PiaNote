@@ -147,7 +147,7 @@ function ControlEngine(userProfile) {
 ControlEngine.prototype.getNextSongParameters = function(lastSongAccuracies) {
     this.userProfile.numAttemptsAtLevel++;
     
-    if (this.userProfile.numAttemptsAtLevel > 3) {
+    if (this.userProfile.numAttemptsAtLevel == 3) {
         this.userProfile.updatePsetLevel();
     }
     return this.userProfile.drillingLevel;

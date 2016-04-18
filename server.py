@@ -42,7 +42,9 @@ def loadScores():
 		data = Users.query.filter_by(username=session['username']).first(); #g.db.getUserData(session['username']);
 		print(data);
 		if data.profile is None or data.stats is None:
-			abort(404);
+			bundle = {"control": data.control}
+			return json.dumps(bundle)
+			#abort(404);
 		
 		bundle = {"stats": json.loads(data.stats), "profile": json.loads(data.profile), "control": data.control}
 

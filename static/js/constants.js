@@ -175,6 +175,7 @@ const NoteRhythms = {
 
 const RhythmToText = {
   32: "Whole",
+  24: "Dotted Half",
   16: "Whole Note",
   8: "Half Note",
   12: "Dotted Half Note",

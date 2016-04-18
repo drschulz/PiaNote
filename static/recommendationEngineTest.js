@@ -156,7 +156,7 @@ window.addEventListener('load', function() {
         console.log(pianote.pianotePiece);
         var results = pianote.scorePerformance();
 		console.log(results);
-        var nextLevel = engine.getNextSongParameters(results);
+        var nextLevel = engine.getNextSongParameters(accuracies);//results);
 		$("#level").html(JSON.stringify(user.currentLevel));
 		$("#base").html(JSON.stringify(user.baseLevel));
 		$("#next").html(JSON.stringify(user.nextBaseLevel));

@@ -413,20 +413,28 @@ function enableButtons() {
 }
 
 function initializeApplication(userData) {
-  if (userData != undefined) {
-    pianote = new PiaNote(userData['stats'], false);
-    user = new UserProfile(userData['profile']);  
-  }
-  else {
+  if (userData == undefined) {
     pianote = new PiaNote();
     user = new UserProfile();
+    engine = new RecommendationEngine(user);    
+  }
+  else {
+    if (userData.stats != undefined && userData.profile != undefined) {
+      pianote = new PiaNote(userData['stats'], userData.control);
+      user = new UserProfile(userData['profile']);
+    }
+    else {
+      pianote = new PiaNote(undefined, userData.control);
+      user = new UserProfile();
+    }
+    engine = userData.control ? new ControlEngine(user) : new RecommendationEngine(user);
   }
   
   metronome = new Metronome();
   MIDI.setVolume(MidiChannels.MAIN_PIANO, MidiConstants.MAX_VOLUME);
   MIDI.programChange(MidiChannels.MAIN_PIANO, GeneralMIDI.PIANO);
   initializeButtons();
-  engine = new RecommendationEngine(user);
+  
   /*timeLevels.setLevel(2);
   songLevels.setLevel(1);
   rhythmLevels.setLevel(2);*/

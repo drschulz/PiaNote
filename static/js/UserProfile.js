@@ -77,6 +77,9 @@ UserProfile.prototype.updatePsetLevel = function() {
 
 	this.currentLevel = PianoteLevels.getCurrentLevels();
 	this.drillingLevel = PianoteLevels.getCurrentLevels();
+	this.numAttemptsAtLevel = 0; //attempts made to pass current level or drilling level
+	this.numSuccessesInLevel = 0;
+    this.numStrugglesInLevel = 0;
 }
 
 UserProfile.prototype.lowerPsetLevel = function() {
