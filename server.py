@@ -65,9 +65,31 @@ def saveScores():
 		performance.accuracies = json.dumps(data['accuracies'])
 		performance.profile = json.dumps(data['profile'])
 		performance.stats = json.dumps(data['stats'])
+		performance.attempt = data['attempt']
 		db.session.add(performance)
 		db.session.commit()
 
+		user.profile = json.dumps(data['profile'])
+		user.stats = json.dumps(data['stats'])
+		db.session.commit()
+
+
+		#g.db.submitUserData(session['username'], json.dumps(data))
+		return "data saved"
+
+	return "data not saved"
+	
+@app.route('/savePrePostTest', methods=['POST'])
+def savePrePost():
+	data = request.get_json();
+
+	if 'username' in session:
+		user = Users.query.filter_by(username=session['username']).first();
+		#print (data['sharpKeyLevel']);
+		prePostTest = PrePostTest(user.id, data['pieceType'], data['pieceNum'], json.dumps(data['performance']), json.dumps(data['accuracies']))
+		db.session.add(prePostTest)
+		db.session.commit()
+		
 		user.profile = json.dumps(data['profile'])
 		user.stats = json.dumps(data['stats'])
 		db.session.commit()
@@ -173,6 +195,7 @@ class PerformanceData(db.Model):
 	user_id = db.Column(db.ForeignKey('users.id'))
 	session_number = db.Column(db.Integer)
 	piece_number = db.Column(db.Integer)
+	attempt = db.Column(db.Integer)
 	piece = db.Column(db.TEXT)
 	performance = db.Column(db.TEXT)
 	accuracies = db.Column(db.TEXT) #component accuracies
@@ -191,6 +214,23 @@ class PerformanceData(db.Model):
 	def __repr__(self):
 		return '<Performance %r, level: %r, session: %r, song: %r>' % (self.user_id, self.level, self.sessionNumber, self.pieceNumber)
 
+class PrePostTest(db.Model):
+	id = db.Column(db.Integer, primary_key=True)
+	user_id = db.Column(db.ForeignKey('users.id'))
+	piece_type = db.Column(db.TEXT)
+	piece_number = db.Column(db.Integer)
+	performance = db.Column(db.TEXT)
+	accuracies = db.Column(db.TEXT)
+	
+	def __init__(self, user_id, pieceType, piece_number, performance, accuracies):
+		self.user_id = user_id
+		self.piece_type = pieceType
+		self.piece_number = piece_number
+		self.performance = performance
+		self.accuracies = accuracies
+	
+	def __repr__(self):
+		return '<PrePostTest %r, type: %r, num: %r>' % (self.user_id, self.piece_type, self.piece_number)
 
 def wsgi(environ, start_response):
 	port = int(os.environ.get("PORT", 5000))

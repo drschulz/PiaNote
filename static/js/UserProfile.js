@@ -1,11 +1,19 @@
 function UserProfile(config) {
 	if (config == undefined) {
 		this.songNum = 0; // the current song
+		this.isWarmup = true;
+		this.warmUpNum = 0;
+		this.isPostTest = false;
+		this.postTestNum = 0;
 		this.updateStatuses();
 		//this.performanceData = {}; //level: {list of accuracy lists}
 	}
 	else {
 		this.songNum = config.songNum;
+		this.isWarmup = config.isWarmup;
+		this.warmUpNum = config.warmUpNum;
+		this.isPostTest = config.isPostTest;
+		this.postTestNum = config.postTestNum;
 		this.setInformation(config);
 		//this.performanceData = config.performanceData;
 	}

@@ -55,6 +55,10 @@ a, a:hover {
   text-decoration: none;
 }
 
+#post-test-button {
+  //display: none;
+}
+
 #playerstave path {
   fill: red;//#455ede;
 }

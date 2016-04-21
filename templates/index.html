@@ -81,6 +81,10 @@
          <iron-icon icon="icons:account-circle"></iron-icon>
          {{ username }}
         </paper-button>
+        <paper-button id="post-test-button">
+          Take Post Test
+        </paper-button>
+        
         <paper-button raised id="logout-button" onclick="logout()">
           Logout
         </paper-button>
@@ -193,109 +197,6 @@
     <br>
     <div id="playerstave"> <!--scale=1.0 editor="true" editor_width=680 editor_height=330 height=300> -->
     </div>
-    <!--<paper-dialog id="results-dialog" modal="true">
-      <h1>Performance Results</h1>
-      <paper-dialog-scrollable>
-        <paper-button raised id="results-play-song-button">
-          <iron-icon icon="av:play-circle-outline"></iron-icon>
-          Play Piece
-        </paper-button>
-        <paper-button raised id="results-play-performed-button">
-          <iron-icon icon="av:play-circle-outline"></iron-icon>
-          Play What you Performed
-        </paper-button>
-        <div class="horizontal center-justified layout">
-          <paper-card id="staff-card">
-            <div class="card-content">
-              <div id="performedstave">
-              </div>
-            </div>
-          </paper-card>
-        </div>  
-        <div class="horizontal center-justified layout">
-          <paper-card id="results-card">
-            <div class="card-content">
-            <div class="layout wrap inline center-center">
-              <paper-header-panel class="results-panel" id="lh-results">
-                <paper-toolbar class="paper-header">
-                  <div>Left Hand</div>
-                </paper-toolbar>
-                <div class="content">
-                  <table class="results">
-                      <td>Notes Hit</td>
-                      <td class="result good" id="n-h2">13</td>
-                    </tr>
-                    <tr>
-                      <td>Notes Missed</td>
-                      <td class="result bad" id="n-m2">42</td>
-                    </tr>
-                    <tr>
-                      <td>Rhythms Hit</td>
-                      <td class="result good" id="r-h2">13</td>
-                    </tr>
-                    <tr>
-                      <td>Rhythms Missed</td>
-                      <td class="result bad" id="r-m2">42</td>
-                    </tr>
-                  </table>
-                </div>
-              </paper-header-panel>
-              <paper-header-panel class="results-panel" id="rh-results">
-                <paper-toolbar class="paper-header">
-                  <div>Right Hand</div>
-                </paper-toolbar>
-                <div class="content horizontal-section">
-                  <table class="results">
-                      <td>Notes Hit</td>
-                      <td class="result good" id="n-h1">13</td>
-                    </tr>
-                    <tr>
-                      <td>Notes Missed</td>
-                      <td class="result bad" id="n-m1">42</td>
-                    </tr>
-                    <tr>
-                      <td>Rhythms Hit</td>
-                      <td class="result good" id="r-h1">13</td>
-                    </tr>
-                    <tr>
-                      <td>Rhythms Missed</td>
-                      <td class="result bad" id="r-m1">42</td>
-                    </tr>
-                  </table>
-                </div>
-                
-              </paper-header-panel>
-              </div>
-              <div class="horizontal center-justified layout">
-                  <table class="accuracy">
-                    <td>Overall Accuracy</td>
-                    <td class="result" id="accurate"></td>
-                  </table>
-              </div>
-              <br>
-              <div class="horizontal center-justified layout">
-                <h2>Current Session</h2>
-              </div>
-              <div class="horizontal center-justified layout">
-                <google-chart id="session-chart"
-                  type='combo'
-                  options='{"seriesType": "bars", "series": {"2": {"type": "line"}}}'
-                  cols='[{"label": "Song", "type": "string"}, 
-                          {"label": "Note Accuracy", "type": "number"},
-                          {"label": "Rhythm Accuracy", "type": "number"},
-                          {"label": "Overall", "type": "number"}]'
-                  rows='[]'>
-                </google-chart>
-              </div>
-            </div>
-          </paper-card>
-        </div>
-      </paper-dialog-scrollable>
-      <div class="buttons">
-        <paper-button dialog-dismiss>Cancel</paper-button>
-        <paper-button dialog-confirm>Accept</paper-button>
-      </div>  
-    </paper-dialog>-->
     <paper-dialog id="my-dialog">
     </paper-dialog>
     

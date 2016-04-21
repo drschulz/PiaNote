@@ -1461,6 +1461,474 @@ HandsTogetherPiece.prototype.getType = function() {
 
 
 function HandsTogetherComplexPiece() {
-
+  
 }
+
+
+function PretestPiece1(stats) {
+  var config = {
+    time: {beats: 4, rhythm: 4},
+    key: 'C',
+    numMeasures: 4,
+    isSharpKey: true,
+    stats: stats, //DO I NEED?
+    title: "Pretest 1",
+    altTitle: ""
+  };
+  
+  Musical_Piece.call(this, config);
+  
+}
+
+PretestPiece1.prototype = Object.create(Musical_Piece.prototype);
+PretestPiece1.prototype.constructor = PretestPiece1;
+
+
+PretestPiece1.prototype.generatePiece = function() {
+  var time = 0;
+  var notes = [
+    {tone: 60, rhythm: NoteRhythms.QUARTER, interval: 0},
+    {tone: 64, rhythm: NoteRhythms.QUARTER, interval: 2},
+    {tone: 62, rhythm: NoteRhythms.HALF, interval: 1},
+    {tone: 67, rhythm: NoteRhythms.HALF, interval: 3},
+    {tone: 64, rhythm: NoteRhythms.HALF, interval: 2},
+  ];
+  
+  var note;
+  for (var i = 0; i < notes.length; i++) {
+    note = new SingleNote({
+      tone: notes[i].tone, 
+      rhythm: notes[i].rhythm, 
+      hand: 'r',
+      interval: notes[i].interval
+    });
+    if (i == 0) {
+      note.setFingering(1);
+    }
+    this.addToPiece(time, note);
+    time += note.rhythm;
+  }
+  
+  this.addRests(2, 3, 'r');
+  
+  var v2Notes = [
+    {tone: 52, rhythm: NoteRhythms.QUARTER, interval: 0},
+    {tone: 55, rhythm: NoteRhythms.QUARTER, interval: 2},
+    {tone: 53, rhythm: NoteRhythms.QUARTER, interval: 1},
+    {tone: 52, rhythm: NoteRhythms.QUARTER, interval: 1},
+    {tone: 48, rhythm: NoteRhythms.HALF, interval: 2},
+    {tone: 48, rhythm: NoteRhythms.HALF, interval: 0}
+  ];
+  
+  this.addRests(0, 1, 'l');
+  
+  for (var i = 0; i < v2Notes.length; i++) {
+    note = new SingleNote({
+      tone: v2Notes[i].tone, 
+      rhythm: v2Notes[i].rhythm, 
+      hand: 'l',
+      interval: v2Notes[i].interval
+    });
+    if (i == 0) {
+      note.setFingering(3);
+    }
+    this.addToPiece(time, note);
+    time += note.rhythm;
+  } 
+}
+
+PretestPiece1.prototype.getType = function() {
+  return "Pretest";
+}
+
+
+function PretestPiece2(stats) {
+  var config = {
+    time: {beats: 3, rhythm: 4},
+    key: 'G',
+    numMeasures: 4,
+    isSharpKey: true,
+    stats: stats, //DO I NEED?
+    title: "Pretest 2",
+    altTitle: ""
+  };
+  
+  Musical_Piece.call(this, config);
+  
+}
+
+PretestPiece2.prototype = Object.create(SimpleChordPiece.prototype);
+PretestPiece2.prototype.constructor = PretestPiece2;
+
+
+PretestPiece2.prototype.generateChords = function() {
+  var chords = [];
+
+  //alwasy start with the chord of the key
+  chords.push(simpleKeyChords[0]);
+
+  chords.push(simpleKeyChords[1]);
+  chords.push(simpleKeyChords[2]);
+
+  //always end with the chord of the key
+  chords.push(simpleKeyChords[0]);
+
+  return chords;
+}
+
+PretestPiece2.prototype.generatePiece = function() {
+  var time = 0;
+  var notes = [
+    {tone: 71, rhythm: NoteRhythms.QUARTER, interval: 0},
+    {tone: 69, rhythm: NoteRhythms.EIGTH, interval: 1},
+    {tone: 71, rhythm: NoteRhythms.EIGTH, interval: 1},
+    {tone: 72, rhythm: NoteRhythms.QUARTER, interval: 1},
+    //{tone: 74, rhythm: NoteRhythms.QUARTER, interval: 1},
+    
+    {tone: 76, rhythm: NoteRhythms.QUARTER, interval: 1},
+    //{tone: 72, rhythm: NoteRhythms.QUARTER, interval: 2},
+    {tone: 69, rhythm: NoteRhythms.HALF, interval: 2},
+    
+    {tone: 76, rhythm: NoteRhythms.QUARTER, interval: 4},
+    {tone: 71, rhythm: NoteRhythms.EIGTH, interval: 3},
+    {tone: 72, rhythm: NoteRhythms.EIGTH, interval: 1},
+    {tone: 74, rhythm: NoteRhythms.QUARTER, interval: 1},
+    //{tone: 72, rhythm: NoteRhythms.EIGTH, interval: 1},
+    //{tone: 69, rhythm: NoteRhythms.EIGTH, interval: 2},
+    
+    {tone: 71, rhythm: NoteRhythms.D_HALF, interval: 1}
+  ];
+  
+  var note;
+  for (var i = 0; i < notes.length; i++) {
+    note = new SingleNote({
+      tone: notes[i].tone, 
+      rhythm: notes[i].rhythm, 
+      hand: 'r',
+      interval: notes[i].interval
+    });
+    if (i == 0) {
+      note.setFingering(3);
+    }
+    this.addToPiece(time, note);
+    time += note.rhythm;
+  }
+  
+  this.generateLeftHandChords(); 
+}
+
+PretestPiece2.prototype.getType = function() {
+  return "Pretest";
+}
+
+
+function PretestPiece3(stats) {
+  var config = {
+    time: {beats: 4, rhythm: 4},
+    key: 'Bb',
+    numMeasures: 4,
+    isSharpKey: true,
+    stats: stats, //DO I NEED?
+    title: "Pretest 3",
+    altTitle: ""
+  };
+  
+  Musical_Piece.call(this, config);
+}
+
+PretestPiece3.prototype = Object.create(MixedChordPiece.prototype);
+PretestPiece3.prototype.constructor = PretestPiece3;
+
+
+PretestPiece3.prototype.generateChords = function() {
+  var chords = [];
+
+  //alwasy start with the chord of the key
+  chords.push(mixedKeyChords[0]);
+
+  chords.push(mixedKeyChords[4]);
+  chords.push(mixedKeyChords[1]);
+
+  //always end with the chord of the key
+  chords.push(mixedKeyChords[0]);
+
+  return chords;
+}
+
+PretestPiece3.prototype.generatePiece = function() {
+  var time = 0;
+  var notes = [
+    {tone: 65, rhythm: NoteRhythms.D_QUARTER, interval: 0},
+    {tone: 62, rhythm: NoteRhythms.EIGTH, interval: 2},
+    {tone: 63, rhythm: NoteRhythms.QUARTER, interval: 1},
+    {tone: 65, rhythm: NoteRhythms.QUARTER, interval: 1},
+    {tone: 62, rhythm: NoteRhythms.D_QUARTER, interval: 2},
+    {tone: 67, rhythm: NoteRhythms.EIGTH, interval: 3},
+    {tone: 65, rhythm: NoteRhythms.HALF, interval: 1},
+    {tone: 69, rhythm: NoteRhythms.EIGTH, interval: 2},
+    {tone: 62, rhythm: NoteRhythms.EIGTH, interval: 4},
+    {tone: 65, rhythm: NoteRhythms.EIGTH, interval: 2},
+    {tone: 67, rhythm: NoteRhythms.EIGTH, interval: 1},
+    {tone: 65, rhythm: NoteRhythms.EIGTH, interval: 1},
+    {tone: 63, rhythm: NoteRhythms.EIGTH, interval: 1},
+    {tone: 62, rhythm: NoteRhythms.EIGTH, interval: 1},
+    {tone: 63, rhythm: NoteRhythms.EIGTH, interval: 1},
+    {tone: 65, rhythm: NoteRhythms.WHOLE, interval: 1}
+  ];
+  
+  var note;
+  for (var i = 0; i < notes.length; i++) {
+    note = new SingleNote({
+      tone: notes[i].tone, 
+      rhythm: notes[i].rhythm, 
+      hand: 'r',
+      interval: notes[i].interval
+    });
+    if (i == 0) {
+      note.setFingering(3);
+    }
+    this.addToPiece(time, note);
+    time += note.rhythm;
+  }
+  
+  this.generateLeftHandChords(); 
+}
+
+PretestPiece3.prototype.getType = function() {
+  return "Pretest";
+}
+
+function PosttestPiece1(stats) {
+  var config = {
+    time: {beats: 4, rhythm: 4},
+    key: 'C',
+    numMeasures: 4,
+    isSharpKey: true,
+    stats: stats, //DO I NEED?
+    title: "Posttest 1",
+    altTitle: ""
+  };
+  
+  Musical_Piece.call(this, config);
+  
+}
+
+PosttestPiece1.prototype = Object.create(Musical_Piece.prototype);
+PosttestPiece1.prototype.constructor = PosttestPiece1;
+
+PosttestPiece1.prototype.generatePiece = function() {
+  var time = 0;
+  var notes = [
+    {tone: 64, rhythm: NoteRhythms.QUARTER, interval: 0},
+    {tone: 60, rhythm: NoteRhythms.QUARTER, interval: 2},
+    {tone: 60, rhythm: NoteRhythms.QUARTER, interval: 2},
+    {tone: 64, rhythm: NoteRhythms.QUARTER, interval: 2},
+    {tone: 67, rhythm: NoteRhythms.QUARTER, interval: 2},
+    {tone: 65, rhythm: NoteRhythms.QUARTER, interval: 1},
+    {tone: 62, rhythm: NoteRhythms.HALF, interval: 2},
+    
+  ];
+  
+  var note;
+  for (var i = 0; i < notes.length; i++) {
+    note = new SingleNote({
+      tone: notes[i].tone, 
+      rhythm: notes[i].rhythm, 
+      hand: 'r',
+      interval: notes[i].interval
+    });
+    if (i == 0) {
+      note.setFingering(3);
+    }
+    this.addToPiece(time, note);
+    time += note.rhythm;
+  }
+  
+  this.addRests(2, 3, 'r');
+  
+  var v2Notes = [
+    {tone: 52, rhythm: NoteRhythms.QUARTER, interval: 0},
+    {tone: 55, rhythm: NoteRhythms.QUARTER, interval: 2},
+    {tone: 53, rhythm: NoteRhythms.QUARTER, interval: 1},
+    {tone: 52, rhythm: NoteRhythms.QUARTER, interval: 1},
+    {tone: 48, rhythm: NoteRhythms.HALF, interval: 2},
+    {tone: 48, rhythm: NoteRhythms.HALF, interval: 0}
+  ];
+  
+  this.addRests(0, 1, 'l');
+  
+  for (var i = 0; i < v2Notes.length; i++) {
+    note = new SingleNote({
+      tone: v2Notes[i].tone, 
+      rhythm: v2Notes[i].rhythm, 
+      hand: 'l',
+      interval: v2Notes[i].interval
+    });
+    if (i == 0) {
+      note.setFingering(3);
+    }
+    this.addToPiece(time, note);
+    time += note.rhythm;
+  } 
+}
+
+PosttestPiece1.prototype.getType = function() {
+  return "Posttest";
+}
+
+function PosttestPiece2(stats) {
+  var config = {
+    time: {beats: 3, rhythm: 4},
+    key: 'F',
+    numMeasures: 4,
+    isSharpKey: true,
+    stats: stats, //DO I NEED?
+    title: "Posttest 2",
+    altTitle: ""
+  };
+  
+  Musical_Piece.call(this, config);
+  
+}
+
+PosttestPiece2.prototype = Object.create(SimpleChordPiece.prototype);
+PosttestPiece2.prototype.constructor = PosttestPiece2;
+
+
+PosttestPiece2.prototype.generateChords = function() {
+  var chords = [];
+
+  //alwasy start with the chord of the key
+  chords.push(simpleKeyChords[0]);
+
+  chords.push(simpleKeyChords[2]);
+  chords.push(simpleKeyChords[1]);
+
+  //always end with the chord of the key
+  chords.push(simpleKeyChords[0]);
+
+  return chords;
+}
+
+PosttestPiece2.prototype.generatePiece = function() {
+  var time = 0;
+  var notes = [
+    {tone: 72, rhythm: NoteRhythms.QUARTER, interval: 0},
+    {tone: 69, rhythm: NoteRhythms.EIGTH, interval: 0},
+    {tone: 70, rhythm: NoteRhythms.EIGTH, interval: 0},
+    {tone: 72, rhythm: NoteRhythms.EIGTH, interval: 0},
+    {tone: 74, rhythm: NoteRhythms.EIGTH, interval: 0},
+    
+    {tone: 74, rhythm: NoteRhythms.QUARTER, interval: 0},
+    {tone: 67, rhythm: NoteRhythms.QUARTER, interval: 0},
+    {tone: 67, rhythm: NoteRhythms.QUARTER, interval: 0},
+    
+    {tone: 70, rhythm: NoteRhythms.QUARTER, interval: 0},
+    {tone: 69, rhythm: NoteRhythms.EIGTH, interval: 0},
+    {tone: 67, rhythm: NoteRhythms.EIGTH, interval: 0},
+    {tone: 69, rhythm: NoteRhythms.EIGTH, interval: 0},
+    {tone: 70, rhythm: NoteRhythms.EIGTH, interval: 0},
+    
+    {tone: 69, rhythm: NoteRhythms.D_HALF, interval: 0}
+  ];
+  
+  var note;
+  for (var i = 0; i < notes.length; i++) {
+    note = new SingleNote({
+      tone: notes[i].tone, 
+      rhythm: notes[i].rhythm, 
+      hand: 'r',
+      interval: notes[i].interval
+    });
+    if (i == 0) {
+      note.setFingering(3);
+    }
+    this.addToPiece(time, note);
+    time += note.rhythm;
+  }
+  
+  this.generateLeftHandChords(); 
+}
+
+PosttestPiece2.prototype.getType = function() {
+  return "Posttest";
+}
+
+function PosttestPiece3(stats) {
+  var config = {
+    time: {beats: 4, rhythm: 4},
+    key: 'D',
+    numMeasures: 4,
+    isSharpKey: true,
+    stats: stats, //DO I NEED?
+    title: "Posttest 3",
+    altTitle: ""
+  };
+  
+  Musical_Piece.call(this, config);
+  
+}
+
+PosttestPiece3.prototype = Object.create(MixedChordPiece.prototype);
+PosttestPiece3.prototype.constructor = PosttestPiece3;
+
+
+PosttestPiece3.prototype.generateChords = function() {
+  var chords = [];
+
+  //alwasy start with the chord of the key
+  chords.push(mixedKeyChords[0]);
+
+  chords.push(mixedKeyChords[4]);
+  chords.push(mixedKeyChords[1]);
+
+  //always end with the chord of the key
+  chords.push(mixedKeyChords[0]);
+
+  return chords;
+}
+
+PosttestPiece3.prototype.generatePiece = function() {
+  var time = 0;
+  var notes = [
+    {tone: 69, rhythm: NoteRhythms.D_QUARTER, interval: 0},
+    {tone: 66, rhythm: NoteRhythms.EIGTH, interval: 2},
+    {tone: 67, rhythm: NoteRhythms.QUARTER, interval: 1},
+    {tone: 69, rhythm: NoteRhythms.QUARTER, interval: 1},
+    {tone: 66, rhythm: NoteRhythms.D_QUARTER, interval: 2},
+    {tone: 71, rhythm: NoteRhythms.EIGTH, interval: 3},
+    {tone: 69, rhythm: NoteRhythms.HALF, interval: 1},
+    {tone: 73, rhythm: NoteRhythms.EIGTH, interval: 2},
+    {tone: 66, rhythm: NoteRhythms.EIGTH, interval: 4},
+    {tone: 69, rhythm: NoteRhythms.EIGTH, interval: 2},
+    {tone: 71, rhythm: NoteRhythms.EIGTH, interval: 1},
+    {tone: 69, rhythm: NoteRhythms.EIGTH, interval: 1},
+    {tone: 67, rhythm: NoteRhythms.EIGTH, interval: 1},
+    {tone: 66, rhythm: NoteRhythms.EIGTH, interval: 1},
+    {tone: 67, rhythm: NoteRhythms.EIGTH, interval: 1},
+    {tone: 69, rhythm: NoteRhythms.WHOLE, interval: 1}
+  ];
+  
+  var note;
+  for (var i = 0; i < notes.length; i++) {
+    note = new SingleNote({
+      tone: notes[i].tone, 
+      rhythm: notes[i].rhythm, 
+      hand: 'r',
+      interval: notes[i].interval
+    });
+    if (i == 0) {
+      note.setFingering(3);
+    }
+    this.addToPiece(time, note);
+    time += note.rhythm;
+  }
+  
+  this.generateLeftHandChords(); 
+}
+
+PosttestPiece3.prototype.getType = function() {
+  return "Posttest";
+}
+
 

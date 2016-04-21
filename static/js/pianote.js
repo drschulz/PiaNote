@@ -90,6 +90,13 @@ PiaNote.prototype.isMonitoring = function() {
   return this.playTime != null;
 };
 
+PiaNote.prototype.setExpectedPiece = function(piece) {
+  this.pianotePiece = {};
+  this.resetTime();
+  
+  this.expectedPiece = piece;
+}
+
 PiaNote.prototype.generateSong = function(title, description) {
   var that = this;
 

@@ -10,7 +10,8 @@ var engine;
 var user;
 var sessionNum = 1;
 var songNum = 0;
-var currentAccuracies;
+var attempt = 1;
+//var currentAccuracies;
 //Sheet music rendering
 
 function openDialog() {
@@ -110,15 +111,29 @@ function getTitle(levels) {
     return title;
 }
 
+var warmUpSongs = [PretestPiece1, PretestPiece2, PretestPiece3];
+var postTestSongs = [PosttestPiece1, PosttestPiece2, PosttestPiece3];
 
 function generateNextMelody() {
-  songNum++;
-  console.log(PianoteLevels.getCurrentLevels());
-  var levels = user.getLevelFocusComponents();
-  console.log(user);
-  var title = getTitle(levels);
+  if (user.isWarmup) {
+    var warmUpPiece = new warmUpSongs[user.warmUpNum](pianote.playerStats);
+    pianote.setExpectedPiece(warmUpPiece);
+  }
+  else if (user.isPostTest) {
+    var postTestPiece = new postTestSongs[user.postTestNum](pianote.playerStats);
+    pianote.setExpectedPiece(postTestPiece);
+  }
+  else {
   
-  pianote.generateSong("Song " + songNum, title);
+    songNum++;
+    console.log(PianoteLevels.getCurrentLevels());
+    var levels = user.getLevelFocusComponents();
+    console.log(user);
+    var title = getTitle(levels);
+    
+    pianote.generateSong("Song " + songNum, title);
+  }
+  
   renderSong(pianote.expectedPiece, "mystave", "black");
 }
 
@@ -174,7 +189,7 @@ function displayResults(results) {
   }*/
 }
 
-function savePiece() {
+function savePiece(currentAccuracies, sNum) {
   var stats = pianote.playerStats;
   var profile = user;
   var level = PianoteLevels.getCurrentLevels();
@@ -185,6 +200,7 @@ function savePiece() {
     level: level,
     performance: performance,
     sessionNum: sessionNum,
+    attempt: attempt,
     songNum: songNum,
     piece: pianote.expectedPiece,
     accuracies: currentAccuracies
@@ -221,6 +237,53 @@ function savePiece() {
     error: registerPostError,
   });
 }
+
+function savePrePostTest(currentAccuracies) {
+  var stats = pianote.playerStats;
+  var profile = user;
+  var performance = pianote.pianotePiece;
+  var num = pianote.expectedPiece.getType() == "Pretest" ? user.warmUpNum : user.postTestNum;
+  var bundle = {
+    stats: stats,
+    profile: profile,
+    performance: performance,
+    pieceType: pianote.expectedPiece.getType(),
+    pieceNum: num,
+    accuracies: currentAccuracies
+  };
+
+
+  function registerPostSuccess() {
+    var toast = document.querySelector('#success-toast');
+    toast.text = "saved current scores";
+    toast.open();
+  }
+
+  function registerPostError() {
+    var toast = document.querySelector('#fail-toast');
+    toast.text = "error saving scores";
+    toast.open();  
+  }
+
+  var bundleJson = JSON.stringify(bundle, function(k, v) {
+    if (k == 'svgElements' || k == 'tiers') {
+      return undefined;
+    }
+    return v;
+  });
+
+  $.ajax({
+    method: 'POST',
+    url: '/savePrePostTest',
+    contentType: 'application/json',
+    processData: true,
+    data: bundleJson,
+    dataType: 'text',
+    success: registerPostSuccess,
+    error: registerPostError,
+  });
+}
+
 
 function resetSurvey() {
   document.querySelector('#ratings').value = 5;
@@ -275,10 +338,32 @@ function saveSurvey() {
 
 function scorePerformance() {
   var results = pianote.scorePerformance();
-  engine.getNextSongParameters(results);
+  
   displayResults(results);
-  currentAccuracies = results;
-  savePiece();
+  
+  if (!user.isWarmup && !user.isPostTest) {
+    $("#survey").show();
+    engine.getNextSongParameters(results);
+    savePiece(results);  
+  }
+  else {
+     if (user.isWarmup) {
+       user.warmUpNum++;
+       if (user.warmUpNum >= warmUpSongs.length) {
+          user.isWarmup = false;
+       }
+     }
+     if (user.isPostTest) {
+       user.postTestNum++;
+       if (user.postTestNum >= postTestSongs.length) {
+          user.isPostTest = false;
+       }
+     }
+     
+     savePrePostTest(results);
+  }
+  //currentAccuracies = results;
+  
 }
 
 function playSong(tune) {
@@ -335,13 +420,17 @@ function initializeButtons() {
     
     //$("#play-button").prop("disabled", true);
     $("#playButtons").show();
-    $("#survey").show();
     $("#score-div").show();
+    
+    if (!user.isWarmup && !user.isPostTest && attempt < 2) {
+      $("#retry-button").prop("disabled", false);
+    }
     
     scorePerformance();
 
     $("#generate-button").prop("disabled", false);
-    $("#retry-button").prop("disabled", false);
+    
+    
     
   });
   
@@ -353,13 +442,14 @@ function initializeButtons() {
     resetSurvey();
     $("#score-div").hide();
     generateNextMelody();
-    
+    attempt = 1;
     $("#generate-button").prop("disabled", true);
     $("#retry-button").prop("disabled", true);
     $("#play-button").prop("disabled", false);
   });
 
   $("#retry-button").click(function() {
+    attempt++;
     pianote.expectedPiece.clearPerformance();
     renderSong(pianote.expectedPiece, "mystave", "black");
     $("#play-button").show();
@@ -393,6 +483,12 @@ function initializeButtons() {
     
   });
   
+  $("#post-test-button").click(function() {
+    user.isPostTest = true;
+    user.postTestNum = 0;
+    generateNextMelody();
+  });
+  
   $("#play-song-button").click(function() {
     playSong(pianote.expectedPiece.piece);
   });
@@ -418,18 +514,21 @@ function enableButtons() {
 
 function initializeApplication(userData) {
   if (userData == undefined) {
-    pianote = new PiaNote();
+    
     user = new UserProfile();
     engine = new RecommendationEngine(user);    
+    pianote = new PiaNote(undefined, undefined);  
   }
   else {
     if (userData.stats != undefined && userData.profile != undefined) {
-      pianote = new PiaNote(userData['stats'], userData.control);
+      
       user = new UserProfile(userData['profile']);
+      pianote = new PiaNote(userData['stats'], userData.control);
     }
     else {
-      pianote = new PiaNote(undefined, userData.control);
       user = new UserProfile();
+      pianote = new PiaNote(undefined, userData.control);
+      
     }
     engine = userData.control ? new ControlEngine(user) : new RecommendationEngine(user);
   }

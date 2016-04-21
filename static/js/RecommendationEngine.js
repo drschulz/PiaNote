@@ -121,9 +121,11 @@ RecommendationEngine.prototype.getNextSongParameters = function(lastSongAccuraci
 		
 	}
 
+	
+	
 	updateDrillingLevel(lastSongAccuracies);
     
-    if (this.userProfile.numStrugglesInLevel > 3) {
+    if (this.userProfile.numStrugglesInLevel == 3) {
         this.userProfile.lowerPsetLevel();
         return this.userProfile.drillingLevel;
     }
