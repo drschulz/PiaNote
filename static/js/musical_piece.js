@@ -1608,7 +1608,7 @@ PretestPiece2.prototype.generatePiece = function() {
       interval: notes[i].interval
     });
     if (i == 0) {
-      note.setFingering(3);
+      note.setFingering(2);
     }
     this.addToPiece(time, note);
     time += note.rhythm;
