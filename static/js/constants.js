@@ -211,7 +211,7 @@ const MATCH_SCORES = {
   RHYTHM_MATCH: 3,
   RHYTHM_MISMATCH: -3,
   
-  INSERTION_DELETION: -4,
+  INSERTION_DELETION: -9,
 };
 
 const MatchDirection = {

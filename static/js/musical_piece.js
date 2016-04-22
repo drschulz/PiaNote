@@ -79,7 +79,7 @@ function flatTuneListSeparatedByNote(tune, separationNote) {
       
       if (noteArr[i].tone < separationNote || (noteArr[i].tone == REST && noteArr[i].hand == "l")) {
           timeNum = parseInt(time);
-          if (timeNum - lastTimeLowerPlayed > 0) {
+          if (timeNum - lastTimeLowerPlayed >= NoteRhythms.QUARTER) {
               lowerTuneList.push(new SingleNote({tone: REST, rhythm: timeNum - lastTimeLowerPlayed}));
           }
           lowerTuneList.push(noteArr[i]);
@@ -87,7 +87,7 @@ function flatTuneListSeparatedByNote(tune, separationNote) {
       }
       else {
           timeNum = parseInt(time);
-          if (timeNum - lastTimeUpperPlayed > 0) {
+          if (timeNum - lastTimeUpperPlayed >= NoteRhythms.QUARTER) {
               upperTuneList.push(new SingleNote({tone: REST, rhythm: timeNum - lastTimeUpperPlayed}));
           }
           upperTuneList.push(noteArr[i]);
@@ -99,10 +99,10 @@ function flatTuneListSeparatedByNote(tune, separationNote) {
     }
     timeNum += noteArr[noteArr.length - 1].rhythm;
     
-    if (timeNum - lastTimeLowerPlayed > 0) {
+    if (timeNum - lastTimeLowerPlayed >= NoteRhythms.QUARTER) {
       lowerTuneList.push(new SingleNote({tone: REST, rhythm: timeNum - lastTimeLowerPlayed}));
     }
-    if (timeNum - lastTimeUpperPlayed > 0) {
+    if (timeNum - lastTimeUpperPlayed >= NoteRhythms.QUARTER) {
       upperTuneList.push(new SingleNote({tone: REST, rhythm: timeNum - lastTimeUpperPlayed}));
     }
     

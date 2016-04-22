@@ -336,19 +336,43 @@ function saveSurvey() {
   });
 }
 
+var pretestPass = false;
+
 function scorePerformance() {
   var results = pianote.scorePerformance();
   
   displayResults(results);
   
   if (!user.isWarmup && !user.isPostTest) {
-    $("#survey").show();
-    engine.getNextSongParameters(results);
-    savePiece(results);  
+    savePiece(results);
+    if (attempt == 1) {
+      engine.getNextSongParameters(results);
+    }
+      
   }
   else {
      if (user.isWarmup) {
        user.warmUpNum++;
+       if (user.warmUpNum > 1) {
+         var avg = (results.s + results.r + results.k + results.i + results.t) / 5.0;
+         
+         if (avg >= 0.8 && !pianote.isControl && pretestPass) {
+           PianoteLevels.increaseAllLevels();
+           user.updateStatuses();
+         }
+         else {
+           pretestPass = false;
+         }
+       }
+       else {
+         var avg = (results.s + results.r + results.k + results.i + results.t) / 5.0;
+         
+         if (avg >= 0.8) {
+           pretestPass = true;
+         }
+         
+       }
+       
        if (user.warmUpNum >= warmUpSongs.length) {
           user.isWarmup = false;
        }
@@ -424,6 +448,7 @@ function initializeButtons() {
     
     if (!user.isWarmup && !user.isPostTest && attempt < 2) {
       $("#retry-button").prop("disabled", false);
+      $("#survey").show();
     }
     
     scorePerformance();

@@ -109,16 +109,24 @@ def saveSurvey():
 	
 	if 'username' in session:
 		user = Users.query.filter_by(username=session['username']).first();
-		performance = PerformanceData.query.filter_by(user_id=user.id, session_number=sessionNum, piece_number=pieceNum).first();
+		if user is None:
+			print("no user")
+		print (user.id)
+		print(sessionNum)
+		print(pieceNum)
+		performance = PerformanceData.query.filter_by(user_id=user.id, session_number=session['sessionNum'], piece_number=pieceNum, attempt=1).first();
 		if performance is None:
-			return "data not saved"
+			print("no performance")
+			abort(404);
+			#return "data not saved"
 		
 		performance.survey = json.dumps(data['survey']);
 		db.session.commit();
 		
 		return "data saved"
 	
-	return "data not saved"
+	abort(404);
+	#return "data not saved"
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
