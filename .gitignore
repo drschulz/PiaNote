@@ -1,5 +1,7 @@
-*/bower_components/
+bower_components
 *.db
-node_modules/
-__pycache__
+/node_modules
+/__pycache__
+*.pyc
+/venv
 */Drew/*

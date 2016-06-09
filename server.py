@@ -243,11 +243,13 @@ class PrePostTest(db.Model):
 def wsgi(environ, start_response):
 	port = int(os.environ.get("PORT", 5000))
 	app.secret_key = os.urandom(24)
+	db.create_all()
 	app.run(debug=True, host='0.0.0.0', port=port, use_reloader=True)
 
 def main():
 	port = int(os.environ.get("PORT", 5000))
 	app.secret_key = os.urandom(24)
+	db.create_all()
 	app.run(debug=True, host='0.0.0.0', port=port)
 
 if __name__ == "__main__":

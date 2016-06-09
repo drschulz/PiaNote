@@ -22,14 +22,21 @@ Needed to run this program:
 	- Flask (http://flask.pocoo.org/)
 - Google Chrome
 
-HOW TO RUN:
+## Development setup
 
-in the PiaNote directory, go to the static directory and run:
+Optional: set up a Python virtualenv by running
 
-bower install
+    virtualenv venv
+    source venv/bin/activate
 
-After that completes, in the PiaNote directory, run:
+Install dependencies by running
 
-python server.py
+    bower install
+    pip install -r requirements.txt
 
-Open up Google Chrome on Localhost:5000
+After that completes, start the server with
+
+    export DATABASE_URL=sqlite:///pianote.db
+    python server.py
+
+Open <http://localhost:5000> in Google Chrome.
